@@ -20,66 +20,19 @@ export default defineConfig({
     alias: aliases,
   },
   server: {
-    port: 3001,
-    strictPort: true,
-    proxy: {
-      // Handle all API requests with /api prefix
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        secure: false,
-        ws: true,
-        // Keep the /api prefix when forwarding to backend
-        rewrite: (path) => path,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('[Vite Proxy Error]', err);
-          });
-          proxy.on('proxyReq', (proxyReq, req, _res) => {
-            console.log('[Vite Proxy] Request:', {
-              method: req.method,
-              url: req.url,
-              path: req.path,
-              headers: req.headers
-            });
-          });
-          proxy.on('proxyRes', (proxyRes, req, _res) => {
-            console.log('[Vite Proxy] Response:', {
-              statusCode: proxyRes.statusCode,
-              statusMessage: proxyRes.statusMessage,
-              method: req.method,
-              url: req.url
-            });
-          });
-        }
-      },
-      // Handle non-prefixed API requests (temporary for backward compatibility)
-      '^/(products|stock|sales|documents)': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-        rewrite: (path) => `/api${path}`,
-        configure: (proxy, _options) => {
-          proxy.on('error', (err, _req, _res) => {
-            console.log('[Vite Proxy Legacy Error]', err);
-          });
-        }
-      }
+    port: 5000,
+    host: '0.0.0.0',
+    strictPort: false,
+    hmr: {
+      port: 5000,
+      overlay: true
     },
     fs: {
       allow: ['..']
-    },
-    hmr: {
-      clientPort: 3001,
-      overlay: true
     }
   },
   css: {
-    postcss: {
-      plugins: [
-        tailwindcss,
-        autoprefixer
-      ]
-    }
+    postcss: './postcss.config.js'
   },
   // Add build configuration for production
   build: {
