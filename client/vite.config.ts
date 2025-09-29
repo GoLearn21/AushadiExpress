@@ -23,10 +23,8 @@ export default defineConfig({
     port: 5000,
     host: '0.0.0.0',
     strictPort: false,
-    hmr: {
-      port: 5000,
-      overlay: true
-    },
+    hmr: false,
+    ws: false, // Disable all websocket connections
     fs: {
       allow: ['..']
     }
