@@ -81,10 +81,10 @@ app.use((req, res, next) => {
       res.status(404).json({ error: 'Not Found', message: `Cannot ${req.method} ${req.path}` });
     });
 
-    const PORT = process.env.PORT || 3000;
+    const PORT = parseInt(process.env.PORT || '5000');
 
     // Initialize the HTTP server
-    const httpServer = app.listen(PORT, () => {
+    const httpServer = app.listen(PORT, '0.0.0.0', () => {
       console.log(`Server is running on port ${PORT}`);
       console.log(`📡 API endpoints are available at http://localhost:${PORT}/api`);
       console.log(`🔌 Connected to database: ${process.env.PGHOST}`);
