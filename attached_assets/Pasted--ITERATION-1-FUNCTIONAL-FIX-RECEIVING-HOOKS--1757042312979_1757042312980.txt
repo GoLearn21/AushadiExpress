@@ -1,0 +1,93 @@
+##################################  ITERATION 1 — FUNCTIONAL FIX + RECEIVING HOOKS  ##################################
+Context
+───────
+Iter-1 POS screen is live but has gaps:
+
+• Home ➜ swipe-right not wired
+• Camera permission failure
+• No Collect-Payment dialog / cash-only option
+• Sale row not hitting outbox
+• Settings unscrollable
+• FAB tooltip missing on first launch
+• Drawer overflow on narrow screens
+• Need supply-chain receiving starter tables
+
+Goals
+─────
+1. Ship a **fully usable scan-to-bill flow** (offline cash/UPI)
+2. Fix UI/UX defects highlighted in testing
+3. Introduce minimal **receiving workflow hooks** (purchase orders & vendor stock-in) ready for Iter-2
+
+Tasks
+─────
+A. **Navigation / Gestures**
+   • Wire `react-native-gesture-handler` swipe-right on Home → `navigation.navigate('POS')`.
+   • Add e2e Jest test that simulates swipe and expects route.
+
+B. **Camera permission**
+   • In `PosScreen`, call `Camera.getAvailableCameraDevices()` to trigger permission; if denied show modal:
+     “Camera permission required to scan. [Open Settings] [Cancel]”.
+   • Add try/catch around `startCamera` → fallback manual search field.
+
+C. **Collect Payment flow**
+   1. New component `CollectPaymentSheet.tsx` (React-Native-Paper or Modal):
+      – Buttons: **Cash (default)** | UPI | Card  
+      – onSelect → marks sale `payment_mode`, `is_paid=1`, writes to outbox.
+   2. Add Setting “Accept only Cash” toggle; hides non-cash buttons.
+
+D. **Data persistence**
+   • Ensure `sales` + `sale_lines` + **outbox rows** written on payment success.
+   • Unit test: after payment, expect one unsynced outbox row per table.
+
+E. **Capability tier badge**
+   • In `HeaderStatus` show tier label from capability service.
+   • Log tier once; store in AsyncStorage.
+
+F. **FAB tooltip**
+   • On first launch only (AsyncStorage flag), show 2-second overlay “Scan & Bill”.
+   • Add Jest test: tooltip present on first run, absent on second.
+
+G. **Layout fixes**
+   • Make `BillDrawer` width responsive: `maxWidth: '90%'` on large screens, full on narrow.
+   • Wrap Settings screen in `ScrollView`.
+
+H. **Receiving Hook (Supply Chain)**
+   1. **DB Migrations (mobile + backend)**  
+      - `vendors(id, name, gst_no)`  
+      - `purchase_orders(id, vendor_id, date, status)`  
+      - `purchase_lines(id, po_id, product_id, qty, rate)`  
+      - `receipts(id, po_id, received_at)`  
+   2. Products tab: Add “Inbound” FAB (box-cube icon) visible **only on Settings→“Enable Receiving (beta)”**.  
+      – Tap opens placeholder `ReceiveStockScreen` with “Scan invoice / Enter PO” stub.  
+      – Logs analytics `receiving_beta_opened`.
+
+   *Note*: no heavy logic yet—just tables + nav stubs. Full receiving workflow is Iter-2.
+
+I. **Docs**
+   • `docs/tech/db_receiving.md` – describe new tables, offline flow (≤ 40 lines).
+   • Update `ux/pos_flow.md` to show payment sheet.
+
+J. **Tests**
+   • Swipe gesture nav
+   • Camera permission fallback
+   • Payment writes outbox rows
+   • Tooltip first-launch logic
+   • Settings scrollable (snapshot)
+
+Constraints
+───────────
+* No new heavyweight libs; `react-native-paper` allowed for payment sheet.
+* Maintain APK ≤ 100 MB, cold-start ≤ 6 s on 2 GB emulator.
+* All new UI meets WCAG AA contrast.
+
+Deliverables
+────────────
+✔ Fixed Home gesture, camera permission, payment sheet  
+✔ Sale persistence & tests green  
+✔ Responsive drawer & scrollable settings  
+✔ Capability badge & FAB tooltip  
+✔ Receiving DB tables + nav stub  
+✔ Updated docs  
+
+Begin.
+#######################################################################################################################

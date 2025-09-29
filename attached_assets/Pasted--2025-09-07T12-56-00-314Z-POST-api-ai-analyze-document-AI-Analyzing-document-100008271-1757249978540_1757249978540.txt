@@ -1,0 +1,110 @@
+
+=== [2025-09-07T12:56:00.314Z] POST /api/ai/analyze-document ===
+[AI] Analyzing document: 1000082713.jpg, size: 562082
+[AI] Document analysis failed: BadRequestError: 400 Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.
+    at Function.generate (/home/runner/workspace/node_modules/openai/src/core/error.ts:72:14)
+    at OpenAI.makeStatusError (/home/runner/workspace/node_modules/openai/src/client.ts:463:28)
+    at OpenAI.makeRequest (/home/runner/workspace/node_modules/openai/src/client.ts:713:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes/ai.ts:39:36) {
+  status: 400,
+  headers: Headers {
+    date: 'Sun, 07 Sep 2025 12:56:01 GMT',
+    'content-type': 'application/json',
+    'content-length': '245',
+    connection: 'keep-alive',
+    'access-control-expose-headers': 'X-Request-ID',
+    'openai-organization': 'user-hiat7cjx8vgel81szeonorcj',
+    'openai-processing-ms': '165',
+    'openai-project': 'proj_MEovbl0GAZ8pvOENentZGX1a',
+    'openai-version': '2020-10-01',
+    'x-envoy-upstream-service-time': '29',
+    'x-openai-proxy-wasm': 'v0.1',
+    'x-ratelimit-limit-input-images': '50000',
+    'x-ratelimit-limit-requests': '500',
+    'x-ratelimit-limit-tokens': '30000',
+    'x-ratelimit-remaining-input-images': '49999',
+    'x-ratelimit-remaining-requests': '499',
+    'x-ratelimit-remaining-tokens': '29129',
+    'x-ratelimit-reset-input-images': '1ms',
+    'x-ratelimit-reset-requests': '120ms',
+    'x-ratelimit-reset-tokens': '1.742s',
+    'x-request-id': 'req_b14f84dab0034b4e958e45791d50db00',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '__cf_bm=K9sIkSPHn9zaEa_2LWrmi8xJe1EvADqFizifsmtKyJo-1757249761-1.0.1.1-wjvefabPIdgMMsTC_vjdz7rfWLWyYmCU9bLmY6JjLP1FXpGkKXoOTsG9Jq1ijWIw3uo8bRm1jJVS.corPqj1WHwx0I8SJ2I7Dr5SjC7z.G8; path=/; expires=Sun, 07-Sep-25 13:26:01 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None, _cfuvid=6aEnklJJRRh24ymnNXcZ5yTpqIx69T7GENaUXsmWMgM-1757249761513-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'x-content-type-options': 'nosniff',
+    server: 'cloudflare',
+    'cf-ray': '97b65d1ccac6ded2-SEA',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  requestID: 'req_b14f84dab0034b4e958e45791d50db00',
+  error: {
+    message: "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.",
+    type: 'invalid_request_error',
+    param: 'max_tokens',
+    code: 'unsupported_parameter'
+  },
+  code: 'unsupported_parameter',
+  param: 'max_tokens',
+  type: 'invalid_request_error'
+}
+[RESPONSE 500] {"error":"Document analysis failed","details":"400 Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead."}
+=== END POST /analyze-document ===
+
+12:56:01 PM [express] POST /api/ai/analyze-document 500 in 1223ms :: {"error":"Document analysis fail…
+
+=== [2025-09-07T12:56:13.182Z] POST /api/ai/analyze-document ===
+[AI] Analyzing document: 1000082713.jpg, size: 562082
+[AI] Document analysis failed: BadRequestError: 400 Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.
+    at Function.generate (/home/runner/workspace/node_modules/openai/src/core/error.ts:72:14)
+    at OpenAI.makeStatusError (/home/runner/workspace/node_modules/openai/src/client.ts:463:28)
+    at OpenAI.makeRequest (/home/runner/workspace/node_modules/openai/src/client.ts:713:24)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async <anonymous> (/home/runner/workspace/server/routes/ai.ts:39:36) {
+  status: 400,
+  headers: Headers {
+    date: 'Sun, 07 Sep 2025 12:56:13 GMT',
+    'content-type': 'application/json',
+    'content-length': '245',
+    connection: 'keep-alive',
+    'access-control-expose-headers': 'X-Request-ID',
+    'openai-organization': 'user-hiat7cjx8vgel81szeonorcj',
+    'openai-processing-ms': '126',
+    'openai-project': 'proj_MEovbl0GAZ8pvOENentZGX1a',
+    'openai-version': '2020-10-01',
+    'x-envoy-upstream-service-time': '34',
+    'x-openai-proxy-wasm': 'v0.1',
+    'x-ratelimit-limit-input-images': '50000',
+    'x-ratelimit-limit-requests': '500',
+    'x-ratelimit-limit-tokens': '30000',
+    'x-ratelimit-remaining-input-images': '49999',
+    'x-ratelimit-remaining-requests': '499',
+    'x-ratelimit-remaining-tokens': '29129',
+    'x-ratelimit-reset-input-images': '1ms',
+    'x-ratelimit-reset-requests': '120ms',
+    'x-ratelimit-reset-tokens': '1.742s',
+    'x-request-id': 'req_36282356a5814aefad75601ca6b8562e',
+    'cf-cache-status': 'DYNAMIC',
+    'set-cookie': '__cf_bm=Omu0J6csbBzDT2uVAwkjHE3avall6F_L0WavDrbb3Vo-1757249773-1.0.1.1-85KcRQoHdzDf.oNrOZ9dS38eeXxnXJbD5VFWjNIMM4y3gdZ8fZM3zLW.RyGJizqHvRTuYqTSxYW7PGTYA58bPY_5L7SglPQhuJWrqNP3F68; path=/; expires=Sun, 07-Sep-25 13:26:13 GMT; domain=.api.openai.com; HttpOnly; Secure; SameSite=None, _cfuvid=3W2H0r2svT3XgA6vQRGxikGoi_LhdtHJUFXi_6y7tBc-1757249773998-0.0.1.1-604800000; path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None',
+    'strict-transport-security': 'max-age=31536000; includeSubDomains; preload',
+    'x-content-type-options': 'nosniff',
+    server: 'cloudflare',
+    'cf-ray': '97b65d6b0e1c76a0-SEA',
+    'alt-svc': 'h3=":443"; ma=86400'
+  },
+  requestID: 'req_36282356a5814aefad75601ca6b8562e',
+  error: {
+    message: "Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.",
+    type: 'invalid_request_error',
+    param: 'max_tokens',
+    code: 'unsupported_parameter'
+  },
+  code: 'unsupported_parameter',
+  param: 'max_tokens',
+  type: 'invalid_request_error'
+}
+[RESPONSE 500] {"error":"Document analysis failed","details":"400 Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead."}
+=== END POST /analyze-document ===
+
+12:56:14 PM [express] POST /api/ai/analyze-document 500 in 823ms :: {"error":"Document analysis faile…

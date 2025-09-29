@@ -1,0 +1,84 @@
+##################################  DEBUG-AND-AUTO-FIX — CAMERA FLOW  ##################################
+Mission
+───────
+1. Add DEV-only debug logs at every branch of the camera-permission flow.  
+2. Emit logs to the Expo console **and** a small on-screen overlay.  
+3. After building, run a headless self-test: if the scanner component fails to
+   mount, automatically retry permission logic once, then surface an error toast.
+4. Keep looping until `mounted=true` or 2 retries fail (to avoid infinite loop).
+
+Changes
+───────
+A. **Logger helper** `utils/devLogger.ts`
+```ts
+export const log = (...args:any[])=>{
+  if(!__DEV__) return;
+  console.log('[CAMERA]', ...args);
+};
+
+import React from 'react';
+import { View, Text } from 'react-native';
+let messages:string[]=[]; let bump:()=>void=()=>{};
+export const DevOverlay=()=>{
+  const [_,setTick]=React.useState(0); bump=()=>setTick(t=>t+1);
+  if(!__DEV__) return null;
+  return (
+    <View style={{position:'absolute',bottom:0,left:0,right:0,backgroundColor:'#0008',padding:4}}>
+      {messages.slice(-4).map((m,i)=><Text key={i} style={{color:'#0f0',fontSize:10}}>{m}</Text>)}
+    </View>
+  );
+};
+export const push=(m:string)=>{ if(__DEV__){ messages.push(m); log(m); bump(); } };
+B. services/camera.ts
+Wrap every branch with push()
+
+ts
+Copy code
+push(`ensureCamera(): initial status ${s}`);
+...
+push('Permission modal → settings');
+push(`AppState back. status=${status}`);
+C. PermissionPortal – render DevOverlay inside the root so overlay is
+always available in DEV.
+
+D. Scanner screens
+
+tsx
+Copy code
+useEffect(()=>{
+  let attempts=0;
+  const tryCam=()=>ensureCamera(
+    ()=>{push('Camera granted → starting'); setReady(true);},
+    ()=>{push('Camera still denied'); if(++attempts<2) tryCam(); else showToast('Camera blocked');}
+  );
+  tryCam();
+},[]);
+E. Headless self-test
+In /scripts/devCamTest.ts (executed by npm run test:cam)
+
+Mock denied → expect 2 retries.
+
+Mock granted on 1st retry → expect push('Camera granted') called.
+
+F. Package.json
+
+json
+Copy code
+"scripts": {
+  "test:cam":"node scripts/devCamTest.ts"
+}
+G. Instructions to dev (added to README)
+Run app in Expo, watch the console & green overlay lines; grant permission in
+settings; overlay must log “Camera granted → starting”.
+
+Constraints
+───────────
+
+All logging disabled in release (__DEV__ guard).
+
+No new heavy deps; plain console + overlay.
+
+Keep APK < 100 MB.
+
+Begin.
+#######################

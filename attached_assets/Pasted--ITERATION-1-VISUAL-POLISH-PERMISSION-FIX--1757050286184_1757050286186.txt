@@ -1,0 +1,76 @@
+################################  ITERATION 1 — VISUAL POLISH & PERMISSION FIX  ################################
+Pain-points to resolve
+──────────────────────
+1. **Home**: typography jumps, header alignment off, “Reorder Now” too loud.
+2. **Receive Stock**: feels empty / lifeless.
+3. **Camera permission**: flow never completes; icon on Home ambiguous.
+
+Design goals
+────────────
+• Consistent 8-pt baseline grid, font ramp (12/14/16/20/24).  
+• Subtle hierarchy: only critical alerts in strong colour.  
+• Permission loop = one-tap fix.  
+• “Smart Action” FAB combines **scan** + **assistant** to reduce clutter.
+
+Tasks
+─────
+A. **Global style tokens** (`mobile/src/theme.ts`)
+   • BASE = 8 dp; heading-xl 24/32, heading-md 20/28, body 14/20.  
+   • Export `tw` helpers to enforce consistent padding / fontSize.
+
+B. **Home screen polish**
+   • Header:  
+     ```
+     [ mortar icon ]  AushadiExpress      ● Online ↻
+     ```
+     – Use `items-center justify-between` flex row.  
+   • KPI cards: font 20/28 for numbers, subtitle 14/20.  
+   • “Reorder Now” card: red icon, text black-800 → draws yet not shouts.
+   • Trial chip trimmed to 2-line “Free 14-day trial”.
+
+C. **Smart Action FAB**
+   • Single FAB bottom-right: camera icon + small chat bubble overlay.  
+   • First-tap behaviour: opens camera if permission granted else permission modal.  
+   • Long-press (≥600 ms) opens Assistant beta modal (same as Settings row).
+
+D. **Camera permission loop**
+   • On “Open Settings” > `Linking.openSettings()` and `AppState.addEventListener('change', ...)`
+     – When AppState returns to active, re-check permission → if granted auto-open camera.  
+   • Add snackbar “Camera enabled ✔” after success.
+
+E. **Receive Stock revitalise**
+   • Top hero banner: icon box-in-box + text “Stock Inward made easy”.  
+   • Two big action cards (scan / PO) remain; below show **progress tracker** chips:
+     – “0 Invoices pending sync” / “0 POs open”.  
+   • Empty-state illustration SVG (64 kB mono) – inline asset.
+
+F. **Ops screen cohesion**
+   • Widget cards share same style as KPI: rounded-lg, shadow-xs, icon 24 dp.  
+   • Add subtle fade animation on mount (Reanimated, already in Expo).
+
+G. **Tests**
+   • Home header renders Online dot and refresh icon aligned (`byTestId='headerOnline'`).  
+   • Smart FAB: first-tap triggers permission modal when denied; long-press opens Assistant.  
+   • AppState listener re-opens camera after enabling permission (jest-mock AppState).
+
+H. **Docs**
+   • `docs/ux/typography_grid.md` – 30 lines on font ramp & spacing.  
+   • Update ops_widget_grid.md screenshot.
+
+Constraints
+───────────
+* No heavy libs; use built-in Reanimated animation, react-native-svg for illustration.
+* APK ≤ 100 MB; cold-start ≤ 6 s on 2 GB.
+* All colours WCAG AA, headroom for dark-mode.
+
+Deliverables
+────────────
+✔ theme.ts with 8-pt grid & font ramp  
+✔ Polished Home UI, aligned header, toned alert  
+✔ Smart Action FAB & camera permission loop fix  
+✔ Receive Stock hero + progress chips + illustration  
+✔ Cohesive Ops widget style  
+✔ Tests & docs updated
+
+Begin.
+###############################################################################################################

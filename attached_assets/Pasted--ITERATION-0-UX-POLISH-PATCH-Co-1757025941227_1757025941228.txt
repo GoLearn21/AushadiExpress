@@ -1,0 +1,66 @@
+################################  ITERATION 0 — UX POLISH PATCH  ################################
+Context
+───────
+The Iteration 0 foundation is live. We now apply a light UI polish so the
+home dashboard converts better before moving on to Iteration 1.
+
+Update scope (do NOT create a new scaffold)
+───────────────────────────────────────────
+1. **mobile/App.tsx** & related components  
+   • Replace dual-tile grid with **one primary CTA** tile labelled  
+     **“📷  Bill Fast\nOffline < 15 s”** (blue, rounded-xl).  
+   • Move *Inventory* access into the existing bottom-nav (Products tab icon).  
+   • Add header ribbon below logo:  
+     `★ 4.8 (12 345 chemists) • Trusted since 2025` (small grey text).  
+   • Add slim urgency badge (orange pill) right-aligned under the CTA:  
+     `Free 90-day trial ends 30 Sep`.  
+   • Keep “Today’s Sales” & “Low Stock” cards but shrink their font-size 10 %.  
+   • Footer note (center, small): `Works offline • No card required • Cancel anytime`.
+
+2. **New component** `mobile/src/ui/HeaderStatus.tsx`  
+   – Shows app title, pharmacy name, and online/offline dot with sync % when offline.
+
+3. **New doc** `docs/ux/dashboard_wireframe.md`  
+   – Paste the ASCII mock-up below for reference (≤ 40 lines).
+
+```txt
+┌──────────────────────────────────────────────────────────┐
+│ Pharma-Empire OS     ★ 4.8 (12 345 chemists) Trusted…    │
+│ MediCare Pharmacy                      ● Online          │
+└──────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────┐
+│  📷  Bill Fast                                            │
+│      Offline < 15 s                                       │
+└──────────────────────────────────────────────────────────┘
+           Free 90-day trial ends 30 Sep ►
+
+Today’s Sales          ₹8 450   ↑14 %
+Low-stock SKU          7        ⚠ Restock
+
+───────── Recent Transactions ─────────
+
+Works offline • No card required • Cancel anytime
+Adjust test
+– Update selector in __tests__/syncWorker.test.ts if the label changed from
+“New Sale” to “Bill Fast”.
+
+Constraints
+───────────
+
+Modify only the files mentioned above; keep schema, outbox, and other tests intact.
+
+Use existing Expo / React-Native deps—no new libraries.
+
+Colours via Tailwind-RN classnames or inline StyleSheet.
+
+Maintain dark-mode contrast ≥ 4.5 : 1.
+
+Deliverables
+────────────
+✔ Updated App.tsx, new HeaderStatus.tsx, modified test
+✔ docs/ux/dashboard_wireframe.md (≤ 40 lines)
+✔ No other files
+
+Begin.
+################################################################################################

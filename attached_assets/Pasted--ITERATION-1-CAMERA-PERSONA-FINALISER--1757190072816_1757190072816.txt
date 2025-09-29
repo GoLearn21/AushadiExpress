@@ -1,0 +1,127 @@
+####################################  ITERATION-1  —  CAMERA + PERSONA FINALISER  ####################################
+Goals
+─────
+1. Camera opens instantly with a live preview and **Take Photo** (or auto barcode scan).  
+2. One Quick-Capture screen for three modes:  
+   • barcode  • invoice  • prescription  
+3. Role selector in **Settings → My Role** (Retailer / Wholesaler / Distributor).  
+4. Every capture row saved with `owner_id` + `persona`; outbox carries both fields.  
+5. Remove on-screen green debug overlay (logs → console only).
+
+────────────────────────────────────────────────────────────────────────────────────────────
+A  DB migration  (mobile & backend)
+────────────────────────────────────────────────────────────────────────────────────────────
+```sql
+ALTER TABLE captures ADD COLUMN owner_id TEXT;
+ALTER TABLE captures ADD COLUMN persona TEXT;
+UPDATE captures
+  SET owner_id = (SELECT id FROM users LIMIT 1),
+      persona  = (SELECT role FROM users LIMIT 1)
+  WHERE owner_id IS NULL;
+CREATE INDEX IF NOT EXISTS idx_captures_owner ON captures(owner_id);
+────────────────────────────────────────────────────────────────────────────────────────────
+B utils/devLogger.ts
+────────────────────────────────────────────────────────────────────────────────────────────
+
+ts
+Copy code
+export const push = (...args:any[])=>{
+  if(__DEV__) console.log('[CAMERA]',...args);
+};
+(delete DevOverlay component)
+
+────────────────────────────────────────────────────────────────────────────────────────────
+C services/permissions.ts
+────────────────────────────────────────────────────────────────────────────────────────────
+
+ts
+Copy code
+import { Camera } from 'expo-camera';
+import * as MediaLibrary from 'expo-media-library';
+
+export async function ensureCorePerms(){
+  const cam = await Camera.requestCameraPermissionsAsync();
+  if(cam.status!=='granted') throw new Error('Camera denied');
+  await MediaLibrary.requestPermissionsAsync();
+}
+────────────────────────────────────────────────────────────────────────────────────────────
+D screens/OnboardingScreen.tsx
+────────────────────────────────────────────────────────────────────────────────────────────
+Step 1 ensureCorePerms()
+Step 2 choose role radio → save {onboarded:true, persona} to SecureStore.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+E QuickCaptureScreen.tsx
+────────────────────────────────────────────────────────────────────────────────────────────
+
+tsx
+Copy code
+export default function QuickCaptureScreen({route,navigation}){
+  const {mode, saleId} = route.params;  // 'barcode' | 'invoice' | 'prescription'
+  const user = useUser();               // persona & id
+  const cam  = useRef(null);
+
+  const capture = async(uri)=>{
+    const id = uuid.v4();
+    await saveCapture({id, uri, mode,
+      owner_id: user.id, persona: user.role});
+    if(mode==='barcode') processBarcode(uri);
+    if(mode==='prescription' && saleId) linkRxToSale(id, saleId);
+    navigation.goBack();
+  };
+
+  return (
+    <View className="flex-1">
+      <Camera ref={cam} style={{flex:1}}
+        onBarCodeScanned={mode==='barcode'
+          ? ({data})=>{ processBarcodeData(data); navigation.goBack(); }
+          : undefined}/>
+      {mode!=='barcode' && <Button title="Take Photo"
+        onPress={async()=>capture((await cam.current.takePictureAsync()).uri)}/>}
+    </View>);
+}
+────────────────────────────────────────────────────────────────────────────────────────────
+F Routes & hooks
+────────────────────────────────────────────────────────────────────────────────────────────
+
+/capture/:mode → QuickCaptureScreen
+
+POS FAB & “Bill Fast” → /capture/barcode
+
+Home FAB → bottom sheet (barcode | invoice | prescription – default depends on persona)
+
+Receive-Stock “Scan Invoice” → /capture/invoice
+
+POS Schedule H prompt passes /capture/prescription?saleId=XXX
+
+────────────────────────────────────────────────────────────────────────────────────────────
+G Settings → My Role
+────────────────────────────────────────────────────────────────────────────────────────────
+Picker saves persona to SecureStore + updates React context; Home re-renders role widgets.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+H Outbox composer (sync/buildOutbox.ts)
+────────────────────────────────────────────────────────────────────────────────────────────
+Add owner_id + persona to payload when the table is captures.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+I Tests (jest)
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Onboarding stores role & perm flag.
+
+Capture invoice inserts row with owner_id + persona.
+
+Change role → Home widgets reorder.
+
+No DevOverlay element in render tree.
+
+Constraints
+───────────
+
+No new heavy deps; keep Expo libs only.
+
+APK ≤ 100 MB; cold-start ≤ 6 s on 2 GB device; WCAG AA colours.
+
+Begin.
+###################

@@ -1,0 +1,68 @@
+################################  ITERATION 0 — FINAL UX CORRECTION  ################################
+Objective
+─────────
+Finish Iteration 0 with a clean, conversion-focused dashboard and subtle hooks
+for future features—without bloating the APK.
+
+Tasks
+─────
+1. **Home screen**
+   • Delete “Quick Add Product (Demo)” and “AI Assistant (Coming Soon)” cards.  
+   • Make “Low Stock Items” card pressable → navigate to Products with
+     `route.params.filter = 'lowStock'`.  
+   • Replace full-width urgency banner with a **pill chip** _inside_ the Bill Fast
+     tile:
+
+     ```tsx
+     <Text className="absolute top-2 right-2 px-2 py-0.5 rounded-full
+                      bg-orange-500/90 text-white text-[10px] leading-none">
+       {"Free\n90-day trial"}
+     </Text>
+     ```
+
+     – Hide chip after first successful sale **or** when user taps ✕ (persist
+       `trialBadgeHidden=true` in AsyncStorage).
+
+2. **FAB (camera)**
+   • Keep icon; add first-run tooltip (Overlay or simple absolute View):
+     “Scan & Bill”.  
+   • Show tooltip only if `fabTipShown` not in AsyncStorage; auto-hide after
+     3 s or on tap, then set the flag.
+
+3. **Products screen**
+   • Add collapsible “Demo Tools” section (default closed) containing the
+     Quick Add Product form.
+
+4. **Settings screen**
+   • Add list row **AI Assistant (Beta)** → chevron.  
+   • Tapping opens modal: “Assistant coming Q4 2025. Join the beta?”  
+     email input ▸ “Join” button ––> stores to new table `assistantBetaLeads`
+     (id, email, ts).
+
+5. **SQLite migration**
+   • Add `assistantBetaLeads` table to both mobile and backend schemas.
+
+6. **Docs**
+   • `docs/ux/dashboard_wireframe.md` – update ASCII to new layout (≤ 40 lines).  
+   • `tech/offline_strategy.md` – add short note on `assistantBetaLeads`.
+
+7. **Tests**
+   • Update Home test selector from “New Sale” → “Bill Fast”.  
+   • New test: Low-Stock card navigation passes filter param.  
+   • New test: pill chip hidden after setting AsyncStorage flag.
+
+Constraints
+───────────
+* Touch only files mentioned above; no new heavy libraries.
+* Use existing Tailwind-RN classes or StyleSheet.
+* Maintain contrast ≥ 4.5 : 1; keep APK < 90 MB.
+
+Deliverables
+────────────
+✔ Updated React components & styles  
+✔ Tooltip logic, pill urgency chip, modal, collapsible demo section  
+✔ SQLite migration for `assistantBetaLeads`  
+✔ Updated docs & Jest tests  
+
+Begin.
+####################################################################################################

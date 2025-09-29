@@ -1,0 +1,396 @@
+
+=== [2025-09-07T19:58:19.771Z] GET /src/components/ui/card.tsx ===
+
+=== [2025-09-07T19:58:19.775Z] GET /src/components/credibility-ribbon.tsx ===
+
+=== [2025-09-07T19:58:19.780Z] GET /src/hooks/use-toast.ts ===
+
+=== [2025-09-07T19:58:19.827Z] GET /src/components/offline-indicator.tsx ===
+
+=== [2025-09-07T19:58:19.847Z] GET /src/lib/theme.ts ===
+
+=== [2025-09-07T19:58:19.851Z] GET /src/components/smart-action-fab.tsx ===
+
+=== [2025-09-07T19:58:19.870Z] GET /src/components/segmented-control.tsx ===
+
+=== [2025-09-07T19:58:19.871Z] GET /src/components/ui/toast.tsx ===
+
+=== [2025-09-07T19:58:19.871Z] GET /src/lib/utils.ts ===
+
+=== [2025-09-07T19:58:19.930Z] GET /src/components/ui/button.tsx ===
+
+=== [2025-09-07T19:58:19.941Z] GET /src/components/ui/badge.tsx ===
+
+=== [2025-09-07T19:58:19.942Z] GET /src/components/ui/tabs.tsx ===
+
+=== [2025-09-07T19:58:19.966Z] GET /src/components/ui/label.tsx ===
+
+=== [2025-09-07T19:58:19.966Z] GET /src/components/ui/input.tsx ===
+
+=== [2025-09-07T19:58:19.969Z] GET /src/components/ui/collapsible.tsx ===
+
+=== [2025-09-07T19:58:20.031Z] GET /src/components/action-sheet.tsx ===
+
+=== [2025-09-07T19:58:20.031Z] GET /src/services/camera.ts ===
+
+=== [2025-09-07T19:58:20.032Z] GET /src/utils/dev-logger.ts ===
+
+=== [2025-09-07T19:58:20.058Z] GET /src/components/ui/switch.tsx ===
+
+=== [2025-09-07T19:58:20.059Z] GET /src/components/ui/dialog.tsx ===
+
+=== [2025-09-07T19:58:20.060Z] GET /src/services/capability.ts ===
+
+=== [2025-09-07T19:58:20.124Z] GET /src/components/payment/collect-payment-sheet.tsx ===
+
+=== [2025-09-07T19:58:20.124Z] GET /src/components/camera-permission-modal.tsx ===
+
+=== [2025-09-07T19:58:20.129Z] GET /src/services/enhanced-capture.ts ===
+
+=== [2025-09-07T19:58:20.148Z] GET /src/components/ui/select.tsx ===
+
+=== [2025-09-07T19:58:20.150Z] GET /src/services/document-storage.ts ===
+
+=== [2025-09-07T19:58:20.150Z] GET /src/lib/ai-assistant.ts ===
+
+=== [2025-09-07T19:58:20.219Z] GET /src/services/pharmacy-agent.ts ===
+
+=== [2025-09-07T19:58:20.220Z] GET /src/utils/app-logger.ts ===
+
+=== [2025-09-07T19:58:20.230Z] GET /src/services/camera-capture.ts ===
+
+=== [2025-09-07T19:58:20.244Z] GET /src/hooks/use-offline.ts ===
+
+=== [2025-09-07T19:58:20.246Z] GET /src/services/ai-vision.ts ===
+
+=== [2025-09-07T19:58:20.396Z] GET /api/products ===
+[API] Fetching products...
+[API] Found 2 products
+[RESPONSE 200] [{"id":"prod-1","name":"Paracetamol 500mg","description":"Pain relief medication","price":25.5,"createdAt":"2025-09-07T19:58:14.314Z"},{"id":"prod-2","name":"Cough Syrup","description":"For dry cough ...
+=== END GET /api/products ===
+
+7:58:20 PM [express] GET /api/products 200 in 3ms :: [{"id":"prod-1","name":"Paracetamol 500mg","des…
+
+=== [2025-09-07T19:58:20.427Z] GET /api/stock ===
+[RESPONSE 200] [{"id":"stock-1","productId":"prod-1","batchNumber":"B2024001","quantity":45,"expiryDate":"2025-12-31T00:00:00.000Z","createdAt":"2025-09-07T19:58:14.314Z"},{"id":"stock-2","productId":"prod-2","batch...
+=== END GET /api/stock ===
+
+7:58:20 PM [express] GET /api/stock 200 in 1ms :: [{"id":"stock-1","productId":"prod-1","batchNumber…
+
+=== [2025-09-07T19:58:20.431Z] GET /api/sales ===
+[RESPONSE 200] [{"id":"sale-1","total":285.5,"date":"2025-09-07T19:58:14.314Z","items":"[{\"productId\":\"prod-1\",\"quantity\":2,\"price\":25.5}]","synced":true}]
+=== END GET /api/sales ===
+
+7:58:20 PM [express] GET /api/sales 200 in 1ms :: [{"id":"sale-1","total":285.5,"date":"2025-09-07T1…
+
+=== [2025-09-07T19:58:20.432Z] GET /api/sales/today ===
+[RESPONSE 200] {"total":285.5}
+=== END GET /api/sales/today ===
+
+7:58:20 PM [express] GET /api/sales/today 304 in 1ms :: {"total":285.5}
+
+=== [2025-09-07T19:58:31.960Z] POST /api/ai/analyze-document ===
+[OCR-DEBUG] Analyzing document: 1000082713.jpg, size: 562082
+[OCR-DEBUG] Base64 image length: 749444 characters
+[OCR-DEBUG] Calling OpenAI with model gpt-4o-mini
+[OCR-DEBUG] OpenAI response received in 20114ms
+[OCR-DEBUG] Response choices length: 1
+[OCR-DEBUG] Raw response length: 3308 characters
+[OCR-DEBUG] Raw response preview: {
+"docType": "invoice",
+"rawText": "TAX INVOICE\nSRI MADHU MEDICAL AGENCIES\nDR.NO: 10-9-2/B, BANKSTREET,ARUNDALEPT, NARASARAO PET\nTel - 97032255666\nDL.Nos:20B: AP/07/03/2021-23859\nDL.Nos:21B: AP/07/03/2021-23860\nGstin: 37BENPM4344B1ZJ\nBill No: WS 2453\nDate: 01/Sep/2025\nMode: CREDIT\nSAI BABA MEDICALS\nMAINROAD\nYERRAGONDAPALEM\nPh:\nMFR HSN Code Product Name PACK BATCH EXP M.R.P QTY FREE RATE Dis% GST AMOUNT\nAL 30041090 MOXEL-D 3000 1'S ET5415016 04/27 127.10 50.0 81.70 4.00 12 4,085.00...
+[OCR-DEBUG] JSON parsing successful
+[OCR-DEBUG] Parsed JSON successfully
+[OCR-DEBUG] Document type: invoice
+[OCR-DEBUG] Raw text length: 1394
+[OCR-DEBUG] Line items count: 7
+[OCR-DEBUG] Header data: {"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BENPM4344B1ZJ","date":"2025-09-01"}
+[OCR-DEBUG] First line item: {"name":"MOXEL-D 3000","qty":"50.0","mrp":"127.10","rate":"81.70","gstPct":"12","amount":"4085.00","batch":"ET5415016","expiry":"04/27"}
+[COMPLIANCE] OCR Duration: 20114ms, Raw Text Length: 1394
+[RESPONSE 200] {"documentType":"invoice","confidence":0.85,"extractedData":{"header":{"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BENPM4344B1ZJ","date":"2025-09-0...
+=== END POST /analyze-document ===
+
+7:58:52 PM [express] POST /api/ai/analyze-document 200 in 20566ms :: {"documentType":"invoice","conf…
+
+=== [2025-09-07T19:58:54.441Z] POST /api/documents ===
+[DOCUMENTS] Storing document: 1000082713.jpg
+[DOCUMENTS-DEBUG] Confirmed type: invoice
+[DOCUMENTS-DEBUG] Raw extractedData string: {"documentType":"invoice","confidence":0.85,"extractedData":{"header":{"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BENPM4344B1ZJ","date":"2025-09-0
+[DOCUMENTS-DEBUG] Parsed data keys: [
+  'documentType',
+  'confidence',
+  'extractedData',
+  'rawText',
+  'modelSummary',
+  'metadata'
+]
+[DOCUMENTS-DEBUG] Raw text from parsed: 1394
+[DOCUMENTS-DEBUG] Line items from parsed: 7
+[DOCUMENTS] Raw text length: 1394
+[DOCUMENTS] Line items count: 7
+[DOCUMENTS] Stored successfully with 7 line items
+[RESPONSE 200] {"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDIC...
+=== END POST /api/documents ===
+
+7:58:54 PM [express] POST /api/documents 200 in 200ms :: {"id":"doc-1757275134639","enterpriseId":"d…
+
+=== [2025-09-07T19:58:54.760Z] POST /api/stock/bulk ===
+[REQUEST BODY] {
+  "items": [
+    {
+      "name": "MOXEL-D 3000",
+      "batch": "ET5415016",
+      "qty": 50,
+      "exp": "04/27",
+      "mrp": 127.1
+    },
+    {
+      "name": "XCEFT500MG",
+      "batch": "ET5718005",
+      "qty": 5,
+      "exp": "05/27",
+      "mrp": 242.55
+    },
+    {
+      "name": "EPIDOSIN",
+      "batch": "EVS24082",
+      "qty": 1,
+      "exp": "04/20",
+      "mrp": 69
+    },
+    {
+      "name": "EPIDOSIN 30ML",
+      "batch": "EVS24006",
+      "qty": 3,
+      "exp": "01/27",
+      "mrp": 63
+    },
+    {
+      "name": "TM/AF TAB",
+      "batch": "EM5004",
+      "qty": 24,
+      "exp": "01/27",
+      "mrp": 37
+    },
+    {
+      "name": "NUROCARE-VET 10ML",
+      "batch": "EB-25001",
+      "qty": 20,
+      "exp": "01/27",
+      "mrp": 41
+    },
+    {
+      "name": "ASCAL GEL 500 ML",
+      "batch": "CK5777052",
+      "qty": 15,
+      "exp": "10/26",
+      "mrp": 275
+    }
+  ]
+}
+[STOCK-BULK] Processing bulk stock insert
+[STOCK-BULK] Request body: {
+  "items": [
+    {
+      "name": "MOXEL-D 3000",
+      "batch": "ET5415016",
+      "qty": 50,
+      "exp": "04/27",
+      "mrp": 127.1
+    },
+    {
+      "name": "XCEFT500MG",
+      "batch": "ET5718005",
+      "qty": 5,
+      "exp": "05/27",
+      "mrp": 242.55
+    },
+    {
+      "name": "EPIDOSIN",
+      "batch": "EVS24082",
+      "qty": 1,
+      "exp": "04/20",
+      "mrp": 69
+    },
+    {
+      "name": "EPIDOSIN 30ML",
+      "batch": "EVS24006",
+      "qty": 3,
+      "exp": "01/27",
+      "mrp": 63
+    },
+    {
+      "name": "TM/AF TAB",
+      "batch": "EM5004",
+      "qty": 24,
+      "exp": "01/27",
+      "mrp": 37
+    },
+    {
+      "name": "NUROCARE-VET 10ML",
+      "batch": "EB-25001",
+      "qty": 20,
+      "exp": "01/27",
+      "mrp": 41
+    },
+    {
+      "name": "ASCAL GEL 500 ML",
+      "batch": "CK5777052",
+      "qty": 15,
+      "exp": "10/26",
+      "mrp": 275
+    }
+  ]
+}
+[STOCK-BULK] Items to process: 7
+[STOCK-BULK] Created new product: MOXEL-D 3000
+[STOCK-BULK] Added stock: MOXEL-D 3000 qty: 50
+[STOCK-BULK] Created new product: XCEFT500MG
+[STOCK-BULK] Added stock: XCEFT500MG qty: 5
+[STOCK-BULK] Created new product: EPIDOSIN
+[STOCK-BULK] Added stock: EPIDOSIN qty: 1
+[STOCK-BULK] Created new product: EPIDOSIN 30ML
+[STOCK-BULK] Added stock: EPIDOSIN 30ML qty: 3
+[STOCK-BULK] Created new product: TM/AF TAB
+[STOCK-BULK] Added stock: TM/AF TAB qty: 24
+[STOCK-BULK] Created new product: NUROCARE-VET 10ML
+[STOCK-BULK] Added stock: NUROCARE-VET 10ML qty: 20
+[STOCK-BULK] Created new product: ASCAL GEL 500 ML
+[STOCK-BULK] Added stock: ASCAL GEL 500 ML qty: 15
+[STOCK-BULK] Completed successfully - items processed: 7
+[RESPONSE 201] {"success":true,"itemsProcessed":7,"message":"7 items added to stock from OCR scan"}
+=== END POST /api/stock/bulk ===
+
+7:58:54 PM [express] POST /api/stock/bulk 201 in 4ms :: {"success":true,"itemsProcessed":7,"message"…
+
+=== [2025-09-07T19:59:14.867Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+7:59:14 PM [express] GET /api/documents 200 in 1ms :: [{"id":"doc-1757275134639","enterpriseId":"def…
+
+=== [2025-09-07T19:59:15.039Z] POST /api/ai/chat ===
+[REQUEST BODY] {
+  "message": "\nwhat is the MRP of MOXEL-D\n\n\nSystem Status:\n- Pharmacy AI Assistant: Active and ready\n- Document processing: Available\n- Compliance monitoring: Enabled\n- Business insights: Active\n\n\nSystem Overview: 1 documents (1 invoices, 0 bills, 0 prescriptions)\n\n\nAs an AI assistant for AushadiExpress pharmacy management system, provide helpful assistance with:\n1. General pharmacy operations\n2. System features and capabilities\n3. Document processing workflows\n4. Business optimization suggestions\n5. Technical support guidance\n\nBe professional, helpful, and focused on Indian pharmacy business needs.\n",
+  "systemPrompt": "You are an AI assistant for AushadiExpress, a pharmacy Point of Sale system. You help pharmacists with:\n\n- Medicine information and drug interactions\n- Inventory management and stock levels\n- Prescription validation and compliance\n- Sales analytics and reporting\n- OCR document processing insights\n\nProvide helpful, accurate, and professional responses. Keep answers concise and actionable.\n\nUser is currently on: AI Assistant screen\n\nRecent actions: General Question",
+  "context": {
+    "currentScreen": "AI Assistant",
+    "recentActions": [
+      "General Question"
+    ]
+  }
+}
+[AI] Chat request received
+[AI] Response generated, length: 512
+[RESPONSE 200] {"response":"I currently do not have real-time access to specific product pricing such as the MRP of MOXEL-D. However, you can easily find this information by:\n\n1. Checking the product packaging for...
+=== END POST /api/ai/chat ===
+
+7:59:17 PM [express] POST /api/ai/chat 200 in 2899ms :: {"response":"I currently do not have real-ti…
+
+=== [2025-09-07T19:59:54.603Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+7:59:54 PM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757275134639","enterpriseId":"def…
+
+=== [2025-09-07T19:59:54.754Z] POST /api/ai/chat ===
+[REQUEST BODY] {
+  "message": "\nwhat are my stored invoices and their summary\n\n\nSystem Status:\n- Pharmacy AI Assistant: Active and ready\n- Document processing: Available\n- Compliance monitoring: Enabled\n- Business insights: Active\n\n\nSystem Overview: 1 documents (1 invoices, 0 bills, 0 prescriptions)\n\n\nAs an AI assistant for AushadiExpress pharmacy management system, provide helpful assistance with:\n1. General pharmacy operations\n2. System features and capabilities\n3. Document processing workflows\n4. Business optimization suggestions\n5. Technical support guidance\n\nBe professional, helpful, and focused on Indian pharmacy business needs.\n",
+  "systemPrompt": "You are an AI assistant for AushadiExpress, a pharmacy Point of Sale system. You help pharmacists with:\n\n- Medicine information and drug interactions\n- Inventory management and stock levels\n- Prescription validation and compliance\n- Sales analytics and reporting\n- OCR document processing insights\n\nProvide helpful, accurate, and professional responses. Keep answers concise and actionable.\n\nUser is currently on: AI Assistant screen\n\nRecent actions: General Question",
+  "context": {
+    "currentScreen": "AI Assistant",
+    "recentActions": [
+      "General Question"
+    ]
+  }
+}
+[AI] Chat request received
+[AI] Response generated, length: 1089
+[RESPONSE 200] {"response":"Based on the current system overview, you have one stored invoice. Here’s a summary of what you can do with it:\n\n1. **Invoice Details**: Access specific details such as date, customer i...
+=== END POST /api/ai/chat ===
+
+7:59:58 PM [express] POST /api/ai/chat 200 in 3604ms :: {"response":"Based on the current system ove…
+
+=== [2025-09-07T20:00:24.945Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+8:00:24 PM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757275134639","enterpriseId":"def…
+
+=== [2025-09-07T20:01:00.858Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+8:01:00 PM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757275134639","enterpriseId":"def…
+
+=== [2025-09-07T20:01:01.026Z] POST /api/ai/chat ===
+[REQUEST BODY] {
+  "message": "\nwhat is the unit of measure of these quantities you gave above\n\n\nSystem Status:\n- Pharmacy AI Assistant: Active and ready\n- Document processing: Available\n- Compliance monitoring: Enabled\n- Business insights: Active\n\n\nSystem Overview: 1 documents (1 invoices, 0 bills, 0 prescriptions)\n\n\nAs an AI assistant for AushadiExpress pharmacy management system, provide helpful assistance with:\n1. General pharmacy operations\n2. System features and capabilities\n3. Document processing workflows\n4. Business optimization suggestions\n5. Technical support guidance\n\nBe professional, helpful, and focused on Indian pharmacy business needs.\n",
+  "systemPrompt": "You are an AI assistant for AushadiExpress, a pharmacy Point of Sale system. You help pharmacists with:\n\n- Medicine information and drug interactions\n- Inventory management and stock levels\n- Prescription validation and compliance\n- Sales analytics and reporting\n- OCR document processing insights\n\nProvide helpful, accurate, and professional responses. Keep answers concise and actionable.\n\nUser is currently on: AI Assistant screen\n\nRecent actions: General Question",
+  "context": {
+    "currentScreen": "AI Assistant",
+    "recentActions": [
+      "General Question"
+    ]
+  }
+}
+[AI] Chat request received
+[AI] Response generated, length: 848
+[RESPONSE 200] {"response":"The system status and overview you provided are not directly related to units of measure for quantities. However, in the context of pharmacy operations, typical units of measure you might...
+=== END POST /api/ai/chat ===
+
+8:01:05 PM [express] POST /api/ai/chat 200 in 4200ms :: {"response":"The system status and overview …
+
+=== [2025-09-07T20:01:45.130Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+8:01:45 PM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757275134639","enterpriseId":"def…
+
+=== [2025-09-07T20:01:45.266Z] POST /api/ai/chat ===
+[REQUEST BODY] {
+  "message": "\npull **Customer Insights**\n\n\nSystem Status:\n- Pharmacy AI Assistant: Active and ready\n- Document processing: Available\n- Compliance monitoring: Enabled\n- Business insights: Active\n\n\nSystem Overview: 1 documents (1 invoices, 0 bills, 0 prescriptions)\n\n\nAs an AI assistant for AushadiExpress pharmacy management system, provide helpful assistance with:\n1. General pharmacy operations\n2. System features and capabilities\n3. Document processing workflows\n4. Business optimization suggestions\n5. Technical support guidance\n\nBe professional, helpful, and focused on Indian pharmacy business needs.\n",
+  "systemPrompt": "You are an AI assistant for AushadiExpress, a pharmacy Point of Sale system. You help pharmacists with:\n\n- Medicine information and drug interactions\n- Inventory management and stock levels\n- Prescription validation and compliance\n- Sales analytics and reporting\n- OCR document processing insights\n\nProvide helpful, accurate, and professional responses. Keep answers concise and actionable.\n\nUser is currently on: AI Assistant screen\n\nRecent actions: General Question",
+  "context": {
+    "currentScreen": "AI Assistant",
+    "recentActions": [
+      "General Question"
+    ]
+  }
+}
+[AI] Chat request received
+[AI] Response generated, length: 1314
+[RESPONSE 200] {"response":"To pull **Customer Insights** for your pharmacy, you can focus on the following key areas:\n\n1. **Sales Trends Analysis**:\n   - Identify peak sales periods and popular products.\n   - A...
+=== END POST /api/ai/chat ===
+
+8:01:49 PM [express] POST /api/ai/chat 200 in 3918ms :: {"response":"To pull **Customer Insights** f…
+
+=== [2025-09-07T20:02:29.895Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757275134639","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+8:02:29 PM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757275134639","enterpriseId":"def…
+
+=== [2025-09-07T20:02:30.037Z] POST /api/ai/chat ===
+[REQUEST BODY] {
+  "message": "\npull all details for GSTN : 37BENPM4344B1ZJ\n\n\nSystem Status:\n- Pharmacy AI Assistant: Active and ready\n- Document processing: Available\n- Compliance monitoring: Enabled\n- Business insights: Active\n\n\nSystem Overview: 1 documents (1 invoices, 0 bills, 0 prescriptions)\n\n\nAs an AI assistant for AushadiExpress pharmacy management system, provide helpful assistance with:\n1. General pharmacy operations\n2. System features and capabilities\n3. Document processing workflows\n4. Business optimization suggestions\n5. Technical support guidance\n\nBe professional, helpful, and focused on Indian pharmacy business needs.\n",
+  "systemPrompt": "You are an AI assistant for AushadiExpress, a pharmacy Point of Sale system. You help pharmacists with:\n\n- Medicine information and drug interactions\n- Inventory management and stock levels\n- Prescription validation and compliance\n- Sales analytics and reporting\n- OCR document processing insights\n\nProvide helpful, accurate, and professional responses. Keep answers concise and actionable.\n\nUser is currently on: AI Assistant screen\n\nRecent actions: General Question",
+  "context": {
+    "currentScreen": "AI Assistant",
+    "recentActions": [
+      "General Question"
+    ]
+  }
+}
+[AI] Chat request received
+[AI] Response generated, length: 1209
+[RESPONSE 200] {"response":"I'm unable to access or pull specific GSTN details directly, as it involves sensitive and regulated information. However, I can guide you on how to manage and process such information wit...
+=== END POST /api/ai/chat ===
+
+8:02:34 PM [express] POST /api/ai/chat 200 in 4606ms :: {"response":"I'm unable to access or pull sp…

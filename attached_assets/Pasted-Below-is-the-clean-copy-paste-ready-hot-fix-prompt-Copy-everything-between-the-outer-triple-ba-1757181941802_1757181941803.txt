@@ -1,0 +1,140 @@
+Below is the **clean, copy-paste-ready hot-fix prompt**.
+Copy everything between the outer triple back-ticks (including them) into Replit AI and run it.
+
+````
+############################  HOT-FIX — CAMERA PERMISSION STUCK  ############################
+Problem
+───────
+`ensureCamera` calls `showPermissionModal`, but that helper doesn’t exist, so the
+user remains on “Starting Camera…”.
+
+Fix summary
+───────────
+1. Add a reusable `PermissionModal.tsx` component.  
+2. Implement `showPermissionModal()` + `PermissionPortal` in `services/camera.ts`.  
+3. Mount `<PermissionPortal />` once in `App.tsx` (inside `NavigationContainer`).  
+4. Replace static “Starting Camera…” message with a spinner + **Retry** button in
+   `BarcodeScannerScreen` and `InvoiceScannerScreen`.  
+5. Web fallback: on retry, call `navigator.mediaDevices.getUserMedia`.  
+6. Jest test: permission denied → modal → Open Settings → `Linking.openSettings`
+   mock called.
+
+Code & steps
+────────────
+### 1  `ui/PermissionModal.tsx`
+```tsx
+import React from 'react';
+import { View, Text, Modal, Pressable } from 'react-native';
+
+type Props = {
+  visible: boolean;
+  onAction: (a: 'settings' | 'retry' | 'cancel') => void;
+};
+
+export default function PermissionModal({ visible, onAction }: Props) {
+  return (
+    <Modal visible={visible} transparent animationType="fade">
+      <View className="flex-1 items-center justify-center bg-black/60 px-6">
+        <View className="bg-white rounded-2xl p-6 w-full max-w-md">
+          <Text className="text-xl font-semibold mb-2">Camera Permission</Text>
+          <Text className="text-sm mb-4">
+            We need camera access to scan barcodes and invoices.
+          </Text>
+
+          <Pressable
+            className="bg-primary-500 rounded-lg p-3 mb-2"
+            onPress={() => onAction('settings')}>
+            <Text className="text-white text-center">Open Settings</Text>
+          </Pressable>
+
+          <Pressable
+            className="border rounded-lg p-3 mb-2"
+            onPress={() => onAction('retry')}>
+            <Text className="text-center">Try Again</Text>
+          </Pressable>
+
+          <Pressable onPress={() => onAction('cancel')}>
+            <Text className="text-center text-gray-500">Cancel</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+````
+
+### 2  Add helper to **`services/camera.ts`**
+
+```ts
+import PermissionModal from '../ui/PermissionModal';
+import React from 'react';
+import { Platform, Linking, AppState } from 'react-native';
+import { Camera } from 'expo-camera';
+
+/* …existing ensureCamera code… */
+
+let show: (v: boolean) => void;
+let resolveAction: (a: 'settings' | 'retry' | 'cancel') => void;
+
+export function showPermissionModal(): Promise<'settings' | 'retry' | 'cancel'> {
+  return new Promise(res => {
+    resolveAction = res;
+    show(true);
+  });
+}
+
+export const PermissionPortal = () => {
+  const [visible, setVisible] = React.useState(false);
+  show = setVisible;
+  return (
+    <PermissionModal
+      visible={visible}
+      onAction={a => {
+        setVisible(false);
+        resolveAction(a);
+      }}
+    />
+  );
+};
+```
+
+### 3  Mount portal in **`App.tsx`**
+
+```tsx
+// Inside <NavigationContainer> …existing code…
+<PermissionPortal />
+```
+
+### 4  Scanner screens
+
+*Replace placeholder with spinner + Retry button calling `ensureCamera` again.*
+
+### 5  Web retry fallback (add to `ensureCamera`)
+
+```ts
+if (Platform.OS === 'web') {
+  try {
+    await navigator.mediaDevices.getUserMedia({ video: true });
+    onOK();
+  } catch {
+    onFail();
+  }
+  return;
+}
+```
+
+### 6  Minimal Jest test
+
+* Mock denied permission → modal visible → tap “Open Settings”
+  → expect `Linking.openSettings` mock called.
+
+No other files changed.
+
+Begin.
+\###########################################################################################
+
+```
+
+Paste the entire block above into Replit AI—this will resolve the stuck camera-permission flow on all platforms.
+::contentReference[oaicite:0]{index=0}
+```

@@ -1,0 +1,147 @@
+#####################################  QUICK-CAPTURE & ROLE PATCH  #####################################
+Problems addressed
+──────────────────
+✔ Missing “My Role” selector in Settings.  
+✔ /capture still shows “Starting Camera…”, never opens on web if permission denied.  
+✔ Back button from /capture navigates to “/-1” → 404.  
+✔ Home camera button still triggers permission modal.
+
+Fixes
+─────
+A Settings: Add “My Role” picker
+--------------------------------
+*File* `screens/SettingsScreen.tsx`
+```tsx
+import React from 'react';
+import { View, Text, Picker } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
+import { usePersona } from '../hooks/usePersona';
+
+export default function SettingsScreen(){
+  const { persona, setPersona } = usePersona();
+
+  return (
+    <View className="flex-1 p-4">
+      <Text className="text-lg font-semibold mb-2">My Role</Text>
+      <Picker
+        selectedValue={persona}
+        onValueChange={async val=>{
+          setPersona(val);
+          await SecureStore.setItemAsync('persona', val);
+        }}>
+        <Picker.Item label="Retailer" value="retailer"/>
+        <Picker.Item label="Wholesaler" value="wholesaler"/>
+        <Picker.Item label="Distributor" value="distributor"/>
+      </Picker>
+    </View>);
+}
+B Quick-Capture screen overhaul
+File screens/QuickCaptureScreen.tsx
+
+tsx
+Copy code
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Button, Platform, Image } from 'react-native';
+import { Camera } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+import { saveCapture } from '../db/saveCapture';
+import { usePersona, useUser } from '../hooks/usePersona';
+
+export default function QuickCaptureScreen({route, navigation}){
+  const { mode, saleId } = route.params;       // 'barcode' | 'invoice' | 'prescription'
+  const camRef   = useRef<Camera>(null);
+  const [ready,setReady]=useState(false);
+  const [fallbackUri,setUri]=useState<string|undefined>();
+  const user = useUser(); const { persona } = usePersona();
+
+  useEffect(()=>{
+    // attempt camera start once – if denied & web, fallback to file picker
+    (async()=>{
+      const {status}=await Camera.requestCameraPermissionsAsync();
+      if(status==='granted'){ setReady(true); }
+      else if(Platform.OS==='web'){   // immediate fallback
+        const res = await ImagePicker.launchImageLibraryAsync({mediaTypes:ImagePicker.MediaTypeOptions.Images});
+        if(!res.canceled){ handleCapture(res.assets[0].uri); }
+        else navigation.goBack();
+      }else navigation.goBack();
+    })();
+  },[]);
+
+  const handleCapture = async(uri:string)=>{
+    const id = await saveCapture({uri, mode, owner_id:user.id, persona});
+    // TODO link prescription to sale if needed
+    navigation.goBack();
+  };
+
+  if(fallbackUri) return <Image source={{uri:fallbackUri}} style={{flex:1}} resizeMode="contain"/>;
+
+  return(
+    <View style={{flex:1,backgroundColor:'#000'}}>
+      {ready &&
+        <Camera ref={camRef} style={{flex:1}}
+          onBarCodeScanned={mode==='barcode'? ({data})=>{ handleCapture(`BARCODE:${data}`);} : undefined}/>}
+      {ready && mode!=='barcode' &&
+        <Button title="Take Photo" onPress={async()=>{
+          const p=await camRef.current?.takePictureAsync({quality:0.8});
+          if(p) handleCapture(p.uri);
+        }}/>}
+    </View>);
+}
+C Home & POS camera buttons route directly
+Home FAB → navigation.navigate('/capture', {mode: persona==='retailer'?'barcode':'invoice'})
+POS FAB → /capture with mode:'barcode'
+
+D Back navigation
+In all capture headers use:
+
+tsx
+Copy code
+import { useNavigation } from '@react-navigation/native';
+const navigation = useNavigation();
+<IconButton icon="arrow-back" onPress={()=>navigation.goBack()}/>
+(Replace any navigate(-1) or router.back().)
+
+E DB helper ensures owner_id + persona
+File db/saveCapture.ts
+
+ts
+Copy code
+import db from './index';
+export async function saveCapture({uri, mode, owner_id, persona}:{uri:string,mode:string,owner_id:string,persona:string}){
+  const id = crypto.randomUUID();
+  await db.write(()=> db.collections.get('captures').create(rec=>{
+    rec._raw.id = id;
+    rec.path = uri;
+    rec.mode = mode;
+    rec.owner_id = owner_id;
+    rec.persona = persona;
+    rec.created_at = new Date().toISOString();
+  }));
+  return id;
+}
+F Routing fix
+Add route in AppNavigator (or Expo Router):
+
+php-template
+Copy code
+<Stack.Screen name="capture" component={QuickCaptureScreen} />
+G Remove permission modal
+Delete import & JSX for PermissionModal if still present.
+
+Smoke-test checklist
+────────────────────
+
+Home camera → live preview or file-upload (web) opens immediately.
+
+POS camera → same.
+
+Back arrow always returns to previous screen — never “/-1” 404.
+
+Settings » My Role appears, persists, and changes default capture mode.
+
+Capture creates row with owner_id + persona.
+
+No permission modal shown anywhere.
+
+Begin.
+##################

@@ -1,0 +1,130 @@
+[API] Fetching products...
+[API] Found 2 products
+[RESPONSE 200] [{"id":"prod-1","name":"Paracetamol 500mg","description":"Pain relief medication","price":25.5,"createdAt":"2025-09-07T10:48:38.603Z"},{"id":"prod-2","name":"Cough Syrup","description":"For dry cough ...
+=== END GET /api/products ===
+
+10:48:45 AM [express] GET /api/products 304 in 1ms :: [{"id":"prod-1","name":"Paracetamol 500mg","des…
+
+=== [2025-09-07T10:48:45.772Z] GET /api/sales/today ===
+[RESPONSE 200] {"total":285.5}
+=== END GET /api/sales/today ===
+
+10:48:45 AM [express] GET /api/sales/today 304 in 1ms :: {"total":285.5}
+
+=== [2025-09-07T10:48:45.774Z] GET /api/stock ===
+[RESPONSE 200] [{"id":"stock-1","productId":"prod-1","batchNumber":"B2024001","quantity":45,"expiryDate":"2025-12-31T00:00:00.000Z","createdAt":"2025-09-07T10:48:38.603Z"},{"id":"stock-2","productId":"prod-2","batch...
+=== END GET /api/stock ===
+
+10:48:45 AM [express] GET /api/stock 304 in 1ms :: [{"id":"stock-1","productId":"prod-1","batchNumber…
+
+=== [2025-09-07T10:48:45.775Z] GET /api/sales ===
+[RESPONSE 200] [{"id":"sale-1","total":285.5,"date":"2025-09-07T10:48:38.603Z","items":"[{\"productId\":\"prod-1\",\"quantity\":2,\"price\":25.5}]","synced":true}]
+=== END GET /api/sales ===
+
+10:48:45 AM [express] GET /api/sales 304 in 1ms :: [{"id":"sale-1","total":285.5,"date":"2025-09-07T1…
+
+=== [2025-09-07T10:48:45.796Z] GET /favicon.ico ===
+
+=== [2025-09-07T10:48:51.782Z] GET /src/services/simple-capture.ts ===
+
+=== [2025-09-07T10:49:04.486Z] GET /src/utils/invoice-parser.ts ===
+
+=== [2025-09-07T10:49:04.688Z] POST /api/stock/bulk ===
+[REQUEST BODY] [
+  {
+    "name": "SAI BABA MEDICALS",
+    "quantity": 7,
+    "rate": 5,
+    "amount": 35
+  },
+  {
+    "name": "MAINROAD 5 20 job 129700 BillNG. WSs",
+    "quantity": 2453,
+    "rate": 10,
+    "amount": 24530
+  },
+  {
+    "name": "YERRAGONDAPALEM Ph",
+    "quantity": 2025,
+    "rate": 10,
+    "amount": 20250
+  },
+  {
+    "name": "al dad",
+    "quantity": 50,
+    "rate": 10,
+    "amount": 500
+  },
+  {
+    "name": "m3 EEonS",
+    "quantity": 20,
+    "rate": 69,
+    "amount": 1380
+  },
+  {
+    "name": "TM/AF TAI 1S EMS5004 37 00 24.0 0.0",
+    "quantity": 76,
+    "rate": 10,
+    "amount": 760
+  },
+  {
+    "name": "VET N",
+    "quantity": 15,
+    "rate": 275.001,
+    "amount": 4125.014999999999
+  },
+  {
+    "name": "No.of",
+    "quantity": 11,
+    "rate": 154,
+    "amount": 1694
+  },
+  {
+    "name": "TAX Rate",
+    "quantity": 6,
+    "rate": 468.8,
+    "amount": 2812.8
+  }
+]
+[STOCK-BULK] Processing bulk stock insert
+[STOCK-BULK] Items to process: 9
+[STOCK-BULK] Created new product: SAI BABA MEDICALS
+[STOCK-BULK] Added stock: SAI BABA MEDICALS qty: undefined
+[STOCK-BULK] Created new product: MAINROAD 5 20 job 129700 BillNG. WSs
+[STOCK-BULK] Added stock: MAINROAD 5 20 job 129700 BillNG. WSs qty: undefined
+[STOCK-BULK] Created new product: YERRAGONDAPALEM Ph
+[STOCK-BULK] Added stock: YERRAGONDAPALEM Ph qty: undefined
+[STOCK-BULK] Created new product: al dad
+[STOCK-BULK] Added stock: al dad qty: undefined
+[STOCK-BULK] Created new product: m3 EEonS
+[STOCK-BULK] Added stock: m3 EEonS qty: undefined
+[STOCK-BULK] Created new product: TM/AF TAI 1S EMS5004 37 00 24.0 0.0
+[STOCK-BULK] Added stock: TM/AF TAI 1S EMS5004 37 00 24.0 0.0 qty: undefined
+[STOCK-BULK] Created new product: VET N
+[STOCK-BULK] Added stock: VET N qty: undefined
+[STOCK-BULK] Created new product: No.of
+[STOCK-BULK] Added stock: No.of qty: undefined
+[STOCK-BULK] Created new product: TAX Rate
+[STOCK-BULK] Added stock: TAX Rate qty: undefined
+[STOCK-BULK] Completed successfully - items processed: 9
+[RESPONSE 201] {"success":true,"itemsProcessed":9,"message":"9 items added to stock from OCR scan"}
+=== END POST /api/stock/bulk ===
+
+10:49:04 AM [express] POST /api/stock/bulk 201 in 5ms :: {"success":true,"itemsProcessed":9,"message"…
+
+=== [2025-09-07T10:49:29.056Z] GET /favicon.ico ===
+
+=== [2025-09-07T10:49:29.738Z] GET /inventory ===
+
+=== [2025-09-07T10:49:29.850Z] GET /@vite/client ===
+
+=== [2025-09-07T10:49:29.899Z] GET /src/main.tsx ===
+[QUERY PARAMS] {
+  "v": "yZ57Q5XPCNGKve1Q8a7xa"
+}
+
+=== [2025-09-07T10:49:30.765Z] GET /@react-refresh ===
+
+=== [2025-09-07T10:49:30.766Z] GET /src/App.tsx ===
+[QUERY PARAMS] {
+  "v": "yZ57Q5XPCNGKve1Q8a7xa"

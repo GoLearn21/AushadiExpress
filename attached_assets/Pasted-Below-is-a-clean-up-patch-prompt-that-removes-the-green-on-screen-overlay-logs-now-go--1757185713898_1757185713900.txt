@@ -1,0 +1,66 @@
+Below is a **clean-up patch prompt** that —
+
+* **removes the green on-screen overlay** (logs now go only to the Expo console)
+* **keeps the working “Take Photo” button** and the existing permission flow
+* leaves all other functionality intact.
+
+Copy **everything between the outer triple back-ticks** into Replit AI and run it.
+
+````
+############################  PATCH — STRIP ON-SCREEN DEBUG OVERLAY  ############################
+Problem
+───────
+The DevOverlay added for camera debugging is visible in the UI, cluttering the
+app. We only want console logs in DEV while keeping the “Take Photo” camera
+flow that now works.
+
+Fix
+───
+1. **utils/devLogger.ts**
+   • Delete (or comment) the `DevOverlay` export and all `messages / bump`
+     code.  
+   • Keep **only**:
+```ts
+export const log = (...args: any[]) => {
+  if (__DEV__) console.log('[CAMERA]', ...args);
+};
+export const push = log;   // alias so existing calls still work
+````
+
+2. **services/camera.ts**
+   • `import { push } from '../utils/devLogger';` (no DevOverlay).
+   • Logging calls stay the same (`push('msg')`) → console only.
+
+3. **App.tsx**
+   • Remove `<PermissionPortal />` **overlay mount** import/JSX.
+   • Keep `PermissionPortal` logic, but export **nothing visible**:
+
+```tsx
+// At app root
+{__DEV__ && false && <PermissionPortal />}   // overlay disabled
+```
+
+4. **Remove overlay styles**
+   • Delete `bg-black/60` overlay view that wrapped green text.
+
+5. **BarcodeScannerScreen & InvoiceScannerScreen**
+   • Keep spinner / Retry button exactly as is (no change). “Take Photo” button
+   remains functional.
+
+6. **Smoke test (manual)**
+   • Run in Expo preview: no green logs overlay; denying permission still shows
+   modal; “Open Settings” deep-links; returning with permission granted →
+   scanner opens; “Take Photo” works.
+
+No other files changed. APK size & performance unchanged.
+
+Begin.
+\###############################################################################################
+
+```
+
+Paste that block into Replit AI.  
+After it runs, the green overlay will be gone, logs will show only in the
+console, and camera actions (including **Take Photo**) will continue working.
+::contentReference[oaicite:0]{index=0}
+```

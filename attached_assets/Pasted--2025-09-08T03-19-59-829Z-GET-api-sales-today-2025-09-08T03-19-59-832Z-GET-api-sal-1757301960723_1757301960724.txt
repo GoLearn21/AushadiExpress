@@ -1,0 +1,41 @@
+=== [2025-09-08T03:19:59.829Z] GET /api/sales/today ===
+
+=== [2025-09-08T03:19:59.832Z] GET /api/sales ===
+[RESPONSE 200] [{"id":"3bc59433-664a-4b7a-a67a-f5b412eb56b0","productId":"113166c1-2f1f-4452-89f3-2c351fab9ab4","batchNumber":"ET5415016","quantity":5,"expiryDate":"2001-04-27T00:00:00.000Z","createdAt":"2025-09-08T...
+=== END GET /api/stock ===
+
+3:19:59 AM [express] GET /api/stock 200 in 32ms :: [{"id":"3bc59433-664a-4b7a-a67a-f5b412eb56b0","pr…
+[RESPONSE 200] {"total":0}
+=== END GET /api/sales/today ===
+
+3:19:59 AM [express] GET /api/sales/today 304 in 101ms :: {"total":0}
+[RESPONSE 200] []
+=== END GET /api/sales ===
+
+3:19:59 AM [express] GET /api/sales 304 in 109ms :: []
+[API] Found 7 products
+[RESPONSE 200] [{"id":"113166c1-2f1f-4452-89f3-2c351fab9ab4","name":"MOXEL-D 3000","description":"Added from OCR scan","price":127.1,"createdAt":"2025-09-08T03:19:52.202Z"},{"id":"3d495085-be20-4cd3-afc7-558d8a0023c...
+=== END GET /api/products ===
+
+3:20:01 AM [express] GET /api/products 200 in 2103ms :: [{"id":"113166c1-2f1f-4452-89f3-2c351fab9ab4…
+
+=== [2025-09-08T03:20:03.351Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757301589597","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+3:20:03 AM [express] GET /api/documents 200 in 1ms :: [{"id":"doc-1757301589597","enterpriseId":"def…
+
+=== [2025-09-08T03:23:11.028Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757301589597","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+3:23:11 AM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757301589597","enterpriseId":"def…
+
+=== [2025-09-08T03:23:38.220Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757301589597","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+3:23:38 AM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757301589597","enterpriseId":"def…

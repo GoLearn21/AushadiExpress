@@ -1,0 +1,160 @@
+Feature — OFFLINE Image-to-Text Capture
+
+(Invoice | Prescription | Bill … extensible)
+
+Goal
+
+User snaps a photo.
+
+Image is saved locally in a category sub-folder / object-store.
+
+Tesseract OCR runs on-device (no network).
+
+Parsed text is written to Dexie (IndexedDB) or expo-sqlite, with a stable FK back to the capture.
+
+UI refreshes instantly; data survives airplane-mode & app reload.
+
+1 · Schema patch db/schema.ts
+/* generic capture ― one row per photo */
+export interface Capture {
+  id: string;              // uuid
+  fileUri: string;         // idb://…  or file://…
+  text: string;            // raw OCR
+  category: "invoice" | "prescription" | "bill";
+  createdAt: number;
+}
+
+/* domain tables keep their own shape */
+export interface Invoice      { id: string; captureId: string; /* … */ }
+export interface Prescription { id: string; captureId: string; /* … */ }
+export interface Bill         { id: string; captureId: string; /* … */ }
+
+
+Dexie (Web):
+
+db.version(4).stores({
+  captures:     "id, category, createdAt",
+  invoiceImages:      "",
+  prescriptionImages: "",
+  billImages:         "",
+  invoices:      "id, captureId",
+  prescriptions: "id, captureId",
+  bills:         "id, captureId"
+});
+
+
+expo-sqlite (RN): run the equivalent CREATE TABLE statements once on startup.
+
+2 · Cross-platform helpers src/platform/
+// fileStorage.ts
+export async function saveImageLocal(
+  srcUri: string,
+  category: "invoice" | "prescription" | "bill"
+): Promise<string> {
+  const id  = crypto.randomUUID();
+  const fn  = `${category}-${id}.jpg`;
+
+  if (typeof window !== "undefined") {
+    /* WEB */
+    const blob = await (await fetch(srcUri)).blob();
+    await indexedDB.put(`${category}Images`, blob, fn);
+    return `idb://${category}Images/${fn}`;
+  } else {
+    /* REACT-NATIVE */
+    const { DocumentDirectoryPath, mkdir, moveFile } = require("react-native-fs");
+    const dir = `${DocumentDirectoryPath}/${category}s`;
+    await mkdir(dir);
+    const dest = `${dir}/${fn}`;
+    await moveFile(srcUri, dest);
+    return `file://${dest}`;
+  }
+}
+
+// ocr.ts  (unchanged)
+
+3 · Universal capture service src/services/capture.ts
+import { saveImageLocal } from "@/platform/fileStorage";
+import { ocrImage }       from "@/platform/ocr";
+import { parseInvoice, parsePrescription, parseBill } from "@/utils/parsers";
+import { db } from "@/lib/db";
+
+export async function captureDocument(
+  cameraUri: string,
+  category: "invoice" | "prescription" | "bill"
+) {
+  /* 1 - save image    */
+  const fileUri = await saveImageLocal(cameraUri, category);
+
+  /* 2 - OCR offline   */
+  const rawText = await ocrImage(fileUri);
+
+  /* 3 - category-specific parse */
+  const parsed =
+    category === "invoice"      ? parseInvoice(rawText)      :
+    category === "prescription" ? parsePrescription(rawText) :
+                                  parseBill(rawText);
+
+  /* 4 - atomic write  */
+  await db.transaction("rw",
+    db.captures, db.invoices, db.prescriptions, db.bills, async () => {
+
+    const captureId = crypto.randomUUID();
+    await db.captures.add({ id: captureId, fileUri, text: rawText, category, createdAt: Date.now() });
+
+    switch (category) {
+      case "invoice":
+        await db.invoices.put({ ...parsed.header, id: parsed.header.invoiceNo, captureId });
+        for (const l of parsed.lines) await db.invoiceLines.add({ ...l, invoiceId: parsed.header.invoiceNo });
+        break;
+      case "prescription":
+        await db.prescriptions.put({ ...parsed, captureId });
+        break;
+      case "bill":
+        await db.bills.put({ ...parsed, captureId });
+        break;
+    }
+  });
+
+  return { captureId, parsed };
+}
+
+4 · UI hooks Scan.tsx / QuickCapture.tsx
+const [category, setCategory] = useState<"invoice"|"prescription"|"bill">("invoice");
+
+const onSave = async () => {
+  if (!photo) return;
+  setSaving(true);
+  try {
+    const { parsed } = await captureDocument(photo.uri, category);
+    toast({ title:"Saved offline", description:`${category} #${parsed.id ?? parsed.header?.invoiceNo}` });
+    navigate(`/${category}/${parsed.id ?? parsed.header.invoiceNo}`);
+  } catch(e){ toast({ title:"Could not save", variant:"destructive"}); }
+  setSaving(false);
+};
+
+
+Add a simple segmented-control Invoices | Prescriptions | Bills that maps to the category state.
+
+5 · Smoke test
+
+pnpm dev (web) / expo start (RN).
+
+Select each category → snap photo → check local folders / object-stores.
+
+Kill network, reload app → data and images still render.
+
+Search & Receive-Stock screens show the new records.
+
+Commit message
+
+feat(capture-offline): category sub-folders + OCR + local persistence
+
+✅ Why this meets the revised requirement
+
+Separation-of-concerns – images live in /invoices/, /prescriptions/, /bills/; DB rows carry category.
+
+Offline-first & low-end ready – Tesseract on-device; no multi-part, no 4 MB JSON bodies.
+
+One code-path – captureDocument() works for any future doc type ("lab-report" etc.) with one parser line.
+
+Immediate UX – optimistic write to Dexie / SQLite; UI updates before OCR even finishes on slow phones.

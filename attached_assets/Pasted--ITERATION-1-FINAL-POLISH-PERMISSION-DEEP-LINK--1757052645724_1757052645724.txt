@@ -1,0 +1,66 @@
+##############################  ITERATION 1 — FINAL POLISH & PERMISSION DEEP-LINK  ##############################
+Objectives
+──────────
+1. Each Ops widget navigates to its own route (/sales-ledger, /receive-stock, …).  
+2. Consistent colour rhythm: hero banners use tint of primary.  
+3. Receive-Stock banner compact; click auto-scrolls to chosen card.  
+4. Camera-permission flow deep-links to platform settings; when user returns
+   with permission granted, scanner opens automatically.  
+5. Unified 8-pt grid, font ramp.
+
+Tasks
+─────
+A. **theme.ts**
+   • Add tokens  
+     `primary-500 #4D94FF`  `primary-400 #267DFF`  
+     `tint-200   #D1E4FF`  `tint-100 #E6F0FF`  
+   • Export `getTint(level)` helper.
+
+B. **Routing**
+   • Stack routes:  
+     `/sales-ledger`  → SalesLedgerScreen  
+     `/receive-stock` → ReceiveStockScreen  
+     `/returns`       → placeholder  
+     `/adjust-stock`  → placeholder  
+   • Ops widget grid → `navigation.navigate(route)`.
+
+C. **Ops widget grid**
+   • Two-column cards (rounded-lg, shadow-xs, icon 24 dp).  
+   • Widgets: Sales Ledger, Receive Stock, Returns (disabled), Adjust Stock (disabled).
+
+D. **ReceiveStockScreen**
+   • Hero banner: `height:72`, gradient `linear(tint-200 → tint-100)`.  
+   • route.params.action = `'scan' | 'enter'` auto-scrolls & triggers card press.  
+   • After banner: headline + beta pill; cards centred; ScrollView paddingBottom 64.
+
+E. **services/camera.ts**
+```ts
+import {Platform, Linking, AppState} from 'react-native';
+import {Camera} from 'expo-camera';
+
+export async function ensureCamera(onGranted: ()=>void, onDenied: ()=>void){
+  const {status} = await Camera.getCameraPermissionsAsync();
+  if(status === 'granted'){ onGranted(); return; }
+
+  const ask = await Camera.requestCameraPermissionsAsync();
+  if(ask.status === 'granted'){ onGranted(); return; }
+
+  const action = await showPermissionModal();  // returns 'settings' | 'retry' | 'cancel'
+  if(action === 'settings'){
+    const open = Platform.OS === 'web'
+      ? async()=>{ await navigator.permissions.query({name:'camera' as any}); }
+      : Linking.openSettings;
+    await open();
+
+    const sub = AppState.addEventListener('change', async s=>{
+      if(s==='active'){
+        const {status:newStatus}=await Camera.getCameraPermissionsAsync();
+        if(newStatus==='granted'){ sub.remove(); onGranted(); }
+      }
+    });
+  } else if(action === 'retry'){
+    ensureCamera(onGranted,onDenied);
+  } else {
+    onDenied();
+  }
+}

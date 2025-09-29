@@ -1,0 +1,127 @@
+
+=== [2025-09-08T20:24:41.818Z] GET /src/components/ui/toast.tsx ===
+
+=== [2025-09-08T20:24:41.819Z] GET /src/lib/utils.ts ===
+
+=== [2025-09-08T20:24:41.821Z] GET /src/components/ui/card.tsx ===
+
+=== [2025-09-08T20:24:41.887Z] GET /src/components/credibility-ribbon.tsx ===
+
+=== [2025-09-08T20:24:41.889Z] GET /src/components/offline-indicator.tsx ===
+
+=== [2025-09-08T20:24:41.893Z] GET /src/lib/theme.ts ===
+
+=== [2025-09-08T20:24:41.894Z] GET /src/components/smart-action-fab.tsx ===
+
+=== [2025-09-08T20:24:41.896Z] GET /src/components/segmented-control.tsx ===
+
+=== [2025-09-08T20:24:41.898Z] GET /src/components/ui/button.tsx ===
+
+=== [2025-09-08T20:24:41.964Z] GET /src/components/ui/input.tsx ===
+
+=== [2025-09-08T20:24:41.967Z] GET /src/components/ui/label.tsx ===
+
+=== [2025-09-08T20:24:41.968Z] GET /src/components/ui/badge.tsx ===
+
+=== [2025-09-08T20:24:41.971Z] GET /src/components/ui/collapsible.tsx ===
+
+=== [2025-09-08T20:24:41.973Z] GET /src/components/action-sheet.tsx ===
+
+=== [2025-09-08T20:24:41.975Z] GET /src/components/ui/tabs.tsx ===
+
+=== [2025-09-08T20:24:42.039Z] GET /src/services/capability.ts ===
+
+=== [2025-09-08T20:24:42.046Z] GET /src/services/camera.ts ===
+
+=== [2025-09-08T20:24:42.050Z] GET /src/utils/dev-logger.ts ===
+
+=== [2025-09-08T20:24:42.055Z] GET /src/components/camera-permission-modal.tsx ===
+
+=== [2025-09-08T20:24:42.055Z] GET /src/components/ui/dialog.tsx ===
+
+=== [2025-09-08T20:24:42.056Z] GET /src/components/payment/collect-payment-sheet.tsx ===
+
+=== [2025-09-08T20:24:42.118Z] GET /src/components/ui/select.tsx ===
+
+=== [2025-09-08T20:24:42.122Z] GET /src/components/ui/switch.tsx ===
+
+=== [2025-09-08T20:24:42.128Z] GET /src/services/enhanced-capture.ts ===
+
+=== [2025-09-08T20:24:42.132Z] GET /src/services/document-storage.ts ===
+
+=== [2025-09-08T20:24:42.133Z] GET /src/utils/app-logger.ts ===
+
+=== [2025-09-08T20:24:42.133Z] GET /src/lib/ai-assistant.ts ===
+
+=== [2025-09-08T20:24:42.195Z] GET /src/services/camera-capture.ts ===
+
+=== [2025-09-08T20:24:42.199Z] GET /src/services/intelligent-pharmacy-agent.ts ===
+
+=== [2025-09-08T20:24:42.204Z] GET /src/hooks/use-offline.ts ===
+
+=== [2025-09-08T20:24:42.209Z] GET /src/services/ai-vision.ts ===
+
+=== [2025-09-08T20:24:42.341Z] GET /api/products ===
+[API] Fetching products...
+
+=== [2025-09-08T20:24:42.346Z] GET /api/sales/today ===
+
+=== [2025-09-08T20:24:42.349Z] GET /api/stock ===
+
+=== [2025-09-08T20:24:42.349Z] GET /api/sales ===
+[API] Found 8 products
+[RESPONSE 200] [{"id":"113166c1-2f1f-4452-89f3-2c351fab9ab4","name":"MOXEL-D 3000","description":"Added from OCR scan","price":127.1,"createdAt":"2025-09-08T03:19:52.202Z"},{"id":"3d495085-be20-4cd3-afc7-558d8a0023c...
+=== END GET /api/products ===
+
+8:24:42 PM [express] GET /api/products 200 in 17ms :: [{"id":"113166c1-2f1f-4452-89f3-2c351fab9ab4",…
+[RESPONSE 200] {"total":0}
+=== END GET /api/sales/today ===
+
+8:24:42 PM [express] GET /api/sales/today 200 in 17ms :: {"total":0}
+[RESPONSE 200] []
+=== END GET /api/sales ===
+
+8:24:42 PM [express] GET /api/sales 200 in 16ms :: []
+[RESPONSE 200] [{"id":"3bc59433-664a-4b7a-a67a-f5b412eb56b0","productId":"113166c1-2f1f-4452-89f3-2c351fab9ab4","batchNumber":"ET5415016","quantity":5,"expiryDate":"2001-04-27T00:00:00.000Z","createdAt":"2025-09-08T...
+=== END GET /api/stock ===
+
+8:24:42 PM [express] GET /api/stock 200 in 17ms :: [{"id":"3bc59433-664a-4b7a-a67a-f5b412eb56b0","pr…
+
+=== [2025-09-08T20:25:04.049Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 0
+[RESPONSE 200] []
+=== END GET /api/documents ===
+
+8:25:04 PM [express] GET /api/documents 304 in 1ms :: []
+
+=== [2025-09-08T20:25:15.133Z] POST /api/agent/query ===
+[REQUEST BODY] {
+  "query": "what medicines are available or in stock right now",
+  "tenantId": "pharm_007",
+  "role": "retailer",
+  "currentScreen": "AI Assistant",
+  "hasImage": false,
+  "sessionId": "default"
+}
+[INTELLIGENT-AGENT] Processing query: {
+  query: 'what medicines are available or in stock right now',
+  context: {
+    tenantId: 'pharm_007',
+    role: 'retailer',
+    currentScreen: 'AI Assistant',
+    hasImage: false,
+    sessionId: 'default'
+  }
+}
+[GEMINI-AGENT] Processing intelligent pharmacy query {
+  query: 'what medicines are available or in stock right now',
+  tenantId: 'pharm_007',
+  role: 'retailer',
+  hasImage: false
+}
+[GEMINI-AGENT] Pharmacy intelligence agent failed {"error":{"code":400,"message":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[0]' (TYPE_STRING), 7\nInvalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[1]' (TYPE_STRING), 30\nInvalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[2]' (TYPE_STRING), 60","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.BadRequest","fieldViolations":[{"field":"tools[0].function_declarations[4].parameters.properties[1].value.enum[0]","description":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[0]' (TYPE_STRING), 7"},{"field":"tools[0].function_declarations[4].parameters.properties[1].value.enum[1]","description":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[1]' (TYPE_STRING), 30"},{"field":"tools[0].function_declarations[4].parameters.properties[1].value.enum[2]","description":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[2]' (TYPE_STRING), 60"}]}]}}
+[GEMINI-AGENT] Agent error response {"error":{"code":400,"message":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[0]' (TYPE_STRING), 7\nInvalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[1]' (TYPE_STRING), 30\nInvalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[2]' (TYPE_STRING), 60","status":"INVALID_ARGUMENT","details":[{"@type":"type.googleapis.com/google.rpc.BadRequest","fieldViolations":[{"field":"tools[0].function_declarations[4].parameters.properties[1].value.enum[0]","description":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[0]' (TYPE_STRING), 7"},{"field":"tools[0].function_declarations[4].parameters.properties[1].value.enum[1]","description":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[1]' (TYPE_STRING), 30"},{"field":"tools[0].function_declarations[4].parameters.properties[1].value.enum[2]","description":"Invalid value at 'tools[0].function_declarations[4].parameters.properties[1].value.enum[2]' (TYPE_STRING), 60"}]}]}}
+[RESPONSE 200] {"response":"I encountered an issue processing your pharmacy intelligence request. Please try again or contact support if the problem persists. I'm here to help with inventory analysis, compliance mon...
+=== END POST /agent/query ===
+
+8:25:15 PM [express] POST /api/agent/query 200 in 299ms :: {"response":"I encountered an issue proce…

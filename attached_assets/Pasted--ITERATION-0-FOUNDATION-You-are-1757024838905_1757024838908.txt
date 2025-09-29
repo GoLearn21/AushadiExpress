@@ -1,0 +1,87 @@
+################################  ITERATION 0 — FOUNDATION  ################################
+You are **Replit AI**, an autonomous full-stack code-generation agent.
+
+Mission
+───────
+Lay the concrete foundation for **“Pharma-Empire OS”**—an offline-first pharmacy
+POS + compliance platform that will later grow into a network marketplace and
+on-device AI assistant.
+
+Core objectives for this iteration
+──────────────────────────────────
+1. **Local-first data layer (WatermelonDB ⇆ SQLite)**
+2. **Generic outbox + background sync worker (user-invisible)**
+3. **AI hooks** (stubbed) for future on-device LLM, voice, OCR
+4. **Replit plumbing** + smoke-test splash
+5. **Concise docs** for UX vision & offline strategy
+
+Deliverables (generate *only* these files)
+──────────────────────────────────────────
+📜 **setup.sh**  
+  • `set -e`; `chmod +x` itself  
+  • Installs Node & Python deps, Expo SDK 51  
+  • Creates `backend/db/pharma.db` and executes:
+
+```sql
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS products(id TEXT PRIMARY KEY,name TEXT);
+CREATE TABLE IF NOT EXISTS stock(id TEXT PRIMARY KEY,product_id TEXT,batch TEXT,
+  expiry TEXT,qty INT,FOREIGN KEY(product_id) REFERENCES products(id));
+CREATE TABLE IF NOT EXISTS sales(id TEXT PRIMARY KEY,date TEXT,total REAL);
+CREATE TABLE IF NOT EXISTS outbox(id INTEGER PRIMARY KEY AUTOINCREMENT,
+  tbl TEXT,row_id TEXT,op TEXT,payload TEXT,
+  ts DATETIME DEFAULT CURRENT_TIMESTAMP,
+  synced INT DEFAULT 0,
+  embedding BLOB NULL);
+• Prints a big ASCII banner with next commands.
+
+📁 mobile/ (Expo + TypeScript)
+• App.tsx — splash “Local-first ready 🚀” + “Add Demo Product” button
+• src/db/index.ts — WatermelonDB init (SQLite adapter)
+• src/sync/syncWorker.ts — polls outbox, POSTs to /api/sync/batch,
+marks rows synced = 1; uses @react-native-community/netinfo; 30 s interval
+• src/ai/assistant.ts — interface ask(text, ctx), implementations
+stubLocal() & remoteOpenAI()
+• src/ai/voice.ts, src/ai/ocr.ts — empty stubs exporting TODOs
+• __tests__/syncWorker.test.ts — Jest: insert fake outbox row → simulate
+offline → online → expect flush
+
+📁 backend/
+• main.py — FastAPI + TinyCouch; /sync/batch idempotently applies outbox events
+• db/schema.sql — same schema as above
+
+📁 docs/
+• ux/requirements.md — two short sections: POS Checkout & Inventory (+ 15-sec rule)
+• tech/offline_strategy.md — explain outbox, eventual consistency, conflict-ID plan
+• roadmap.md — Iterations 1 → 5 one-liner headlines
+• ux/research.md — table of three Indian pharmacy POS apps with URL/screenshot & takeaway
+
+⚙️ .replit
+
+ini
+Copy code
+run = "bash setup.sh && npx expo start --tunnel"
+⚙️ replit.nix — nodejs 18, python 3.12, expo-cli, uvicorn
+
+📄 app.json — add "extra": {"LLM_DOWNLOAD_URL": ""} and set android.maxSdkVersion = 34
+
+Constraints
+───────────
+
+Generate no other files or code—POS logic lands in Iteration 1.
+
+All commands non-interactive; final APK < 90 MB.
+
+Dependencies:
+– node 18.x, expo “~51.0.8”, react 18.2.0, react-native 0.74.1
+– WatermelonDB 0.27.1, @nozbe/sqlite 1.7.2
+– fastapi ^0.111, uvicorn ^0.30, tinycouch latest
+
+Each markdown doc ≤ 120 lines.
+
+Smoke test
+──────────
+setup.sh must finish; npm test must pass; Expo tunnel must display the splash.
+
+Begin.
+##########################################################################################

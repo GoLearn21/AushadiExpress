@@ -1,0 +1,105 @@
+=== [2025-09-07T17:38:29.267Z] GET /src/components/action-sheet.tsx ===
+
+=== [2025-09-07T17:38:29.268Z] GET /src/components/offline-indicator.tsx ===
+
+=== [2025-09-07T17:38:29.348Z] GET /src/lib/theme.ts ===
+
+=== [2025-09-07T17:38:29.353Z] GET /src/components/smart-action-fab.tsx ===
+
+=== [2025-09-07T17:38:29.363Z] GET /src/components/ui/tabs.tsx ===
+
+=== [2025-09-07T17:38:29.364Z] GET /src/services/capability.ts ===
+
+=== [2025-09-07T17:38:29.365Z] GET /src/components/segmented-control.tsx ===
+
+=== [2025-09-07T17:38:29.445Z] GET /src/services/camera.ts ===
+
+=== [2025-09-07T17:38:29.455Z] GET /src/utils/dev-logger.ts ===
+
+=== [2025-09-07T17:38:29.464Z] GET /src/components/camera-permission-modal.tsx ===
+
+=== [2025-09-07T17:38:29.464Z] GET /src/components/ui/dialog.tsx ===
+
+=== [2025-09-07T17:38:29.465Z] GET /src/components/ui/switch.tsx ===
+
+=== [2025-09-07T17:38:29.549Z] GET /src/services/enhanced-capture.ts ===
+
+=== [2025-09-07T17:38:29.550Z] GET /src/components/payment/collect-payment-sheet.tsx ===
+
+=== [2025-09-07T17:38:29.559Z] GET /src/components/ui/select.tsx ===
+
+=== [2025-09-07T17:38:29.565Z] GET /src/services/document-storage.ts ===
+
+=== [2025-09-07T17:38:29.568Z] GET /src/lib/ai-assistant.ts ===
+
+=== [2025-09-07T17:38:29.576Z] GET /src/components/credibility-ribbon.tsx ===
+
+=== [2025-09-07T17:38:29.652Z] GET /src/utils/app-logger.ts ===
+
+=== [2025-09-07T17:38:29.661Z] GET /src/services/pharmacy-agent.ts ===
+
+=== [2025-09-07T17:38:29.661Z] GET /src/services/camera-capture.ts ===
+
+=== [2025-09-07T17:38:29.671Z] GET /src/hooks/use-offline.ts ===
+
+=== [2025-09-07T17:38:29.671Z] GET /src/services/ai-vision.ts ===
+
+=== [2025-09-07T17:38:29.824Z] GET /api/products ===
+[API] Fetching products...
+[API] Found 2 products
+[RESPONSE 200] [{"id":"prod-1","name":"Paracetamol 500mg","description":"Pain relief medication","price":25.5,"createdAt":"2025-09-07T17:37:20.235Z"},{"id":"prod-2","name":"Cough Syrup","description":"For dry cough ...
+=== END GET /api/products ===
+
+5:38:29 PM [express] GET /api/products 304 in 1ms :: [{"id":"prod-1","name":"Paracetamol 500mg","des…
+
+=== [2025-09-07T17:38:29.827Z] GET /api/stock ===
+[RESPONSE 200] [{"id":"stock-1","productId":"prod-1","batchNumber":"B2024001","quantity":45,"expiryDate":"2025-12-31T00:00:00.000Z","createdAt":"2025-09-07T17:37:20.235Z"},{"id":"stock-2","productId":"prod-2","batch...
+=== END GET /api/stock ===
+
+5:38:29 PM [express] GET /api/stock 304 in 1ms :: [{"id":"stock-1","productId":"prod-1","batchNumber…
+
+=== [2025-09-07T17:38:29.829Z] GET /api/sales/today ===
+[RESPONSE 200] {"total":285.5}
+=== END GET /api/sales/today ===
+
+5:38:29 PM [express] GET /api/sales/today 304 in 0ms :: {"total":285.5}
+
+=== [2025-09-07T17:38:29.831Z] GET /api/sales ===
+[RESPONSE 200] [{"id":"sale-1","total":285.5,"date":"2025-09-07T17:37:20.235Z","items":"[{\"productId\":\"prod-1\",\"quantity\":2,\"price\":25.5}]","synced":true}]
+=== END GET /api/sales ===
+
+5:38:29 PM [express] GET /api/sales 304 in 1ms :: [{"id":"sale-1","total":285.5,"date":"2025-09-07T1…
+
+=== [2025-09-07T17:38:38.171Z] POST /api/ai/analyze-document ===
+[OCR-DEBUG] Analyzing document: 1000082713.jpg, size: 562082
+[OCR-DEBUG] Base64 image length: 749444 characters
+[OCR-DEBUG] Calling OpenAI with model gpt-4o-mini
+[OCR-DEBUG] OpenAI response received in 20758ms
+[OCR-DEBUG] Response choices length: 1
+[OCR-DEBUG] Raw response length: 3301 characters
+[OCR-DEBUG] Raw response preview: {
+"docType": "invoice",
+"rawText": "TAX INVOICE\nSRI MADHU MEDICAL AGENCIES\nDRNO: 10-9-2/B, BANKSTREET,ARUNDALPET, NARASARAO PET\nState: Andra Pradesh\nGSTN: 37BASPN6526P1ZO\nTel -97032225666\nDL.Nos:20B: AP/07/03/2021-23859\nDL.Nos:21B: AP/07/03/2021-23860\n\nSAI BABA MEDICALS\nMAINROAD\nYERRAGONDAPALEM\nPh: \n\nMFR HSN Code Product Name PACK BATCH EXP M.R.P QTY FREE RATE Dis% GST AMOUNT\nAL 30041090 Moxel-D 3000 1'S ET5415016 04/27 127.10 50.0 81.70 4.00 12 4,085.00\nVET 30042019 XCEFT500MG 1...
+[OCR-DEBUG] JSON parsing successful
+[OCR-DEBUG] Parsed JSON successfully
+[OCR-DEBUG] Document type: invoice
+[OCR-DEBUG] Raw text length: 1380
+[OCR-DEBUG] Line items count: 7
+[OCR-DEBUG] Header data: {"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BASPN6526P1ZO","date":"2025-09-01"}
+[OCR-DEBUG] First line item: {"name":"Moxel-D 3000","qty":"50.0","mrp":"127.10","rate":"81.70","gstPct":"12","amount":"4,085.00","batch":"ET5415016","expiry":"04/27"}
+[COMPLIANCE] OCR Duration: 20758ms, Raw Text Length: 1380
+[RESPONSE 200] {"documentType":"invoice","confidence":0.85,"extractedData":{"header":{"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BASPN6526P1ZO","date":"2025-09-0...
+=== END POST /analyze-document ===
+
+5:38:59 PM [express] POST /api/ai/analyze-document 200 in 21175ms :: {"documentType":"invoice","conf…
+
+=== [2025-09-07T17:39:05.790Z] POST /api/documents ===
+[DOCUMENTS] Storing document: 1000082713.jpg
+[DOCUMENTS] Raw text length: 0
+[DOCUMENTS] Line items count: 0
+[LEARNING] User corrected AI prediction: { ai: undefined, user: 'invoice' }
+[DOCUMENTS] Stored successfully with 0 line items
+[RESPONSE 200] {"id":"doc-1757266746001","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"other","confirmedType":"invoice","confidence":0.5,"rawText":"","modelSummary":"","header":{}...
+=== END POST /api/documents ===
+
+5:39:06 PM [express] POST /api/documents 200 in 214ms :: {"id":"doc-1757266746001","enterpriseId":"d…

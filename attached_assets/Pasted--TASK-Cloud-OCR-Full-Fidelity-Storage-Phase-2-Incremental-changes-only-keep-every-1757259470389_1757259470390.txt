@@ -1,0 +1,117 @@
+### 🛠 TASK: Cloud OCR + Full-Fidelity Storage  (Phase β-2)
+
+> Incremental changes only – keep everything from Phase β unless overwritten here.
+
+-----------------------------------------------------------------
+## 0 · Why this patch?
+-----------------------------------------------------------------
+* The user supplied a real Indian tax-invoice image (see `/mnt/data/31f55fe3-….png`).
+* We must **persist ALL textual content** returned by GPT-4o-mini Vision,  
+  plus a concise **modelSummary**, so auditors can compare AI output to the
+  original image at any time.
+* The JSON schema therefore expands.
+
+-----------------------------------------------------------------
+## 1 · Backend changes  (/src/server/)
+-----------------------------------------------------------------
+### 1.1  New extraction prompt
+Replace the system prompt in `/services/ocr.ts` with:
+
+You are a precise OCR + information extractor.
+
+Read the receipt/invoice exactly.
+
+Return ONLY valid JSON with these keys:
+{
+"docType": "invoice" | "bill" | "prescription" | "other",
+"rawText": "<COMPLETE text with line-breaks>",
+"modelSummary": "<≤150-word natural-language summary>",
+"header": { "supplier":…, "buyer":…, "docNo":…, "gstin":…, "date":… },
+"lineItems":[{ "name":…, "qty":…, "mrp":…, "rate":…, "gstPct":…, "amount":… }],
+"totals": { "taxable":…, "cgst":…, "sgst":…, "igst":…, "net":… }
+}
+Do NOT wrap in markdown, no extra keys.
+
+yaml
+Copy code
+
+### 1.2  MongoDB schema update (`/models/document.ts`)
+```ts
+export interface Document {
+  _id         : ObjectId;
+  enterpriseId: string;
+  docType     : string;
+  fileUrl     : string;
+  rawText     : string;       // NEW – entire OCR dump
+  modelSummary: string;       // NEW – ≤150 words
+  header      : Header;
+  lineItems   : LineItem[];
+  totals      : Totals;
+  createdAt   : Date;
+}
+Use db.documents.createIndex({ enterpriseId:1, "header.supplier":1, createdAt:-1 }).
+
+1.3 Storage flow
+Upload image ➜ keep S3/local logic.
+
+Call GPT-4o-mini Vision ➜ receive JSON.
+
+Validate (zod) + insert into Mongo (rawText, modelSummary, etc.).
+
+Emit change over sync endpoint so Pouch/Watermelon replicate.
+
+2 · Local device storage
+Images still saved under …/invoices/, …/bills/, …/prescriptions/.
+
+New LiteFS table (RN) / Dexie store (Web):
+
+ts
+Copy code
+{ _id, fileUri, rawText, modelSummary }
+linked by _id to documents replica – makes “open original” easy offline.
+
+3 · Agent update
+pharma_intelligence_agent now has three memory tiers:
+
+modelSummary (fast path)
+
+rawText (fallback on edge cases)
+
+Live vector DB (Atlas) – unchanged
+
+If user asks “summarise last month’s invoices” the agent streams over
+all modelSummary rows for that period and composes the answer.
+
+4 · Reports tab autoload
+/reports/receiving page queries Mongo (or local replica) for
+docType:"invoice" → displays header & totals table.
+
+XLS/PDF export uses the same query so GST filings match stored data.
+
+5 · Perf & audit logging
+Keep existing timestamp logs.
+
+Add ocrDurationMs and mongoWriteMs to INSERT log.
+
+6 · Acceptance criteria
+Upload the provided image.
+
+API returns 201 & timestamps; rawText contains every visible word.
+
+modelSummary ≤150 words, human-readable.
+
+Toggle offline → open Reports ➜ invoice visible, image matches data.
+
+Ask assistant:
+
+“What is the GSTIN on invoice WS 2453?” → agent answers from header.
+
+“Summarise stock received this quarter” → agent aggregates modelSummary.
+
+Export CSV from Reports – totals align with document.
+
+Commit:
+
+scss
+Copy code
+feat(doc-fullstore): save rawText + modelSummary, update agent & reports

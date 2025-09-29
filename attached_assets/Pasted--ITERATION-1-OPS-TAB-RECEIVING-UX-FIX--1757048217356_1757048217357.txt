@@ -1,0 +1,51 @@
+################################  ITERATION 1 — OPS TAB & RECEIVING UX FIX  ################################
+Context
+────────
+• “Sales” bottom tab now mixes Sales + Receiving → confusing.  
+• Receive view shows sales card instead of workflow launcher.  
+• Need scalable widget grid for future flows (Returns, Transfers, etc.).  
+
+Changes
+───────
+1️⃣  **Bottom-nav rename**  
+    • Rename tab label & icon from **Sales** → **Ops** (ledger icon).  
+    • Route remains `OpsScreen`.
+
+2️⃣  **OpsScreen overhaul**  
+    Layout = ScrollView, top shows Today’s Total ₹.  
+    Below: **widget grid** (2-column cards, 96 dp).  
+    Default widgets:  
+    • **Sales Ledger**  (stack icon) → shows sales list (current component).  
+    • **Receive Stock** (inbox icon) → opens full receive workflow.  
+    • **Returns**       (u-turn icon, disabled placeholder).  
+    • **Adjust Stock**  (pencil icon, disabled placeholder).  
+    Widgets can be toggled in future via remote config.
+
+3️⃣  **Receive Stock flow**  
+    • Restore previous screen: header “Receive Stock (Beta)”.  
+    • Input method segment: **Scan Invoice** | **Enter PO**.  
+    • Scan: asks camera permission → opens preview stub.  
+    • Enter PO: navigates to `EnterPOScreen` (text inputs).  
+    • Entire screen wrapped in ScrollView.
+
+4️⃣  **Navigation**  
+    • `OpsScreen` mounts with param `initial="sales"` or `"receive"` to deep-link from Low-Stock card etc.  
+    • FAB on Products “Receive Stock” now simply `navigate('Ops', {initial:'receive'})`.
+
+5️⃣  **Tests**  
+    • Bottom nav shows “Ops”.  
+    • Widget press “Sales Ledger” renders sales list; “Receive Stock” renders receive UI.  
+    • Deep-link param opens correct tab.  
+
+Docs
+────
+• `docs/ux/ops_widget_grid.md` – 25-line rationale & future widgets.  
+
+Constraints
+───────────
+* No new heavy libs; use existing vector-icons for widget icons.  
+* APK ≤ 100 MB; cold-start ≤ 6 s on 2 GB.  
+* WCAG AA colours.
+
+Begin.
+###########################################################################################################

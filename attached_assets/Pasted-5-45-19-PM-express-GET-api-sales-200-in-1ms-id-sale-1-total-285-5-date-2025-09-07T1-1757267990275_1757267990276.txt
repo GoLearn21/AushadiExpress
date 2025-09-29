@@ -1,0 +1,180 @@
+5:45:19 PM [express] GET /api/sales 200 in 1ms :: [{"id":"sale-1","total":285.5,"date":"2025-09-07T1…
+
+=== [2025-09-07T17:45:19.953Z] GET /api/sales/today ===
+[RESPONSE 200] {"total":285.5}
+=== END GET /api/sales/today ===
+
+5:45:19 PM [express] GET /api/sales/today 304 in 1ms :: {"total":285.5}
+
+=== [2025-09-07T17:55:11.869Z] POST /api/ai/analyze-document ===
+[OCR-DEBUG] Analyzing document: 1000082713.jpg, size: 562082
+[OCR-DEBUG] Base64 image length: 749444 characters
+[OCR-DEBUG] Calling OpenAI with model gpt-4o-mini
+[OCR-DEBUG] OpenAI response received in 20885ms
+[OCR-DEBUG] Response choices length: 1
+[OCR-DEBUG] Raw response length: 3562 characters
+[OCR-DEBUG] Raw response preview: {
+"docType": "invoice",
+"rawText": "TAX INVOICE\nSRI MADHU MEDICAL AGENCIES\nDRNO: 10-9-2/B, BANKSTREET, ARUNDALEPET, NARASARAOPET\nState: Andra Pradesh\nGSTN: 37BASPN6526P1ZO\nTel - 97032225666\nDL.Nos:20B: AP/07/03/2021-23859\nDL.Nos:21B: AP/07/03/2021-23860\nSAI BABA MEDICALS\nMAINROAD\nYERRAGONDAPALEM\nPh:\n\nMFR  HSN Code  Product Name     PACK   BATCH    EXP   M.R.P  QTY   FREE  RATE  Dis%  GST  AMOUNT\nAL   30041090  MOXEL-D 3000     1'S    ET5415016  04/27  127.10  50.0  81.70 4.00  12  ...
+[OCR-DEBUG] JSON parsing successful
+[OCR-DEBUG] Parsed JSON successfully
+[OCR-DEBUG] Document type: invoice
+[OCR-DEBUG] Raw text length: 1656
+[OCR-DEBUG] Line items count: 7
+[OCR-DEBUG] Header data: {"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BASPN6526P1ZO","date":"2025-09-01"}
+[OCR-DEBUG] First line item: {"name":"MOXEL-D 3000","qty":"50.0","mrp":"127.10","rate":"81.70","gstPct":"12","amount":"4085.00","batch":"ET5415016","expiry":"04/27"}
+[COMPLIANCE] OCR Duration: 20885ms, Raw Text Length: 1656
+[RESPONSE 200] {"documentType":"invoice","confidence":0.85,"extractedData":{"header":{"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BASPN6526P1ZO","date":"2025-09-0...
+=== END POST /analyze-document ===
+
+5:55:33 PM [express] POST /api/ai/analyze-document 200 in 21396ms :: {"documentType":"invoice","conf…
+
+=== [2025-09-07T17:55:35.628Z] POST /api/documents ===
+[DOCUMENTS] Storing document: 1000082713.jpg
+[DOCUMENTS-DEBUG] Confirmed type: invoice
+[DOCUMENTS-DEBUG] Raw extractedData string: {"documentType":"invoice","confidence":0.85,"extractedData":{"header":{"supplier":"SRI MADHU MEDICAL AGENCIES","buyer":"SAI BABA MEDICALS","docNo":"WS 2453","gstin":"37BASPN6526P1ZO","date":"2025-09-0
+[DOCUMENTS-DEBUG] Parsed data keys: [
+  'documentType',
+  'confidence',
+  'extractedData',
+  'rawText',
+  'modelSummary',
+  'metadata'
+]
+[DOCUMENTS-DEBUG] Raw text from parsed: 1656
+[DOCUMENTS-DEBUG] Line items from parsed: 7
+[DOCUMENTS] Raw text length: 1656
+[DOCUMENTS] Line items count: 7
+[DOCUMENTS] Stored successfully with 7 line items
+[RESPONSE 200] {"id":"doc-1757267735883","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDIC...
+=== END POST /api/documents ===
+
+5:55:35 PM [express] POST /api/documents 200 in 255ms :: {"id":"doc-1757267735883","enterpriseId":"d…
+
+=== [2025-09-07T17:55:36.047Z] POST /api/stock/bulk ===
+[REQUEST BODY] {
+  "items": [
+    {
+      "name": "MOXEL-D 3000",
+      "batch": "ET5415016",
+      "qty": 50,
+      "exp": "04/27",
+      "mrp": 127.1
+    },
+    {
+      "name": "XCEFT500MG",
+      "batch": "ET5718005",
+      "qty": 5,
+      "exp": "05/27",
+      "mrp": 242.55
+    },
+    {
+      "name": "EPIDOSIN",
+      "batch": "EVS24024",
+      "qty": 5,
+      "exp": "-",
+      "mrp": 69
+    },
+    {
+      "name": "EPIDOSIN 30ML",
+      "batch": "EVS24006",
+      "qty": 24,
+      "exp": "-",
+      "mrp": 63
+    },
+    {
+      "name": "TM/AF TAB",
+      "batch": "EM5004",
+      "qty": 24,
+      "exp": "01/27",
+      "mrp": 37
+    },
+    {
+      "name": "NUROCARE-VET 10ML",
+      "batch": "EB-25001",
+      "qty": 24,
+      "exp": "01/27",
+      "mrp": 37
+    },
+    {
+      "name": "ASCAL GEL 500 ML",
+      "batch": "CK5777052",
+      "qty": 15,
+      "exp": "10/26",
+      "mrp": 275
+    }
+  ]
+}
+[STOCK-BULK] Processing bulk stock insert
+[STOCK-BULK] Items to process: undefined
+[STOCK-BULK] Error: TypeError: items is not iterable
+    at <anonymous> (/home/runner/workspace/server/routes.ts:307:26)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/runner/workspace/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:40:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at <anonymous> (/home/runner/workspace/server/index.ts:37:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at urlencodedParser (/home/runner/workspace/node_modules/body-parser/lib/types/urlencoded.js:85:7)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at /home/runner/workspace/node_modules/body-parser/lib/read.js:137:5
+    at AsyncResource.runInAsyncScope (node:async_hooks:206:9)
+    at invokeCallback (/home/runner/workspace/node_modules/raw-body/index.js:238:16)
+    at done (/home/runner/workspace/node_modules/raw-body/index.js:227:7)
+    at IncomingMessage.onEnd (/home/runner/workspace/node_modules/raw-body/index.js:287:7)
+    at IncomingMessage.emit (node:events:524:28)
+    at endReadableNT (node:internal/streams/readable:1698:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+[RESPONSE 500] {"error":"Failed to process bulk stock insert"}
+=== END POST /api/stock/bulk ===
+
+5:55:36 PM [express] POST /api/stock/bulk 500 in 25ms :: {"error":"Failed to process bulk stock inse…
+^[[1;2B^[[1;2B
+=== [2025-09-07T17:58:19.823Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757267735883","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+5:58:19 PM [express] GET /api/documents 200 in 1ms :: [{"id":"doc-1757267735883","enterpriseId":"def…
+
+=== [2025-09-07T17:58:47.679Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 1
+[RESPONSE 200] [{"id":"doc-1757267735883","enterpriseId":"default","userId":"user-1","fileName":"1000082713.jpg","docType":"invoice","confirmedType":"invoice","confidence":0.85,"rawText":"TAX INVOICE\nSRI MADHU MEDI...
+=== END GET /api/documents ===
+
+5:58:47 PM [express] GET /api/documents 304 in 1ms :: [{"id":"doc-1757267735883","enterpriseId":"def…
+
+=== [2025-09-07T17:58:47.838Z] POST /api/ai/chat ===
+[REQUEST BODY] {
+  "message": "\ntell me the MRP of TM/AF TAB\n\n\nSystem Status:\n- Pharmacy AI Assistant: Active and ready\n- Document processing: Available\n- Compliance monitoring: Enabled\n- Business insights: Active\n\n\nSystem Overview: 1 documents (1 invoices, 0 bills, 0 prescriptions)\n\n\nAs an AI assistant for AushadiExpress pharmacy management system, provide helpful assistance with:\n1. General pharmacy operations\n2. System features and capabilities\n3. Document processing workflows\n4. Business optimization suggestions\n5. Technical support guidance\n\nBe professional, helpful, and focused on Indian pharmacy business needs.\n",
+  "systemPrompt": "You are an AI assistant for AushadiExpress, a pharmacy Point of Sale system. You help pharmacists with:\n\n- Medicine information and drug interactions\n- Inventory management and stock levels\n- Prescription validation and compliance\n- Sales analytics and reporting\n- OCR document processing insights\n\nProvide helpful, accurate, and professional responses. Keep answers concise and actionable.\n\nUser is currently on: AI Assistant screen\n\nRecent actions: General Question",
+  "context": {
+    "currentScreen": "AI Assistant",
+    "recentActions": [
+      "General Question"
+    ]
+  }
+}
+[AI] Chat request received
+[AI] Response generated, length: 483
+[RESPONSE 200] {"response":"To provide you with the Maximum Retail Price (MRP) of TM/AF TAB, I recommend checking the inventory management system within AushadiExpress, as it will have the most accurate and up-to-da...
+=== END POST /api/ai/chat ===
+
+5:58:50 PM [express] POST /api/ai/chat 200 in 2182ms :: {"response":"To provide you with the Maximum…

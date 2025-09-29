@@ -1,0 +1,103 @@
+=== [2025-09-10T09:26:58.202Z] GET /api/products ===
+[API] Fetching products...
+[API] Found 8 products
+[RESPONSE 200] [{"id":"113166c1-2f1f-4452-89f3-2c351fab9ab4","name":"MOXEL-D 3000","description":"Added from OCR scan","price":127.1,"createdAt":"2025-09-08T03:19:52.202Z"},{"id":"3d495085-be20-4cd3-afc7-558d8a0023c...
+=== END GET /api/products ===
+
+9:26:58 AM [express] GET /api/products 304 in 22ms :: [{"id":"113166c1-2f1f-4452-89f3-2c351fab9ab4",…
+
+=== [2025-09-10T09:26:58.225Z] GET /api/sales ===
+
+=== [2025-09-10T09:26:58.229Z] GET /api/stock ===
+
+=== [2025-09-10T09:26:58.232Z] GET /api/sales/today ===
+[RESPONSE 200] []
+=== END GET /api/sales ===
+
+9:26:58 AM [express] GET /api/sales 304 in 25ms :: []
+[RESPONSE 200] {"total":0}
+=== END GET /api/sales/today ===
+
+9:26:58 AM [express] GET /api/sales/today 304 in 76ms :: {"total":0}
+[RESPONSE 200] [{"id":"3bc59433-664a-4b7a-a67a-f5b412eb56b0","productId":"113166c1-2f1f-4452-89f3-2c351fab9ab4","batchNumber":"ET5415016","quantity":5,"expiryDate":"2001-04-27T00:00:00.000Z","createdAt":"2025-09-08T...
+=== END GET /api/stock ===
+
+9:26:58 AM [express] GET /api/stock 304 in 90ms :: [{"id":"3bc59433-664a-4b7a-a67a-f5b412eb56b0","pr…
+
+=== [2025-09-10T09:27:27.125Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 0
+[RESPONSE 200] []
+=== END GET /api/documents ===
+
+9:27:27 AM [express] GET /api/documents 304 in 2ms :: []
+
+=== [2025-09-10T09:27:40.294Z] POST /api/agent/query ===
+[REQUEST BODY] {
+  "query": "tell me who my suppliers are",
+  "tenantId": "pharm_007",
+  "role": "retailer",
+  "currentScreen": "AI Assistant",
+  "hasImage": false,
+  "sessionId": "default"
+}
+[INTELLIGENT-AGENT] Processing query: {
+  query: 'tell me who my suppliers are',
+  context: {
+    tenantId: 'pharm_007',
+    role: 'retailer',
+    currentScreen: 'AI Assistant',
+    hasImage: false,
+    sessionId: 'default'
+  }
+}
+[GEMINI-AGENT] Processing intelligent pharmacy query {
+  query: 'tell me who my suppliers are',
+  tenantId: 'pharm_007',
+  role: 'retailer',
+  hasImage: false
+}
+
+=== [2025-09-10T09:27:45.852Z] GET /api/documents ===
+[DOCUMENTS] Fetching documents: 0
+[RESPONSE 200] []
+=== END GET /api/documents ===
+
+9:27:45 AM [express] GET /api/documents 200 in 1ms :: []
+[GEMINI-AGENT] Pharmacy intelligence agent failed {"error":{"code":503,"message":"The model is overloaded. Please try again later.","status":"UNAVAILABLE"}}
+[GEMINI-AGENT] Agent error response {"error":{"code":503,"message":"The model is overloaded. Please try again later.","status":"UNAVAILABLE"}}
+[RESPONSE 200] {"response":"🎯 **System temporarily unavailable**\n\n💡 **Quick Actions:** [Try Again] [Check Connection] [Contact Support]","context":{"tenantId":"pharm_007","role":"retailer","currentScreen":"AI As...
+=== END POST /agent/query ===
+
+9:27:50 AM [express] POST /api/agent/query 200 in 9816ms :: {"response":"🎯 **System temporarily una…
+
+=== [2025-09-10T09:28:41.696Z] POST /api/agent/query ===
+[REQUEST BODY] {
+  "query": "what are the top 10 product movers",
+  "tenantId": "pharm_007",
+  "role": "retailer",
+  "currentScreen": "AI Assistant",
+  "hasImage": false,
+  "sessionId": "default"
+}
+[INTELLIGENT-AGENT] Processing query: {
+  query: 'what are the top 10 product movers',
+  context: {
+    tenantId: 'pharm_007',
+    role: 'retailer',
+    currentScreen: 'AI Assistant',
+    hasImage: false,
+    sessionId: 'default'
+  }
+}
+[GEMINI-AGENT] Processing intelligent pharmacy query {
+  query: 'what are the top 10 product movers',
+  tenantId: 'pharm_007',
+  role: 'retailer',
+  hasImage: false
+}
+[GEMINI-AGENT] Pharmacy intelligence agent failed {"error":{"code":503,"message":"The model is overloaded. Please try again later.","status":"UNAVAILABLE"}}
+[GEMINI-AGENT] Agent error response {"error":{"code":503,"message":"The model is overloaded. Please try again later.","status":"UNAVAILABLE"}}
+[RESPONSE 200] {"response":"🎯 **System temporarily unavailable**\n\n💡 **Quick Actions:** [Try Again] [Check Connection] [Contact Support]","context":{"tenantId":"pharm_007","role":"retailer","currentScreen":"AI As...
+=== END POST /agent/query ===
+
+9:28:46 AM [express] POST /api/agent/query 200 in 4476ms :: {"response":"🎯 **System temporarily una…

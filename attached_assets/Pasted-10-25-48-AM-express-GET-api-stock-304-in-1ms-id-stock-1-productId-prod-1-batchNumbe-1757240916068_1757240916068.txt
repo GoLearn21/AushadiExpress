@@ -1,0 +1,148 @@
+10:25:48 AM [express] GET /api/stock 304 in 1ms :: [{"id":"stock-1","productId":"prod-1","batchNumber…
+
+=== [2025-09-07T10:25:48.623Z] GET /api/sales ===
+[RESPONSE 200] [{"id":"sale-1","total":285.5,"date":"2025-09-07T10:21:18.250Z","items":"[{\"productId\":\"prod-1\",\"quantity\":2,\"price\":25.5}]","synced":true}]
+=== END GET /api/sales ===
+
+10:25:48 AM [express] GET /api/sales 304 in 1ms :: [{"id":"sale-1","total":285.5,"date":"2025-09-07T1…
+
+=== [2025-09-07T10:25:56.443Z] GET /favicon.ico ===
+
+=== [2025-09-07T10:25:56.452Z] GET /capture ===
+
+=== [2025-09-07T10:25:56.572Z] GET /@vite/client ===
+
+=== [2025-09-07T10:25:56.713Z] GET /src/main.tsx ===
+[QUERY PARAMS] {
+  "v": "w-dw4FFhwT8dTgHgtrdnB"
+}
+
+=== [2025-09-07T10:25:57.087Z] GET /@react-refresh ===
+
+=== [2025-09-07T10:25:57.088Z] GET /@fs/home/runner/workspace/node_modules/vite/dist/client/env.mjs ===
+
+=== [2025-09-07T10:25:57.099Z] GET /src/App.tsx ===
+[QUERY PARAMS] {
+  "v": "w-dw4FFhwT8dTgHgtrdnB"
+}
+
+=== [2025-09-07T10:25:57.100Z] GET /src/index.css ===
+[QUERY PARAMS] {
+  "v": "w-dw4FFhwT8dTgHgtrdnB"
+}
+
+=== [2025-09-07T10:25:57.188Z] GET /src/lib/queryClient.ts ===
+
+=== [2025-09-07T10:25:57.192Z] GET /src/components/ui/tooltip.tsx ===
+
+=== [2025-09-07T10:25:57.192Z] GET /src/pages/dashboard.tsx ===
+
+=== [2025-09-07T10:25:57.193Z] GET /src/components/ui/toaster.tsx ===
+
+=== [2025-09-07T10:25:57.196Z] GET /src/pages/inventory.tsx ===
+
+=== [2025-09-07T10:25:57.260Z] GET /src/pages/sales.tsx ===
+
+=== [2025-09-07T10:25:57.264Z] GET /src/pages/ops.tsx ===
+
+=== [2025-09-07T10:25:57.266Z] GET /src/pages/enter-po.tsx ===
+
+=== [2025-09-07T10:25:57.269Z] GET /src/pages/sales-ledger.tsx ===
+
+=== [2025-09-07T10:25:57.271Z] GET /src/pages/returns.tsx ===
+
+=== [2025-09-07T10:25:57.324Z] GET /src/pages/adjust-stock.tsx ===
+
+=== [2025-09-07T10:25:57.337Z] GET /src/pages/barcode-scan.tsx ===
+
+=== [2025-09-07T10:25:57.342Z] GET /src/pages/scan-invoice.tsx ===
+
+=== [2025-09-07T10:25:57.347Z] GET /src/pages/quick-capture.tsx ===
+
+=== [2025-09-07T10:25:57.349Z] GET /src/pages/pos.tsx ===
+
+=== [2025-09-07T10:25:57.350Z] GET /src/pages/settings.tsx ===
+
+=== [2025-09-07T10:25:57.400Z] GET /src/pages/receive-stock.tsx ===
+
+=== [2025-09-07T10:25:57.412Z] GET /src/pages/not-found.tsx ===
+
+=== [2025-09-07T10:25:57.420Z] GET /src/components/bottom-navigation.tsx ===
+
+=== [2025-09-07T10:25:57.423Z] GET /src/lib/utils.ts ===
+
+=== [2025-09-07T10:25:57.425Z] GET /src/hooks/use-toast.ts ===
+
+=== [2025-09-07T10:25:57.431Z] GET /src/components/ui/toast.tsx ===
+
+=== [2025-09-07T10:25:57.474Z] GET /src/components/ui/card.tsx ===
+
+=== [2025-09-07T10:25:57.484Z] GET /src/components/offline-indicator.tsx ===
+
+=== [2025-09-07T10:25:57.497Z] GET /src/components/credibility-ribbon.tsx ===
+
+=== [2025-09-07T10:25:57.499Z] GET /src/lib/theme.ts ===
+
+=== [2025-09-07T10:25:57.503Z] GET /src/components/smart-action-fab.tsx ===
+
+=== [2025-09-07T10:25:57.509Z] GET /src/components/ui/badge.tsx ===
+
+=== [2025-09-07T10:25:57.548Z] GET /src/components/ui/button.tsx ===
+
+=== [2025-09-07T10:25:57.561Z] GET /src/components/ui/input.tsx ===
+
+=== [2025-09-07T10:25:57.570Z] GET /src/components/ui/label.tsx ===
+
+=== [2025-09-07T10:25:57.572Z] GET /src/components/ui/collapsible.tsx ===
+
+=== [2025-09-07T10:25:57.580Z] GET /src/components/action-sheet.tsx ===
+
+=== [2025-09-07T10:25:57.585Z] GET /src/components/segmented-control.tsx ===
+
+=== [2025-09-07T10:25:57.626Z] GET /src/services/camera.ts ===
+
+=== [2025-09-07T10:25:57.637Z] GET /src/services/capability.ts ===
+
+=== [2025-09-07T10:25:57.650Z] GET /src/components/payment/collect-payment-sheet.tsx ===
+
+=== [2025-09-07T10:25:57.651Z] GET /src/utils/dev-logger.ts ===
+
+=== [2025-09-07T10:25:57.666Z] GET /src/services/enhanced-camera.ts ===
+
+=== [2025-09-07T10:25:57.667Z] GET /src/components/camera-permission-modal.tsx ===
+
+=== [2025-09-07T10:25:57.702Z] GET /src/components/ui/switch.tsx ===
+
+=== [2025-09-07T10:25:57.722Z] GET /src/components/ui/dialog.tsx ===
+
+=== [2025-09-07T10:25:57.730Z] GET /src/hooks/use-offline.ts ===
+
+=== [2025-09-07T10:25:57.769Z] GET /src/utils/invoice-parser.ts ===
+PayloadTooLargeError: request entity too large
+    at readStream (/home/runner/workspace/node_modules/raw-body/index.js:163:17)
+    at getRawBody (/home/runner/workspace/node_modules/raw-body/index.js:116:12)
+    at read (/home/runner/workspace/node_modules/body-parser/lib/read.js:79:3)
+    at jsonParser (/home/runner/workspace/node_modules/body-parser/lib/types/json.js:138:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at expressInit (/home/runner/workspace/node_modules/express/lib/middleware/init.js:40:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at query (/home/runner/workspace/node_modules/express/lib/middleware/query.js:45:5)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/home/runner/workspace/node_modules/express/lib/router/index.js:328:13)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/router/index.js:175:3)
+    at Function.handle (/home/runner/workspace/node_modules/express/lib/application.js:181:10)
+    at Server.app (/home/runner/workspace/node_modules/express/lib/express.js:39:9)
+    at Server.emit (node:events:524:28)
+    at parserOnIncoming (node:_http_server:1141:12)
+    at HTTPParser.parserOnHeadersComplete (node:_http_common:118:17)

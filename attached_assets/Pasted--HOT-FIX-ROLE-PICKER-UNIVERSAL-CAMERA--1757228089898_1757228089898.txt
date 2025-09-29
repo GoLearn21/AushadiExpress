@@ -1,0 +1,107 @@
+################################  HOT-FIX — ROLE PICKER & UNIVERSAL CAMERA  ################################
+A  Schema additions  (backend/agent/schema.sql & mobile mirror)
+---------------------------------------------------------------
+```sql
+CREATE TABLE IF NOT EXISTS user_profile(id TEXT PRIMARY KEY DEFAULT 'ME',
+  role TEXT CHECK(role IN ('retailer','wholesaler','distributor')) DEFAULT 'retailer');
+CREATE TABLE IF NOT EXISTS receive_items(
+  id TEXT PRIMARY KEY, invoice_id TEXT, drug TEXT, qty INT, mrp REAL, ts TEXT);
+B Settings → RolePicker
+File screens/settings/RoleCard.tsx
+
+tsx
+Copy code
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
+import db from '../../db';
+const ROLES = ['retailer','wholesaler','distributor'];
+export default function RoleCard(){
+  const [role,setRole] = React.useState('retailer');
+  React.useEffect(()=>{ (async()=>{ const p=await db.collections.get('user_profile').find('ME'); setRole(p.role);} )(); },[]);
+  const pick = async()=>{
+    const idx = await new Promise<number>(r=>ActionSheetIOS.showActionSheetWithOptions({options:[...ROLES,'Cancel'],cancelButtonIndex:3},r));
+    if(idx<3){
+       await db.write(async()=>{ await db.collections.get('user_profile').upsert({id:'ME',role:ROLES[idx]}); });
+       setRole(ROLES[idx]);
+    }
+  };
+  return(<Pressable onPress={pick} className="p-4 bg-white rounded-xl">
+     <Text className="text-xs text-gray-500 mb-1">My Role</Text>
+     <Text className="text-lg font-semibold capitalize">{role}</Text>
+  </Pressable>);
+}
+Add <RoleCard/> to SettingsScreen.
+
+C cameraService: guarantee opening & debug log
+Update src/services/cameraService.ts
+
+ts
+Copy code
+import * as FileSystem from 'expo-file-system';
+export async function captureWithCamera(mode:'barcode'|'invoice'|'prescription'){
+  const res = await openCameraOrPicker();           // from previous patch
+  if(res==='camera') return 'camera';               // caller mounts Camera
+  await persistMeta(mode,res);                      // picker direct save
+}
+async function persistMeta(mode:string,uri:string){
+  console.log('CAPTURE-SAVED', {mode, uri});
+  const id = crypto.randomUUID();
+  await db.write(async()=>{
+     await db.collections.get('captures').create(r=>{
+        r._raw.id=id; r.path=uri; r.mode=mode; r.owner_id='ME'; r.ts=new Date().toISOString();
+     });
+     if(mode==='invoice'){ await runOcrAndStore(id,uri); }
+  });
+}
+async function runOcrAndStore(invId:string, uri:string){
+  const txt = await TesseractOcr.recognize(uri, 'LANG_ENGLISH');   // lite ≈1-2 s
+  const rows = parseInvoiceLines(txt);                             // simple regex splitter
+  await db.write(async()=>{
+     for(const row of rows){
+        await db.collections.get('receive_items').create(r=>{
+           Object.assign(r,{invoice_id:invId,drug:row.name,qty:row.qty,mrp:row.mrp,
+             _raw:{id:crypto.randomUUID()}, ts:new Date().toISOString()});
+        });
+     }
+  });
+}
+D QuickCaptureScreen — always render Camera or Picker
+Replace first lines of useEffect:
+
+tsx
+Copy code
+useEffect(()=>{ (async()=>{
+  try{
+     const res = await captureWithCamera(mode);     // returns 'camera' or has saved
+     if(res==='camera') setCam(true); else navigation.goBack();
+  }catch(e){ navigation.goBack(); }
+})();},[]);
+Keep previous persistShot but call it only from Camera path.
+
+E Receive-Stock & POS buttons
+Receive-Stock » Scan Invoice:
+
+tsx
+Copy code
+nav.push('/capture',{mode:'invoice'});
+POS Camera:
+
+tsx
+Copy code
+nav.push('/capture',{mode:'barcode'});
+F Remove “Ready to capture” placeholders
+Delete any JSX that prints “Ready to capture”.
+
+G Green toast hook is unchanged — still shows on persistShot.
+
+Smoke-test
+──────────
+✓ Settings » My Role cycles roles and persists offline.
+✓ Home camera → pick “Invoice” → camera opens, shoot → green toast, log prints
+CAPTURE-SAVED, OCR runs, receive_items rows created.
+✓ Home camera → “Prescription” likewise.
+✓ POS camera opens scanner immediately (no placeholders).
+✓ Receive-Stock » Scan Invoice opens camera/picker the same way.
+
+Begin.
+#################

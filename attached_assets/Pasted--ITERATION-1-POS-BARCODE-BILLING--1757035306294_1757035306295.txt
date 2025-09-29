@@ -1,0 +1,63 @@
+################################  ITERATION 1 — POS & BARCODE BILLING  ################################
+Goal
+────
+Ship a scan-to-bill flow that runs in ≤15 s on a 2 GB phone yet scales up on
+high-end devices.
+
+Add progressive-enhancement hooks:
+
+* HW capability probe
+* Dynamic import of heavy features
+
+Tasks
+─────
+A. **Capability Service**
+   • `mobile/src/services/capability.ts`
+     - Uses `react-native-device-info` (already in expo) to expose:
+         getRAM() -> GB
+         hasNeon() -> boolean
+         osMajor() -> number
+     - Export `Tiers = { VALUE, MAINSTREAM, PREMIUM }` chosen at runtime.
+     - Persist result in AsyncStorage to avoid repeat probes.
+
+B. **POS flow**
+   1. **PosScreen.tsx**
+      • Grid tiles, bill drawer, qty +/- same as previous spec.
+      • Camera scan path:
+          if (tier === VALUE)  -> use 720p preview + single-frame decode
+          else                 -> enable 1080p + continuous decode.
+   2. FEFO stock decrement in `salesEngine.ts` (unchanged spec).
+   3. Payment stub (`UpiLiteMock.tsx`) marks sale paid offline.
+
+C. **Navigation & Shortcuts**
+   • Home swipe-right → PosScreen.
+   • FAB camera now references capability: if tier === VALUE shows static
+     icon; else animate (bounce) for 120 ms to highlight power feature.
+
+D. **Backend**
+   • `/api/barcode/lookup` endpoint (FastAPI) stub returns skeleton drug.
+
+E. **Tests**
+   • Unit: capability tier resolves correctly for mocked RAM.
+   • E2E Jest/Detox: barcode -> bill -> sale in <15 s on emulator with
+     2 GB RAM setting.
+
+F. **Docs**
+   • `docs/tech/capability_matrix.md` – table of tier vs. unlocked features
+     (≤40 lines).
+   • `docs/ux/pos_flow.md` – sequence diagram & timing targets.
+
+Constraints
+───────────
+* Use only existing expo-friendly deps (react-native-device-info is bundled).
+* Bundle splitting via `import()` – no extra libraries.
+* Maintain cold-start ≤6 s on 2 GB profile; APK <100 MB.
+
+Deliverables
+────────────
+✔ capability.ts, PosScreen, payment stub, navigation changes  
+✔ Backend lookup endpoint  
+✔ Updated tests & docs  
+
+Begin.
+######################################################################################################

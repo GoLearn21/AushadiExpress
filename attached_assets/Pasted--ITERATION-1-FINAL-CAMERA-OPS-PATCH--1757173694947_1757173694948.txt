@@ -1,0 +1,163 @@
+############################################  ITERATION-1 — FINAL CAMERA & OPS PATCH  ############################################
+Top-line goals
+──────────────
+1. **Working cameras everywhere**  
+   • POS “Bill Fast” → `/barcode-scan`  
+   • Receive Stock “Scan Invoice” → `/scan-invoice`  
+   • Permission denied → deep-link to device settings; returning auto-opens scanner  
+   • Web fallback = file-input capture
+
+2. **Ops widgets open dedicated routes** (`/sales-ledger`, `/receive-stock`, etc.).
+
+3. **Colour rhythm & typography** — hero banners use a tint of primary; 8-pt grid.
+
+4. **Receive Stock** hero banner 72 dp, auto-scroll to the selected card.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+A  `theme.ts` – colour + font ramp
+────────────────────────────────────────────────────────────────────────────────────────────
+```ts
+export const colors = {
+  'primary-500': '#4D94FF',
+  'primary-400': '#267DFF',
+  'tint-200'   : '#D1E4FF',
+  'tint-100'   : '#E6F0FF',
+  green        : '#28A745',
+};
+export const ramp = { xl:24, lg:20, md:16, sm:14, xs:12 };
+export const getTint = (lvl: 100 | 200) => colors[`tint-${lvl}`];
+────────────────────────────────────────────────────────────────────────────────────────────
+B Routing
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Add stack routes
+/sales-ledger → SalesLedgerScreen
+/receive-stock → ReceiveStockScreen
+/barcode-scan → BarcodeScannerScreen
+/scan-invoice → InvoiceScannerScreen
+/returns, /adjust-stock → placeholders
+
+Ops widget onPress → navigation.navigate(route).
+
+────────────────────────────────────────────────────────────────────────────────────────────
+C services/camera.ts – universal permission helper
+────────────────────────────────────────────────────────────────────────────────────────────
+
+ts
+Copy code
+import { Platform, Linking, AppState } from 'react-native';
+import { Camera } from 'expo-camera';
+
+export async function ensureCamera(onOK: () => void, onFail: () => void) {
+  let s = (await Camera.getCameraPermissionsAsync()).status;
+  if (s === 'granted') { onOK(); return; }
+  s = (await Camera.requestCameraPermissionsAsync()).status;
+  if (s === 'granted') { onOK(); return; }
+
+  const action = await showPermissionModal();           // 'settings' | 'retry' | 'cancel'
+  if (action === 'settings') {
+    const open = Platform.OS === 'web'
+      ? () => navigator.permissions.query({ name: 'camera' as any })
+      : Linking.openSettings;
+    await open();
+    const sub = AppState.addEventListener('change', async st => {
+      if (st === 'active') {
+        const { status } = await Camera.getCameraPermissionsAsync();
+        sub.remove();
+        status === 'granted' ? onOK() : onFail();
+      }
+    });
+  } else if (action === 'retry') {
+    ensureCamera(onOK, onFail);
+  } else {
+    onFail();
+  }
+}
+────────────────────────────────────────────────────────────────────────────────────────────
+D BarcodeScannerScreen.tsx
+────────────────────────────────────────────────────────────────────────────────────────────
+
+tsx
+Copy code
+export default function BarcodeScannerScreen({ navigation }) {
+  const onCode = ({ data }) => { addLineByBarcode(data); navigation.goBack(); };
+  useEffect(() => { ensureCamera(() => {}, () => navigation.goBack()); }, []);
+  return <Camera style={{ flex: 1 }} onBarCodeScanned={onCode} />;
+}
+────────────────────────────────────────────────────────────────────────────────────────────
+E InvoiceScannerScreen.tsx
+────────────────────────────────────────────────────────────────────────────────────────────
+
+tsx
+Copy code
+export default function InvoiceScannerScreen({ navigation }) {
+  const cam = useRef(null);
+  const snap = async () => { await cam.current?.takePictureAsync(); /* TODO */ };
+  useEffect(() => { ensureCamera(() => {}, () => navigation.goBack()); }, []);
+  return (
+    <View style={{ flex: 1 }}>
+      <Camera ref={cam} style={{ flex: 1 }} />
+      <Button title="Capture" onPress={snap} />
+    </View>
+  );
+}
+────────────────────────────────────────────────────────────────────────────────────────────
+F Hook-ups
+────────────────────────────────────────────────────────────────────────────────────────────
+
+POS FAB & “Bill Fast” → navigate('/barcode-scan')
+
+Receive Stock “Scan Invoice” → navigate('/scan-invoice')
+
+Products FAB → navigate('/receive-stock', { action: 'scan' })
+
+────────────────────────────────────────────────────────────────────────────────────────────
+G ReceiveStockScreen tweaks
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Hero banner 72 dp, gradient tint-200 → tint-100.
+
+If route.params.action is 'scan' | 'enter', auto-scroll & trigger card.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+H Ops widget grid
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Two-column cards; icons 24 dp; shared KPI style.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+I Snackbar
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Permission-granted snackbar → green (#28A745), 1.5 s.
+
+────────────────────────────────────────────────────────────────────────────────────────────
+J Tests (jest)
+────────────────────────────────────────────────────────────────────────────────────────────
+
+Widget routes correct.
+
+Route param triggers scanner.
+
+ensureCamera deep-links & re-opens on return.
+
+Home header alignment snapshot.
+
+Docs (update)
+─────────────
+
+docs/ux/colour_rhythm.md
+
+docs/ux/ops_widget_grid.md
+
+docs/tech/camera_permission.md
+
+Constraints
+───────────
+
+Use Expo Camera & LinearGradient only—no new heavy deps.
+
+APK < 100 MB; cold-start < 6 s on 2 GB device; WCAG AA colours.
+
+Begin.
+########################

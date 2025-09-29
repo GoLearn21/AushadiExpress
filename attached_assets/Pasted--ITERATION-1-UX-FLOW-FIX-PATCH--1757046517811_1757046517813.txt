@@ -1,0 +1,94 @@
+
+
+
+
+####################################  ITERATION 1 — UX / FLOW FIX PATCH  ####################################
+Context
+───────
+Current build runs but needs usability and branding fixes.
+
+• POS grid squeezes, lacks “Charge” button.  
+• Dual FABs in Products confuse users.  
+• Insufficient-stock toast has no quick fix.  
+• Header cramped; “Pharma-Empire OS” feels generic.  
+• Camera “Open Settings” inactive.  
+• Receive Stock screen not scrollable; buttons stubbed.
+
+New brand
+─────────
+Adopt **“AushadiExpress”** (औषधि = medicine + Express = speed).  
+Temporary logo: mortar-and-pestle inside tricolour swoosh (placeholder SVG).
+
+Deliverables
+────────────
+A. **Branding**
+   • Rename in header & `app.json`: `"name": "AushadiExpress"`.  
+   • Replace logo PNG/SVG in `assets`.
+
+B. **Home header**
+   • Compact layout:
+
+     ```
+     AushadiExpress        ● Online ↻
+                                         PREMIUM
+     ```
+
+   • PREMIUM badge 12 dp, top-right inside header with translucent diamond badge.
+
+C. **POS screen**
+   1. Grid tiles: FlatList `numColumns={3}`, `minWidth: "30%"`, `flexShrink:1`.  
+   2. Drawer body wrapped in `ScrollView`.  
+   3. **Sticky checkout bar** at bottom:
+
+      ```
+      ___Total ₹425.00__________  [Charge ₹425]
+      ```
+
+      → opens `CollectPaymentSheet`.
+   4. Insufficient-stock **Snackbar** with action **Adjust** → qty picker modal.
+
+D. **CollectPaymentSheet**
+   • Buttons: Cash (default, blue), UPI, Card.  
+   • If Settings → “Cash only” = true → show Cash button only.
+
+E. **Camera permission modal**
+   • `Linking.openSettings()` wired to “Open Settings”.
+
+F. **Products screen**
+   • Replace overlapping FABs with **single Plus FAB**.  
+   • On press → bottom ActionSheet:  
+     – Receive Stock  
+     – Add Product  
+     – Quick Add Demo (dev only, `__DEV__`).  
+   • Remove inbound cube FAB.
+
+G. **Workflow launcher**
+   • Bottom nav: Home, **POS**, Products, Sales, Settings.  
+   • Sales screen gains segmented switch: Sales | Receiving (shows Receive list).
+
+H. **Receive Stock screen**
+   • Wrap content in `ScrollView`.  
+   • “Scan Invoice” opens camera stub; “Enter PO” navigates to placeholder screen.
+
+I. **SQLite / Backend** – no new tables.
+
+J. **Tests**
+   • POS three-column grid on narrow width.  
+   • “Charge” writes sale/outbox rows.  
+   • Snackbar “Adjust” opens qty picker.  
+   • Products FAB sheet opens with 3 actions.  
+   • Camera modal opens settings (mock).
+
+Docs
+────
+• `docs/ux/brand.md` – 20-line note on AushadiExpress name & logo.  
+• Update POS + dashboard wireframes with new header & Charge bar.
+
+Constraints
+───────────
+* No extra heavyweight libs; may use `react-native-action-sheet` (already in Expo).  
+* APK ≤ 100 MB; cold-start ≤ 6 s on 2 GB device.  
+* All UI at least WCAG AA contrast.
+
+Begin.
+#############################################################################################################

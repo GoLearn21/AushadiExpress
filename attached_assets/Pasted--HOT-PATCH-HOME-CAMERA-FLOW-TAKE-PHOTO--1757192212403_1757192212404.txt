@@ -1,0 +1,95 @@
+#############################  HOT-PATCH — HOME CAMERA FLOW & TAKE-PHOTO  ####################################
+Issues
+──────
+1. Home camera still shows the old permission modal and falls through to “camera not
+   available” with an irrelevant success card.
+2. “Take Photo” button disappeared in Quick-Capture; user can’t shoot invoices.
+
+Patch
+─────
+A  Delete the legacy permission modal hook
+   • **Remove** any remaining imports / JSX for `PermissionModal` and calls to `showPermissionModal`
+     in `services/camera.ts` (leave only Camera.requestCameraPermissionsAsync).
+
+B  Universal file-picker fallback
+   *services/camera.ts*
+```ts
+export async function getCameraOrPicker(){
+  const {status} = await Camera.requestCameraPermissionsAsync();
+  if(status==='granted') return 'camera';
+  if(Platform.OS==='web'){
+    const res = await ImagePicker.launchImageLibraryAsync({mediaTypes:ImagePicker.MediaTypeOptions.Images});
+    if(!res.canceled) return res.assets[0].uri;
+  }
+  throw new Error('NO_CAM');
+}
+C Home camera FAB → ActionSheet
+In HomeScreen.tsx (or wherever the camera FAB lives):
+
+tsx
+Copy code
+import * as ExpoRouter from 'expo-router';
+import { ActionSheetIOS, Platform } from 'react-native';
+const router = ExpoRouter.useRouter();
+const showCaptureSheet = ()=>{
+  const go = (mode:string)=>router.push({pathname:'/capture', params:{mode}});
+  const opts = ['Barcode (Billing)', 'Invoice (Stock)', 'Prescription (Rx)', 'Cancel'];
+  const ios = ()=>ActionSheetIOS.showActionSheetWithOptions(
+      {options:opts,cancelButtonIndex:3},
+      idx=>{ if(idx===0)go('barcode'); if(idx===1)go('invoice'); if(idx===2)go('prescription'); });
+  const android = async()=>{
+    // simple prompt for Android/Web
+    const sel = await new Promise(r=>Alert.prompt('Capture','Select what to capture',
+        [{text:'Barcode',onPress:()=>r('barcode')},
+         {text:'Invoice',onPress:()=>r('invoice')},
+         {text:'Prescription',onPress:()=>r('prescription')},
+         {text:'Cancel',style:'cancel',onPress:()=>r(null)}]));
+    if(sel) go(sel as string);
+  };
+  Platform.OS==='ios'? ios(): android();
+};
+<FAB icon="camera" onPress={showCaptureSheet} />
+D QuickCaptureScreen – restore Take Photo
+screens/QuickCaptureScreen.tsx
+
+tsx
+Copy code
+const [camReady,setCamReady] = useState(false);
+const [fallback,setFallback] = useState<string|undefined>();
+
+useEffect(()=>{
+  (async()=>{
+    const res = await getCameraOrPicker();
+    if(res==='camera') setCamReady(true);
+    else if(typeof res==='string'){ handleCapture(res); }   // file-picker URI
+    else navigation.goBack();
+  })();
+},[]);
+
+return (
+  <View style={{flex:1,backgroundColor:'#000'}}>
+    {camReady &&
+      <Camera ref={camRef} style={{flex:1}}
+        onCameraReady={()=>setCamReady(true)}
+        onBarCodeScanned={mode==='barcode'?({data})=>{ handleBarcode(data); }:undefined}/>}
+
+    {camReady && mode!=='barcode' &&
+      <Button title="Take Photo" onPress={async()=>{
+        const p=await camRef.current.takePictureAsync({quality:0.8});
+        handleCapture(p.uri);
+      }}/>}
+  </View>);
+E Safe Back navigation (no “/-1”)
+Ensure every Back arrow runs navigation.goBack(); remove any raw
+string routes like router.back(-1).
+
+Smoke-test checklist
+────────────────────
+✓ Tap Home-camera → ActionSheet appears.
+✓ Choose any option → live camera (or file picker on web) opens instantly, never
+the permission modal.
+✓ In invoice / prescription mode the Take Photo button shows and saves.
+✓ Back arrow always returns to prior screen; no 404 links.
+
+Begin. (No other files modified.)
+#########################
