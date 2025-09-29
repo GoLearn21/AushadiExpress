@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { db } from "../db";
-import { products, stock, sales } from "../../shared/schema.js";
+import { products, stock, sales, documents } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 
 // Simple logging utility
