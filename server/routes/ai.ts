@@ -1,7 +1,6 @@
 import { Router, Request } from 'express';
 import multer from 'multer';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import OpenAI from 'openai';
 import { ImageAnnotatorClient } from '@google-cloud/vision';
@@ -10,10 +9,6 @@ import { ImageAnnotatorClient } from '@google-cloud/vision';
 interface MulterRequest extends Request {
   file?: Express.Multer.File;
 }
-
-// Get the directory name in ES module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Configure multer for file uploads
 const upload = multer({
@@ -24,7 +19,8 @@ const upload = multer({
 });
 
 // Load service account key from file (optional - for Google Cloud Vision)
-const serviceAccountPath = path.join(__dirname, '../../inner-period.json');
+// Use process.cwd() for production compatibility (works with bundled code)
+const serviceAccountPath = path.join(process.cwd(), 'inner-period.json');
 let visionClient: ImageAnnotatorClient | null = null;
 
 if (fs.existsSync(serviceAccountPath)) {
