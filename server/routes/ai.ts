@@ -23,18 +23,23 @@ const upload = multer({
   },
 });
 
-// Load service account key from file
+// Load service account key from file (optional - for Google Cloud Vision)
 const serviceAccountPath = path.join(__dirname, '../../inner-period.json');
-if (!fs.existsSync(serviceAccountPath)) {
-  console.error('Error: Service account key file not found at', serviceAccountPath);
-  process.exit(1);
-}
+let visionClient: ImageAnnotatorClient | null = null;
 
-// Initialize Google Vision API client
-const visionClient = new ImageAnnotatorClient({
-  keyFilename: serviceAccountPath,
-  projectId: 'inner-period-472511-s9' // From your service account file
-});
+if (fs.existsSync(serviceAccountPath)) {
+  try {
+    visionClient = new ImageAnnotatorClient({
+      keyFilename: serviceAccountPath,
+      projectId: 'inner-period-472511-s9'
+    });
+    console.log('✓ Google Cloud Vision API initialized with service account');
+  } catch (error) {
+    console.warn('Warning: Failed to initialize Google Cloud Vision:', error);
+  }
+} else {
+  console.warn('Warning: Google Cloud Vision service account not found. OCR features will be limited.');
+}
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -53,6 +58,14 @@ router.post('/analyze-document', upload.single('image'), async (req: MulterReque
 
     // Convert the image to base64
     const base64Image = req.file.buffer.toString('base64');
+
+    // Check if Google Cloud Vision is available
+    if (!visionClient) {
+      return res.status(503).json({ 
+        error: 'OCR service unavailable', 
+        message: 'Google Cloud Vision is not configured. Please use manual entry.' 
+      });
+    }
 
     // Use Google Cloud Vision API to detect text
     const [result] = await visionClient.textDetection({
