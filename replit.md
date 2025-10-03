@@ -16,6 +16,7 @@ Preferred communication style: Simple, everyday language.
 - **Routing**: Wouter for lightweight client-side routing
 - **State Management**: TanStack React Query for server state management and caching
 - **Mobile-First Design**: Responsive design with bottom navigation optimized for mobile/tablet usage
+- **Progressive Web App**: Full PWA support with installable app experience for mobile devices
 
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js web framework
@@ -129,3 +130,26 @@ The application follows a monorepo structure with clear separation between clien
 - Gemini API key required for full AI functionality (set GEMINI_API_KEY environment variable)
 - System gracefully degrades to database-driven responses when AI is unavailable
 - Inner-period.json service account file required for Google Cloud Vision OCR features
+
+### October 03, 2025 - Progressive Web App (PWA) Implementation
+
+**PWA Installation Features:**
+- Created web app manifest with proper metadata (name, icons, theme colors, display mode)
+- Generated SVG app icons in multiple sizes (72x72 to 512x512) for all device types
+- Added PWA meta tags to HTML (apple-touch-icon, theme-color, mobile-web-app-capable)
+- Implemented install prompt component that detects and guides users through installation
+- iOS Safari support with custom "Add to Home Screen" instructions
+- Android Chrome support with native install prompt integration
+
+**User Experience:**
+- Install prompt appears after 3 seconds on first visit (dismissible and remembers user preference)
+- Standalone display mode provides app-like experience without browser UI
+- Portrait-primary orientation optimized for mobile pharmacy workflows
+- Automatic detection of installed state to hide prompt when already installed
+
+**Technical Implementation:**
+- Manifest served from `/manifest.json` with proper MIME types
+- Icons served from `/icons/` directory via Vite public folder
+- Install prompt uses beforeinstallprompt API for Android/Chrome
+- localStorage persistence for user preferences and dismissal state
+- Platform detection for iOS vs Android installation flows
