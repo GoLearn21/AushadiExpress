@@ -93,11 +93,13 @@ app.use((req, res, next) => {
       console.log(`   • POST   http://localhost:${PORT}/api/ai/chat`);
       console.log('\n⚡ Press Ctrl+C to stop the server\n');
       
-      // Setup Vite in development mode
+      // Setup Vite in development mode, serve static files in production
       if (process.env.NODE_ENV === 'development') {
         setupVite(app, httpServer).catch(err => {
           console.error('Failed to setup Vite:', err);
         });
+      } else {
+        serveStatic(app);
       }
     });
   } catch (error) {
