@@ -51,11 +51,12 @@ Preferred communication style: Simple, everyday language.
 - **Conflict Resolution**: Timestamp-based conflict resolution for data synchronization
 - **Network Detection**: Automatic sync resumption when connectivity is restored
 
-### AI Integration (Stubbed)
-- **Assistant Interface**: Prepared hooks for future on-device LLM integration
+### AI Integration
+- **Gemini AI Agent**: Intelligent pharmacy assistant powered by Google Gemini API for database querying and business intelligence
+- **Fallback System**: Database-driven fallback responses when AI is unavailable (handles low stock, inventory, sales queries)
 - **Voice Recognition**: Stubbed voice input capabilities for future implementation
-- **OCR Integration**: Placeholder for optical character recognition features
-- **Remote AI**: Configurable OpenAI API integration for remote AI assistance
+- **OCR Integration**: Google Cloud Vision API for invoice text extraction (requires service account credentials)
+- **Remote AI**: OpenAI API integration for general chat and document analysis
 
 The application follows a monorepo structure with clear separation between client, server, and shared code, enabling efficient development and deployment while maintaining type safety across the entire stack.
 
@@ -107,3 +108,24 @@ The application follows a monorepo structure with clear separation between clien
 - File input fallback ensures scanning functionality works even without camera access
 - Improved toast notifications with distinct styling for errors vs success messages
 - Scanner remains functional and provides alternatives when camera is unavailable
+
+### October 03, 2025 - AI Assistant Database Query Improvements
+
+**AI Assistant Fixes:**
+- Fixed Gemini AI integration to handle invalid API keys gracefully
+- Enhanced fallback system to actually query database instead of returning generic responses
+- Low stock queries now show actual products below 20 units with batch information
+- Inventory queries display full product list with quantities and prices
+- Most expensive product queries show top 5 items sorted by price
+- All responses now include relevant quick action suggestions
+
+**Production Deployment Fixes:**
+- Fixed Google Cloud Vision service account path resolution for production using process.cwd()
+- Fixed static file serving path for bundled production code
+- Sales page now properly displays parsed sale items instead of raw JSON
+- All path resolutions updated to work correctly in both development and production environments
+
+**Technical Notes:**
+- Gemini API key required for full AI functionality (set GEMINI_API_KEY environment variable)
+- System gracefully degrades to database-driven responses when AI is unavailable
+- Inner-period.json service account file required for Google Cloud Vision OCR features

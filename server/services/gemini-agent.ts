@@ -346,15 +346,52 @@ Answer the question now:`;
     try {
       const queryLower = query.toLowerCase();
       
-      // Simple pattern-based responses as last resort
-      if (queryLower.includes('inventory') || queryLower.includes('stock')) {
+      // LOW STOCK - Actually query the database
+      if (queryLower.includes('low stock') || queryLower.includes('running low') || queryLower.includes('reorder')) {
         const result = await this.handleGoodsInLookup({ tenant_id: context.tenantId }, context);
-        return `Current inventory: ${result.total_products} products worth ₹${result.total_stock_value?.toFixed(2) || '0'}\n\nQuick Actions: How many products do we have|Show me products with low stock|What is our most expensive product`;
+        const lowStockItems = result.inventory?.filter((item: any) => item.total_stock < 20) || [];
+        
+        if (lowStockItems.length === 0) {
+          return `✅ All products are well stocked! No items below 20 units.\n\nCurrent inventory: ${result.total_products} products\n\nQuick Actions: Show me all products|What is our most expensive product|Show me sales summary`;
+        }
+        
+        const itemsList = lowStockItems.slice(0, 10).map((item: any) => 
+          `• ${item.name} - ${item.total_stock} units (Batch: ${item.batch_number})`
+        ).join('\n');
+        
+        return `⚠️ **Low Stock Alert:** ${lowStockItems.length} products below 20 units\n\n${itemsList}\n${lowStockItems.length > 10 ? `\n...and ${lowStockItems.length - 10} more` : ''}\n\nQuick Actions: Show me all products|What is our total inventory value|Show me sales summary`;
       }
       
+      // INVENTORY/STOCK - Show actual product list
+      if (queryLower.includes('inventory') || queryLower.includes('stock') || queryLower.includes('products')) {
+        const result = await this.handleGoodsInLookup({ tenant_id: context.tenantId }, context);
+        
+        if (!result.inventory || result.inventory.length === 0) {
+          return `📦 No products in inventory yet.\n\nQuick Actions: Add a product|Upload invoice|Scan barcode`;
+        }
+        
+        const productList = result.inventory.slice(0, 10).map((item: any) => 
+          `• ${item.name} - ${item.total_stock} units @ ₹${item.price?.toFixed(2) || '0'}`
+        ).join('\n');
+        
+        return `📦 **Current Inventory:** ${result.total_products} products worth ₹${result.total_stock_value?.toFixed(2) || '0'}\n\n${productList}\n${result.inventory.length > 10 ? `\n...and ${result.inventory.length - 10} more` : ''}\n\nQuick Actions: Show me low stock items|What is our most expensive product|Show me sales summary`;
+      }
+      
+      // SALES
       if (queryLower.includes('sales')) {
         const result = await this.handleGoodsOutLookup({ tenant_id: context.tenantId }, context);
-        return `Sales summary: ${result.total_sales} transactions (₹${result.total_value?.toFixed(2) || '0'})\n\nQuick Actions: Show me today's sales total|What are our top selling products|How much revenue did we make this week`;
+        return `💰 **Sales Summary:** ${result.total_sales} transactions (₹${result.total_value?.toFixed(2) || '0'})\n\nQuick Actions: Show me today's sales total|What are our top selling products|How much revenue did we make this week`;
+      }
+      
+      // EXPENSIVE/MOST EXPENSIVE
+      if (queryLower.includes('expensive') || queryLower.includes('highest price')) {
+        const result = await this.handleGoodsInLookup({ tenant_id: context.tenantId }, context);
+        const sorted = [...(result.inventory || [])].sort((a, b) => (b.price || 0) - (a.price || 0));
+        const top5 = sorted.slice(0, 5).map((item: any) => 
+          `• ${item.name} - ₹${item.price?.toFixed(2) || '0'} (${item.total_stock} units)`
+        ).join('\n');
+        
+        return `💎 **Most Expensive Products:**\n\n${top5}\n\nQuick Actions: Show me cheapest products|Show me low stock items|Show me all products`;
       }
       
       return null;
