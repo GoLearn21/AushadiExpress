@@ -31,7 +31,6 @@ export async function setupVite(app: Express, server: Server): Promise<void> {
     const serverOptions = {
       middlewareMode: true,
       hmr: false,
-      ws: false, // Disable websockets completely
       allowedHosts: true as const,
     };
 
