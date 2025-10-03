@@ -84,9 +84,28 @@ export default function Sales() {
                 {sale.items && (
                   <div className="mt-4 pt-4 border-t border-border">
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">Items</h4>
-                    <div className="text-sm text-muted-foreground">
-                      {/* Parse and display sale items if needed */}
-                      <pre className="whitespace-pre-wrap">{sale.items}</pre>
+                    <div className="space-y-2">
+                      {(() => {
+                        try {
+                          const items = JSON.parse(sale.items);
+                          return items.map((item: any, index: number) => (
+                            <div key={index} className="flex justify-between items-center text-sm">
+                              <div className="flex-1">
+                                <p className="font-medium">{item.productName || item.name}</p>
+                                {item.batchNumber && (
+                                  <p className="text-xs text-muted-foreground">Batch: {item.batchNumber}</p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                              </div>
+                            </div>
+                          ));
+                        } catch (e) {
+                          return <p className="text-xs text-muted-foreground">Unable to display items</p>;
+                        }
+                      })()}
                     </div>
                   </div>
                 )}
