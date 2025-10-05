@@ -28,15 +28,16 @@ app.use(session({
     createTableIfMissing: true,
   }),
   secret: process.env.SESSION_SECRET || 'pharma-empire-secret-key-change-in-production',
-  resave: false,
+  resave: true,
   saveUninitialized: false,
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: false,
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: 'lax',
   },
   name: 'pharma.sid',
+  proxy: true,
 }));
 
 // Middleware
