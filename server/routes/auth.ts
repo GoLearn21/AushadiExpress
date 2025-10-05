@@ -44,6 +44,11 @@ router.post('/register', async (req, res) => {
       }
       
       console.log(`[AUTH] User registered: ${user.username} (${user.id}) - Tenant: ${user.tenantId}`);
+      console.log('[AUTH DEBUG] Session after save:', {
+        sessionID: req.sessionID,
+        userId: (req.session as any).userId,
+        hasCookie: !!req.headers.cookie
+      });
       
       res.status(201).json({
         id: user.id,
@@ -117,6 +122,13 @@ router.post('/logout', (req, res) => {
 router.get('/me', async (req, res) => {
   try {
     const session = (req as any).session;
+    console.log('[AUTH DEBUG] Session check:', {
+      hasSession: !!session,
+      userId: session?.userId,
+      sessionID: req.sessionID,
+      cookies: req.headers.cookie
+    });
+    
     if (!session?.userId) {
       return res.status(401).json({ error: 'Not authenticated' });
     }
@@ -125,6 +137,8 @@ router.get('/me', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    
+    console.log('[AUTH] Session valid for user:', user.username);
     
     res.json({
       id: user.id,
