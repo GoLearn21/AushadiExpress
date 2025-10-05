@@ -29,12 +29,14 @@ app.use(session({
   }),
   secret: process.env.SESSION_SECRET || 'pharma-empire-secret-key-change-in-production',
   resave: true,
-  saveUninitialized: false,
+  saveUninitialized: true,
+  rolling: true,
   cookie: {
     secure: false,
-    httpOnly: true,
+    httpOnly: false,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: 'lax',
+    path: '/',
   },
   name: 'pharma.sid',
   proxy: true,

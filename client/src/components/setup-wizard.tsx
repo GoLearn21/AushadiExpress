@@ -70,10 +70,10 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         description: `${pharmacyName} is ready to go!`,
       });
 
-      // Wait for session to be saved, then notify parent
+      // Wait longer for session to be fully established
       setTimeout(() => {
         onComplete();
-      }, 500);
+      }, 1500);
     } catch (error: any) {
       toast({
         title: 'Setup Failed',
