@@ -137,6 +137,32 @@ export default function Settings() {
     });
   };
 
+  const handleLogout = async () => {
+    try {
+      // Call logout API
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Clear all localStorage data
+    localStorage.clear();
+    
+    // Show toast
+    toast({
+      title: "Logged out",
+      description: "You've been logged out successfully",
+    });
+    
+    // Reload page to show setup wizard
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  };
+
   const settingsItems = [
     {
       id: "role",
@@ -293,14 +319,24 @@ export default function Settings() {
 
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" data-testid="settings-title">Settings</h1>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => setShowOnboarding(true)}
-          data-testid="button-rerun-onboarding"
-        >
-          Setup Wizard
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowOnboarding(true)}
+            data-testid="button-rerun-onboarding"
+          >
+            Setup Wizard
+          </Button>
+          <Button 
+            variant="destructive" 
+            size="sm" 
+            onClick={handleLogout}
+            data-testid="button-logout"
+          >
+            Logout
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-3">
