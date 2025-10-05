@@ -7,6 +7,7 @@ import { z } from "zod";
 import aiRoutes from "./routes/ai";
 import multer from 'multer';
 import { normalizeInvoiceExtraction, NormalizedInvoice } from "./utils/invoice-normalizer";
+import { tenantContext, type TenantRequest } from "./middleware/tenant-context";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced comprehensive logging middleware for debug visibility in Replit console
@@ -306,12 +307,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Apply tenant middleware to all API routes
+  app.use("/api", tenantContext);
+
   // Products routes
-  app.get("/api/products", async (req, res) => {
+  app.get("/api/products", async (req: TenantRequest, res) => {
     try {
       console.log('[API] Fetching products...');
-      const products = await storage.getProducts();
-      console.log(`[API] Found ${products.length} products`);
+      const products = await storage.getProducts(req.tenantId);
+      console.log(`[API] Found ${products.length} products for tenant ${req.tenantId}`);
       res.json(products);
     } catch (error) {
       console.error('[API ERROR] Failed to fetch products:', error);
@@ -319,9 +323,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/products", async (req, res) => {
+  app.post("/api/products", async (req: TenantRequest, res) => {
     try {
-      const productData = insertProductSchema.parse(req.body);
+      const productData = insertProductSchema.parse({
+        ...req.body,
+        tenantId: req.tenantId
+      });
       const product = await storage.createProduct(productData);
       res.status(201).json(product);
     } catch (error) {
@@ -346,9 +353,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stock routes
-  app.get("/api/stock", async (req, res) => {
+  app.get("/api/stock", async (req: TenantRequest, res) => {
     try {
-      const stock = await storage.getStock();
+      const stock = await storage.getStock(req.tenantId);
+      console.log(`[API] Found ${stock.length} stock items for tenant ${req.tenantId}`);
       res.json(stock);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch stock" });
@@ -424,9 +432,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Sales routes
-  app.get("/api/sales", async (req, res) => {
+  app.get("/api/sales", async (req: TenantRequest, res) => {
     try {
-      const sales = await storage.getSales();
+      const sales = await storage.getSales(req.tenantId);
+      console.log(`[API] Found ${sales.length} sales for tenant ${req.tenantId}`);
       res.json(sales);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch sales" });

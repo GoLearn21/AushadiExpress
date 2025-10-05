@@ -558,8 +558,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Products
-  async getProducts(): Promise<Product[]> {
+  async getProducts(tenantId?: string): Promise<Product[]> {
     try {
+      if (tenantId) {
+        return await db.select().from(products).where(eq(products.tenantId, tenantId));
+      }
       return await db.select().from(products);
     } catch (error) {
       console.error('Database error in getProducts:', error);
@@ -613,8 +616,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Stock
-  async getStock(): Promise<Stock[]> {
+  async getStock(tenantId?: string): Promise<Stock[]> {
     try {
+      if (tenantId) {
+        return await db.select().from(stock).where(eq(stock.tenantId, tenantId));
+      }
       return await db.select().from(stock);
     } catch (error) {
       console.error('Database error in getStock:', error);
@@ -676,8 +682,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Sales
-  async getSales(): Promise<Sale[]> {
+  async getSales(tenantId?: string): Promise<Sale[]> {
     try {
+      if (tenantId) {
+        return await db.select().from(sales).where(eq(sales.tenantId, tenantId));
+      }
       return await db.select().from(sales);
     } catch (error) {
       console.error('Database error in getSales:', error);
