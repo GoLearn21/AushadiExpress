@@ -23,6 +23,11 @@ export function useAuth() {
       if (cachedUser) {
         try {
           const userData = JSON.parse(cachedUser);
+          // Migration: If user exists but onboarded is undefined, set it to true
+          if (userData && userData.id && userData.onboarded === undefined) {
+            userData.onboarded = true;
+            localStorage.setItem('user', JSON.stringify(userData));
+          }
           setUser(userData);
           setIsLoading(false);
           return;
@@ -31,23 +36,27 @@ export function useAuth() {
         }
       }
       
-      // Try session-based auth
+      // Try session-based auth (but don't clear localStorage if it fails)
       const res = await fetch('/api/auth/me', {
         credentials: 'include',
       });
       
       if (res.ok) {
         const userData = await res.json();
+        // Add onboarded flag if missing
+        if (userData && userData.id && userData.onboarded === undefined) {
+          userData.onboarded = true;
+        }
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
       } else {
+        // Session failed, but don't clear localStorage - rely on cached user
         setUser(null);
-        localStorage.removeItem('user');
       }
     } catch (error) {
       console.error('Auth check failed:', error);
+      // Network error - don't clear localStorage, rely on cached user
       setUser(null);
-      localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }
