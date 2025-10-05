@@ -1,12 +1,43 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
+import session from 'express-session';
+import connectPg from 'connect-pg-simple';
+import pg from 'pg';
 import { registerRoutes } from "./routes";
 import { registerAIRoutes } from "./ai-routes";
 import intelligentAgentRoutes from "./routes/intelligent-agent";
 import apiKeyRoutes from "./routes/api-key-management";
+import authRoutes from "./routes/auth";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+const PgSession = connectPg(session);
+const pgPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+});
+
+if (!process.env.SESSION_SECRET) {
+  console.warn('⚠️  WARNING: SESSION_SECRET not set. Using fallback (not secure for production)');
+}
+
+app.use(session({
+  store: new PgSession({
+    pool: pgPool,
+    tableName: 'session',
+    createTableIfMissing: true,
+  }),
+  secret: process.env.SESSION_SECRET || 'pharma-empire-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    sameSite: 'lax',
+  },
+  name: 'pharma.sid',
+}));
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -58,6 +89,9 @@ app.use((req, res, next) => {
     
     // Register AI routes
     registerAIRoutes(app);
+    
+    // Register authentication routes
+    app.use('/api/auth', authRoutes);
     
     // Register intelligent agent routes
     app.use('/api', intelligentAgentRoutes);

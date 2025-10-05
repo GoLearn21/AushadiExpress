@@ -63,6 +63,39 @@ The application follows a monorepo structure with clear separation between clien
 
 ## Recent Changes
 
+### October 05, 2025 - Multi-Tenancy Implementation
+
+**Complete Multi-Tenant Architecture:**
+- Auto-generated unique tenant IDs for each user (format: `pharm_XXXXXX_YYYYYYYY`)
+- Full data isolation between tenants across all tables (users, products, stock, sales, etc.)
+- PostgreSQL-backed persistent session store using connect-pg-simple
+- Secure session management with SameSite protection and httpOnly cookies
+- Authentication middleware that requires login for all protected routes
+
+**Authentication System:**
+- User registration endpoint (`POST /api/auth/register`) with bcrypt password hashing
+- Login endpoint (`POST /api/auth/login`) with session creation
+- Logout endpoint (`POST /api/auth/logout`) with session destruction
+- Current user endpoint (`GET /api/auth/me`) for session validation
+- Automatic tenant ID generation on user creation
+
+**Security Enhancements:**
+- All API endpoints (products, stock, sales) require authentication
+- Tenant context middleware extracts and validates tenant ID from session
+- Cross-tenant data access prevented - users can only see their own data
+- Session cookies with SameSite='lax' protection against CSRF
+- PostgreSQL session store for production-grade persistence
+- Environment variable validation for SESSION_SECRET
+
+**Technical Implementation:**
+- Created `requireAuth` middleware for tenant isolation
+- Updated all GET endpoints to filter by tenant ID
+- Updated all POST endpoints to stamp tenant ID on new records
+- Session data includes userId, tenantId, and userRole
+- Tenant ID cached in session for performance
+
+## Recent Changes
+
 ### September 05, 2025 - AushadiExpress Rebrand & UX Improvements
 
 **Payment Sheet Implementation:**

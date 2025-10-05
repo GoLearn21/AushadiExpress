@@ -307,11 +307,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Apply tenant middleware to all API routes
-  app.use("/api", tenantContext);
-
-  // Products routes
-  app.get("/api/products", async (req: TenantRequest, res) => {
+  // Products routes (require authentication)
+  app.get("/api/products", tenantContext, async (req: TenantRequest, res) => {
     try {
       console.log('[API] Fetching products...');
       const products = await storage.getProducts(req.tenantId);
@@ -323,7 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/products", async (req: TenantRequest, res) => {
+  app.post("/api/products", tenantContext, async (req: TenantRequest, res) => {
     try {
       const productData = insertProductSchema.parse({
         ...req.body,
@@ -352,8 +349,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stock routes
-  app.get("/api/stock", async (req: TenantRequest, res) => {
+  // Stock routes (require authentication)
+  app.get("/api/stock", tenantContext, async (req: TenantRequest, res) => {
     try {
       const stock = await storage.getStock(req.tenantId);
       console.log(`[API] Found ${stock.length} stock items for tenant ${req.tenantId}`);
@@ -431,8 +428,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Sales routes
-  app.get("/api/sales", async (req: TenantRequest, res) => {
+  // Sales routes (require authentication)
+  app.get("/api/sales", tenantContext, async (req: TenantRequest, res) => {
     try {
       const sales = await storage.getSales(req.tenantId);
       console.log(`[API] Found ${sales.length} sales for tenant ${req.tenantId}`);
