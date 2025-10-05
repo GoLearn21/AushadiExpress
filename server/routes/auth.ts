@@ -36,13 +36,21 @@ router.post('/register', async (req, res) => {
     (req.session as any).userRole = user.role;
     (req.session as any).tenantId = user.tenantId;
     
-    console.log(`[AUTH] User registered: ${user.username} (${user.id}) - Tenant: ${user.tenantId}`);
-    
-    res.status(201).json({
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      tenantId: user.tenantId
+    // Save session explicitly before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('[AUTH ERROR] Session save failed:', err);
+        return res.status(500).json({ error: 'Registration failed' });
+      }
+      
+      console.log(`[AUTH] User registered: ${user.username} (${user.id}) - Tenant: ${user.tenantId}`);
+      
+      res.status(201).json({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        tenantId: user.tenantId
+      });
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -71,13 +79,21 @@ router.post('/login', async (req, res) => {
     (req.session as any).userRole = user.role;
     (req.session as any).tenantId = user.tenantId;
     
-    console.log(`[AUTH] User logged in: ${user.username} (${user.id}) - Tenant: ${user.tenantId}`);
-    
-    res.json({
-      id: user.id,
-      username: user.username,
-      role: user.role,
-      tenantId: user.tenantId
+    // Save session explicitly before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('[AUTH ERROR] Session save failed:', err);
+        return res.status(500).json({ error: 'Login failed' });
+      }
+      
+      console.log(`[AUTH] User logged in: ${user.username} (${user.id}) - Tenant: ${user.tenantId}`);
+      
+      res.json({
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        tenantId: user.tenantId
+      });
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

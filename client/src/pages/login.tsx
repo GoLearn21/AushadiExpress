@@ -37,11 +37,13 @@ export default function LoginPage() {
         title: isLogin ? 'Welcome back!' : 'Account created!',
         description: isLogin 
           ? `Logged in as ${data.username}` 
-          : `Your pharmacy is ready! Tenant ID: ${data.tenantId}`,
+          : `Your pharmacy is ready!`,
       });
 
-      // Reload page to refresh authentication state
-      window.location.href = '/';
+      // Wait a moment for session to save, then reload
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500);
     } catch (error: any) {
       toast({
         title: 'Error',
