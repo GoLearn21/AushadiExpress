@@ -8,7 +8,10 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").default("retailer"), // retailer, wholesaler, distributor
+  tenantId: varchar("tenant_id").notNull().default("pharm_007"),
+  pharmacyName: text("pharmacy_name"),
   onboarded: boolean("onboarded").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const products = pgTable("products", {

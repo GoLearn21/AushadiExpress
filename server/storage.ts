@@ -1,5 +1,6 @@
 import { type User, type InsertUser, type Product, type InsertProduct, type Stock, type InsertStock, type Sale, type InsertSale, type Outbox, type InsertOutbox, type AssistantBetaLead, type InsertAssistantBetaLead, type Document, type InsertDocument, invoiceHeaders, invoiceLineItems, pendingInvoices, type PendingInvoice, type InsertPendingInvoice } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { generateTenantId } from "./utils/tenant-id-generator";
 import { db } from "./db";
 import { and, eq, sql } from "drizzle-orm";
 import { users, products, stock, sales, outbox, assistantBetaLeads, documents, pendingInvoices as pendingInvoicesTable } from "@shared/schema";
@@ -542,9 +543,12 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
+      const tenantId = insertUser.tenantId || generateTenantId();
       const [user] = await db.insert(users).values({
         ...insertUser,
-        id: randomUUID()
+        id: randomUUID(),
+        tenantId,
+        createdAt: new Date()
       }).returning();
       return user;
     } catch (error) {
