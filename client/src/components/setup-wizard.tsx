@@ -65,15 +65,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         throw new Error(data.error || 'Setup failed');
       }
 
+      // Store user info in localStorage as backup since session cookies may not work in iframe
+      localStorage.setItem('user', JSON.stringify(data));
+      
       toast({
         title: 'Welcome!',
         description: `${pharmacyName} is ready to go!`,
       });
 
-      // Wait longer for session to be fully established
-      setTimeout(() => {
-        onComplete();
-      }, 1500);
+      // Immediately trigger completion
+      onComplete();
     } catch (error: any) {
       toast({
         title: 'Setup Failed',
