@@ -21,13 +21,12 @@ import ReceiveStockScreen from "./pages/receive-stock";
 import ReportsScreen from "./pages/reports";
 import AIAssistantPage from "./pages/ai-assistant-fullscreen";
 import NotFound from "./pages/not-found";
-import LoginPage from "./pages/login";
+import { SetupWizard } from "./components/setup-wizard";
 import { BottomNavigation } from "./components/bottom-navigation";
 import { useAuth } from "./hooks/use-auth";
-// import { PermissionPortal } from "@/services/camera"; // Removed - no longer needed
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, refetch } = useAuth();
   
   if (isLoading) {
     return (
@@ -41,7 +40,7 @@ function Router() {
   }
   
   if (!isAuthenticated) {
-    return <LoginPage />;
+    return <SetupWizard onComplete={refetch} />;
   }
   
   return (
