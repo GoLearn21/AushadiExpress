@@ -21,10 +21,29 @@ import ReceiveStockScreen from "./pages/receive-stock";
 import ReportsScreen from "./pages/reports";
 import AIAssistantPage from "./pages/ai-assistant-fullscreen";
 import NotFound from "./pages/not-found";
+import LoginPage from "./pages/login";
 import { BottomNavigation } from "./components/bottom-navigation";
+import { useAuth } from "./hooks/use-auth";
 // import { PermissionPortal } from "@/services/camera"; // Removed - no longer needed
 
 function Router() {
+  const { isAuthenticated, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
+  
   return (
     <div className="flex flex-col h-screen">
       <div className="flex-1 overflow-hidden">
