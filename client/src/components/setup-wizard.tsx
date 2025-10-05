@@ -87,12 +87,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome to AushadiExpress</CardTitle>
-          <CardDescription>
-            Let's set up your pharmacy management system
+          <CardDescription className="space-y-2">
+            <p className="font-medium text-base">Complete this one-time setup to unlock your dashboard</p>
+            <p className="text-xs text-muted-foreground">Create your secure account with a unique pharmacy ID</p>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -146,6 +146,5 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           </form>
         </CardContent>
       </Card>
-    </div>
   );
 }
