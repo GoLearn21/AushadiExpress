@@ -5,6 +5,7 @@ interface User {
   username: string;
   role: string;
   tenantId: string;
+  onboarded?: boolean;
 }
 
 export function useAuth() {
@@ -52,10 +53,13 @@ export function useAuth() {
     }
   };
 
+  const needsSetup = !!user && !user.onboarded;
+
   return {
     user,
     isAuthenticated: !!user,
     isLoading,
+    needsSetup,
     refetch: checkAuth,
   };
 }

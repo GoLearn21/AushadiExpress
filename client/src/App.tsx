@@ -21,12 +21,12 @@ import ReceiveStockScreen from "./pages/receive-stock";
 import ReportsScreen from "./pages/reports";
 import AIAssistantPage from "./pages/ai-assistant-fullscreen";
 import NotFound from "./pages/not-found";
-import { SetupWizard } from "./components/setup-wizard";
+import { SetupGate } from "./components/setup-gate";
 import { BottomNavigation } from "./components/bottom-navigation";
 import { useAuth } from "./hooks/use-auth";
 
 function Router() {
-  const { isAuthenticated, isLoading, refetch } = useAuth();
+  const { isLoading } = useAuth();
   
   if (isLoading) {
     return (
@@ -39,37 +39,35 @@ function Router() {
     );
   }
   
-  if (!isAuthenticated) {
-    return <SetupWizard onComplete={refetch} />;
-  }
-  
   return (
-    <div className="flex flex-col h-screen">
-      <div className="flex-1 overflow-hidden">
-        <Switch>
-          <Route path="/" component={Dashboard} />
-          <Route path="/products" component={Inventory} />
-          <Route path="/inventory" component={Inventory} />
-          <Route path="/sales" component={Sales} />
-          <Route path="/ops" component={OpsScreen} />
-          <Route path="/sales-ledger" component={SalesLedgerScreen} />
-          <Route path="/returns" component={ReturnsScreen} />
-          <Route path="/adjust-stock" component={AdjustStockScreen} />
-          <Route path="/barcode-scan" component={BarcodeScannerScreen} />
-          <Route path="/scan-invoice" component={InvoiceScannerScreen} />
-          <Route path="/capture" component={QuickCaptureScreen} />
-          <Route path="/enter-po" component={EnterPOScreen} />
-          <Route path="/pos" component={PosScreen} />
-          <Route path="/receive-stock" component={ReceiveStockScreen} />
-          <Route path="/reports" component={ReportsScreen} />
-          <Route path="/ai-assistant" component={AIAssistantPage} />
-          <Route path="/bill-fast" component={() => <div className="p-4 text-center text-muted-foreground">Bill Fast feature coming in Iteration 1</div>} />
-          <Route path="/settings" component={Settings} />
-          <Route component={NotFound} />
-        </Switch>
+    <SetupGate>
+      <div className="flex flex-col h-screen">
+        <div className="flex-1 overflow-hidden">
+          <Switch>
+            <Route path="/" component={Dashboard} />
+            <Route path="/products" component={Inventory} />
+            <Route path="/inventory" component={Inventory} />
+            <Route path="/sales" component={Sales} />
+            <Route path="/ops" component={OpsScreen} />
+            <Route path="/sales-ledger" component={SalesLedgerScreen} />
+            <Route path="/returns" component={ReturnsScreen} />
+            <Route path="/adjust-stock" component={AdjustStockScreen} />
+            <Route path="/barcode-scan" component={BarcodeScannerScreen} />
+            <Route path="/scan-invoice" component={InvoiceScannerScreen} />
+            <Route path="/capture" component={QuickCaptureScreen} />
+            <Route path="/enter-po" component={EnterPOScreen} />
+            <Route path="/pos" component={PosScreen} />
+            <Route path="/receive-stock" component={ReceiveStockScreen} />
+            <Route path="/reports" component={ReportsScreen} />
+            <Route path="/ai-assistant" component={AIAssistantPage} />
+            <Route path="/bill-fast" component={() => <div className="p-4 text-center text-muted-foreground">Bill Fast feature coming in Iteration 1</div>} />
+            <Route path="/settings" component={Settings} />
+            <Route component={NotFound} />
+          </Switch>
+        </div>
+        <BottomNavigation />
       </div>
-      <BottomNavigation />
-    </div>
+    </SetupGate>
   );
 }
 

@@ -30,6 +30,7 @@ router.post('/register', async (req, res) => {
     const user = await storage.createUser({
       username,
       password: hashedPassword,
+      onboarded: true,
     });
     
     (req.session as any).userId = user.id;

@@ -65,15 +65,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         throw new Error(data.error || 'Setup failed');
       }
 
-      // Store user info in localStorage as backup since session cookies may not work in iframe
-      localStorage.setItem('user', JSON.stringify(data));
+      // Mark user as onboarded and store in localStorage
+      const updatedUser = { ...data, onboarded: true };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
       
       toast({
         title: 'Welcome!',
         description: `${pharmacyName} is ready to go!`,
       });
 
-      // Immediately trigger completion
+      // Immediately trigger completion to refresh auth state
       onComplete();
     } catch (error: any) {
       toast({
