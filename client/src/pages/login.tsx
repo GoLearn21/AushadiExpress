@@ -40,7 +40,8 @@ export default function LoginPage() {
           : `Your pharmacy is ready! Tenant ID: ${data.tenantId}`,
       });
 
-      setLocation('/');
+      // Reload page to refresh authentication state
+      window.location.href = '/';
     } catch (error: any) {
       toast({
         title: 'Error',
