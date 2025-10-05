@@ -11,14 +11,9 @@ export function SetupGate({ children }: SetupGateProps) {
 
   if (needsSetup) {
     return (
-      <div className="relative">
-        {/* Background content (blurred and disabled) */}
-        <div className="opacity-20 pointer-events-none" aria-hidden="true">
-          {children}
-        </div>
-        
-        {/* Setup wizard overlay */}
-        <div className="fixed inset-0 z-50 bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="flex flex-col h-screen">
+        {/* Setup wizard centered on screen */}
+        <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
           <SetupWizard onComplete={refetch} />
         </div>
       </div>

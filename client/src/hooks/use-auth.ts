@@ -53,7 +53,8 @@ export function useAuth() {
     }
   };
 
-  const needsSetup = !!user && !user.onboarded;
+  // Show setup if no user OR if user exists but not onboarded
+  const needsSetup = !user || !user.onboarded;
 
   return {
     user,
