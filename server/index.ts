@@ -21,6 +21,8 @@ if (!process.env.SESSION_SECRET) {
   console.warn('⚠️  WARNING: SESSION_SECRET not set. Using fallback (not secure for production)');
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 app.use(session({
   store: new PgSession({
     pool: pgPool,
@@ -28,12 +30,12 @@ app.use(session({
     createTableIfMissing: true,
   }),
   secret: process.env.SESSION_SECRET || 'pharma-empire-secret-key-change-in-production',
-  resave: true,
-  saveUninitialized: true,
+  resave: false,
+  saveUninitialized: false,
   rolling: true,
   cookie: {
-    secure: false,
-    httpOnly: false,
+    secure: 'auto',
+    httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: 'lax',
     path: '/',
