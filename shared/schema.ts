@@ -171,7 +171,20 @@ export const insertProductSchema = createInsertSchema(products, {
 export const insertStockSchema = createInsertSchema(stock, {
   productName: (schema) => schema.optional(),
   tenantId: (schema) => schema.optional(),
-  expiryDate: z.union([z.date(), z.string().transform((val) => new Date(val))]).optional().nullable(),
+  expiryDate: z.union([
+    z.date(),
+    z.string().transform((val, ctx) => {
+      const parsed = new Date(val);
+      if (isNaN(parsed.getTime())) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Invalid date format",
+        });
+        return z.NEVER;
+      }
+      return parsed;
+    })
+  ]).optional().nullable(),
 }).omit({
   id: true,
   createdAt: true,
