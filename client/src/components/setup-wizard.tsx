@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +16,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const savedBusinessName = localStorage.getItem('lastBusinessName');
+    if (savedBusinessName) {
+      setPharmacyName(savedBusinessName);
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +54,8 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       if (!res.ok) {
         throw new Error(data.error || 'Login failed');
       }
+
+      localStorage.setItem('lastBusinessName', pharmacyName);
 
       toast({
         title: 'Welcome back!',
@@ -115,6 +124,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
       const updatedUser = { ...data, onboarded: true };
       localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem('lastBusinessName', pharmacyName);
       
       toast({
         title: 'Welcome!',
@@ -152,7 +162,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       <CardContent>
         <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="pharmacyName">Pharmacy Name</Label>
+            <Label htmlFor="pharmacyName">Business Name</Label>
             <Input
               id="pharmacyName"
               type="text"
