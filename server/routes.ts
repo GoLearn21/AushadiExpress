@@ -360,9 +360,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/stock", async (req, res) => {
+  app.post("/api/stock", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const stockData = insertStockSchema.parse(req.body);
+      const stockData = insertStockSchema.parse({
+        ...req.body,
+        tenantId: req.tenantId
+      });
       const stock = await storage.createStock(stockData);
       res.status(201).json(stock);
     } catch (error) {
@@ -521,9 +524,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/sales", async (req, res) => {
+  app.post("/api/sales", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const saleData = insertSaleSchema.parse(req.body);
+      const saleData = insertSaleSchema.parse({
+        ...req.body,
+        tenantId: req.tenantId
+      });
 
       let rawItems: any[] = [];
       if (saleData.items) {
@@ -586,9 +592,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/sales/today", async (req, res) => {
+  app.get("/api/sales/today", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const todaysSales = await storage.getTodaysSales();
+      const todaysSales = await storage.getTodaysSales(req.tenantId);
       res.json({ total: todaysSales });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch today's sales" });
@@ -596,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Stock bulk insert endpoint for OCR processing
-  app.post('/api/stock/bulk', async (req, res) => {
+  app.post('/api/stock/bulk', tenantContext, async (req: TenantRequest, res) => {
     try {
       console.log('[STOCK-BULK] Processing bulk stock insert');
       console.log('[STOCK-BULK] Request body:', JSON.stringify(req.body, null, 2));
@@ -609,8 +615,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mrp: number;
       }>;
       
-      const { billNumber, date, tenantId: requestTenantId } = req.body;
-      const tenantId = requestTenantId ?? 'default';
+      const { billNumber, date } = req.body;
+      const tenantId = req.tenantId;
       
       if (!items || !Array.isArray(items)) {
         throw new Error('Items array is required');
