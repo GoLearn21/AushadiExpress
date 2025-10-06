@@ -22,23 +22,23 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   // Products
-  getProducts(): Promise<Product[]>;
+  getProducts(tenantId?: string): Promise<Product[]>;
   getProduct(id: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
   deleteProduct(id: string): Promise<boolean>;
   
   // Stock
-  getStock(): Promise<Stock[]>;
+  getStock(tenantId?: string): Promise<Stock[]>;
   getStockByProduct(productId: string): Promise<Stock[]>;
   createStock(stock: InsertStock): Promise<Stock>;
   updateStock(id: string, stock: Partial<InsertStock>): Promise<Stock | undefined>;
   
   // Sales
-  getSales(): Promise<Sale[]>;
+  getSales(tenantId?: string): Promise<Sale[]>;
   getSale(id: string): Promise<Sale | undefined>;
   createSale(sale: InsertSale, items?: SaleItemPayload[]): Promise<Sale>;
-  getTodaysSales(): Promise<number>;
+  getTodaysSales(tenantId: string): Promise<number>;
 
   // Pending invoices
   getPendingInvoices(tenantId: string): Promise<PendingInvoice[]>;
@@ -165,7 +165,10 @@ export class MemStorage implements IStorage {
   }
 
   // Products
-  async getProducts(): Promise<Product[]> {
+  async getProducts(tenantId?: string): Promise<Product[]> {
+    if (tenantId) {
+      return Array.from(this.products.values()).filter(p => p.tenantId === tenantId);
+    }
     return Array.from(this.products.values());
   }
 
@@ -175,6 +178,9 @@ export class MemStorage implements IStorage {
 
   async createProduct(product: InsertProduct): Promise<Product> {
     const id = randomUUID();
+    if (!(product as any).tenantId) {
+      throw new Error('Tenant ID is required for creating products');
+    }
     const newProduct: Product = { 
       ...product, 
       id, 
@@ -182,7 +188,7 @@ export class MemStorage implements IStorage {
       price: product.price || 0,
       totalQuantity: (product as any).totalQuantity ?? 0,
       batchNumber: product.batchNumber ?? null,
-      tenantId: (product as any).tenantId ?? 'default',
+      tenantId: (product as any).tenantId,
       createdAt: new Date() 
     };
     this.products.set(id, newProduct);
@@ -241,7 +247,10 @@ export class MemStorage implements IStorage {
   }
 
   // Stock
-  async getStock(): Promise<Stock[]> {
+  async getStock(tenantId?: string): Promise<Stock[]> {
+    if (tenantId) {
+      return Array.from(this.stock.values()).filter(s => s.tenantId === tenantId);
+    }
     return Array.from(this.stock.values());
   }
 
@@ -251,9 +260,12 @@ export class MemStorage implements IStorage {
 
   async createStock(stock: InsertStock): Promise<Stock> {
     const id = randomUUID();
+    if (!(stock as any).tenantId) {
+      throw new Error('Tenant ID is required for creating stock');
+    }
     const product = this.products.get(stock.productId);
     const productName = stock.productName ?? product?.name ?? "Unknown Product";
-    const tenantId = (stock as any).tenantId ?? product?.tenantId ?? 'default';
+    const tenantId = (stock as any).tenantId;
     const newStock: Stock = { 
       ...stock,
       id, 
@@ -298,8 +310,12 @@ export class MemStorage implements IStorage {
   }
 
   // Sales
-  async getSales(): Promise<Sale[]> {
-    return Array.from(this.sales.values()).sort((a, b) => 
+  async getSales(tenantId?: string): Promise<Sale[]> {
+    const allSales = Array.from(this.sales.values());
+    const filteredSales = tenantId 
+      ? allSales.filter(s => s.tenantId === tenantId)
+      : allSales;
+    return filteredSales.sort((a, b) => 
       new Date(b.date!).getTime() - new Date(a.date!).getTime()
     );
   }
@@ -310,13 +326,16 @@ export class MemStorage implements IStorage {
 
   async createSale(sale: InsertSale, items: SaleItemPayload[] = []): Promise<Sale> {
     const id = randomUUID();
+    if (!(sale as any).tenantId) {
+      throw new Error('Tenant ID is required for creating sales');
+    }
     const newSale: Sale = { 
       ...sale, 
       id, 
       items: sale.items || null,
       date: new Date(),
       synced: false,
-      tenantId: (sale as any).tenantId ?? 'default'
+      tenantId: (sale as any).tenantId
     };
     this.sales.set(id, newSale);
 
@@ -347,12 +366,13 @@ export class MemStorage implements IStorage {
     return newSale;
   }
 
-  async getTodaysSales(): Promise<number> {
+  async getTodaysSales(tenantId: string): Promise<number> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     return Array.from(this.sales.values())
       .filter(sale => {
+        if (sale.tenantId !== tenantId) return false;
         const saleDate = new Date(sale.date!);
         saleDate.setHours(0, 0, 0, 0);
         return saleDate.getTime() === today.getTime();
@@ -706,12 +726,15 @@ export class DatabaseStorage implements IStorage {
 
   async createSale(insertSale: InsertSale, items: SaleItemPayload[] = []): Promise<Sale> {
     try {
+      if (!insertSale.tenantId) {
+        throw new Error('Tenant ID is required for creating sales');
+      }
       const [sale] = await db.transaction(async (tx) => {
         const [createdSale] = await tx.insert(sales).values({
           ...insertSale,
           id: randomUUID(),
           date: new Date(),
-          tenantId: insertSale.tenantId ?? 'default'
+          tenantId: insertSale.tenantId
         }).returning();
 
         for (const item of items) {
@@ -741,9 +764,9 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getTodaysSales(): Promise<number> {
+  async getTodaysSales(tenantId: string): Promise<number> {
     try {
-      const allSales = await db.select().from(sales);
+      const allSales = await db.select().from(sales).where(eq(sales.tenantId, tenantId));
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
