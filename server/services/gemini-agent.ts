@@ -442,7 +442,7 @@ Answer the question now:`;
         }
         
         // If asking ONLY for stock/quantity/count
-        if ((queryLower.includes('how many') || queryLower.includes('stock') || queryLower.includes('count')) && !queryLower.includes('value')) {
+        if ((queryLower.includes('how many') || queryLower.includes('stock') || queryLower.includes('count') || queryLower.includes('quantity')) && !queryLower.includes('value')) {
           response = `📦 **${foundProduct.name}**\n\n`;
           response += `Stock Count: ${foundProduct.total_stock} units\n`;
           if (foundProduct.batches && foundProduct.batches > 1) {
