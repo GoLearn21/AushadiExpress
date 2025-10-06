@@ -1904,7 +1904,8 @@ export default function AIAssistantFullscreenPage() {
         const response = await agent.processQuery(userContent, {
           hasImage: false,
           currentScreen: 'AI Assistant',
-          sessionId: sessionId
+          sessionId: sessionId,
+          tenantId: user?.tenantId
         });
 
         addMessage('assistant', response);
