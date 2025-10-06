@@ -231,13 +231,21 @@ ${JSON.stringify(documentsData, null, 2)}
 Create a detailed enterprise intelligence report covering:
 
 1. **PRODUCT CATALOG**: Every single product with exact names, quantities, prices, and batch details
-2. **INVENTORY HEALTH**: Stock levels, expiry tracking, reorder points
+2. **INVENTORY HEALTH**: 
+   - List ALL products with their exact stock quantities
+   - Identify LOW STOCK items (quantity < 20 units) - list these separately
+   - Identify OUT OF STOCK items (quantity = 0) - flag these as critical
+   - Track expiry dates and reorder points
 3. **FINANCIAL OVERVIEW**: Total inventory value, revenue, profit margins
 4. **SALES ANALYTICS**: Top performers, slow movers, trends
 5. **SUPPLIER ECOSYSTEM**: Key suppliers, buyer relationships, document insights
 6. **OPERATIONAL INSIGHTS**: Critical actions needed, opportunities, risks
 
-Be extremely specific with product names, quantities, and financial data. Include ALL products in your analysis. This summary will be used to answer detailed questions about any aspect of this pharmacy business.
+Be extremely specific with product names, quantities, and financial data. Include ALL products in your analysis. 
+
+**IMPORTANT**: When listing low stock items, ONLY include products with quantity less than 20 units. Do not show all products when asked about low stock.
+
+This summary will be used to answer detailed questions about any aspect of this pharmacy business.
 
 Format the response as a comprehensive business intelligence report that can answer any question about inventory, sales, finances, or operations.`;
     
@@ -311,11 +319,14 @@ CRITICAL INSTRUCTIONS:
 - Be extremely specific with product names, quantities, prices, and batch information
 - If asking about specific products, search through ALL products in the data carefully
 - For inventory questions, provide exact stock levels and batch details
+- For "low stock" or "running low" queries: ONLY show products with quantity less than 20 units
+- For "out of stock" queries: ONLY show products with 0 units
 - Include relevant financial data (prices, values, totals) with ₹ symbol
 - End with 3 relevant quick actions in format: Quick Actions: Question1|Question2|Question3
 - Quick actions should be meaningful questions that would provide useful business insights
 - Keep responses concise but comprehensive
 - If a specific product isn't found, clearly state that and suggest alternatives
+- NEVER show all products when asked for "low stock" - filter to only items below 20 units
 
 QUICK ACTION EXAMPLES:
 - "How many units of [product name] do we have in stock"
