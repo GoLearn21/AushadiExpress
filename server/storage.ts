@@ -30,7 +30,7 @@ export interface IStorage {
   
   // Stock
   getStock(tenantId?: string): Promise<Stock[]>;
-  getStockByProduct(productId: string): Promise<Stock[]>;
+  getStockByProduct(productId: string, tenantId?: string): Promise<Stock[]>;
   createStock(stock: InsertStock): Promise<Stock>;
   updateStock(id: string, stock: Partial<InsertStock>): Promise<Stock | undefined>;
   
@@ -56,7 +56,7 @@ export interface IStorage {
   createAssistantBetaLead(lead: InsertAssistantBetaLead): Promise<AssistantBetaLead>;
   
   // Documents - Critical for AI/GSTN compliance data
-  getDocuments(): Promise<Document[]>;
+  getDocuments(tenantId?: string): Promise<Document[]>;
   createDocument(doc: InsertDocument): Promise<Document>;
 }
 
@@ -254,8 +254,12 @@ export class MemStorage implements IStorage {
     return Array.from(this.stock.values());
   }
 
-  async getStockByProduct(productId: string): Promise<Stock[]> {
-    return Array.from(this.stock.values()).filter(s => s.productId === productId);
+  async getStockByProduct(productId: string, tenantId?: string): Promise<Stock[]> {
+    return Array.from(this.stock.values()).filter(s => {
+      if (s.productId !== productId) return false;
+      if (tenantId && s.tenantId !== tenantId) return false;
+      return true;
+    });
   }
 
   async createStock(stock: InsertStock): Promise<Stock> {
@@ -475,8 +479,12 @@ export class MemStorage implements IStorage {
   }
 
   // Documents - Critical for AI/GSTN data
-  async getDocuments(): Promise<Document[]> {
-    return Array.from(this.documents.values()).sort((a: Document, b: Document) => 
+  async getDocuments(tenantId?: string): Promise<Document[]> {
+    let docs = Array.from(this.documents.values());
+    if (tenantId) {
+      docs = docs.filter(d => d.enterpriseId === tenantId);
+    }
+    return docs.sort((a: Document, b: Document) => 
       new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
     );
   }
@@ -648,8 +656,13 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  async getStockByProduct(productId: string): Promise<Stock[]> {
+  async getStockByProduct(productId: string, tenantId?: string): Promise<Stock[]> {
     try {
+      if (tenantId) {
+        return await db.select().from(stock).where(
+          and(eq(stock.productId, productId), eq(stock.tenantId, tenantId))
+        );
+      }
       return await db.select().from(stock).where(eq(stock.productId, productId));
     } catch (error) {
       console.error('Database error in getStockByProduct:', error);
@@ -906,9 +919,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Documents - Critical for AI/GSTN compliance data
-  async getDocuments(): Promise<Document[]> {
+  async getDocuments(tenantId?: string): Promise<Document[]> {
     try {
-      const docs = await db.select().from(documents);
+      let docs;
+      if (tenantId) {
+        docs = await db.select().from(documents).where(eq(documents.enterpriseId, tenantId));
+      } else {
+        docs = await db.select().from(documents);
+      }
       const sorted = docs.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
       console.log('[DATABASE] Loaded', docs.length, 'documents from database');
       return sorted;

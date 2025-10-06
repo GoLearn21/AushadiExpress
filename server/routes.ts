@@ -215,9 +215,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return 'unknown';
   }
 
-  app.get("/api/documents", async (req, res) => {
+  app.get("/api/documents", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const documents = await storage.getDocuments();
+      const documents = await storage.getDocuments(req.tenantId);
       console.log('[DOCUMENTS] Fetching documents:', documents.length);
       res.json(documents);
     } catch (error) {
@@ -226,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post("/api/documents", documentUpload.single('image'), async (req, res) => {
+  app.post("/api/documents", tenantContext, documentUpload.single('image'), async (req: TenantRequest, res) => {
     const processingStartTime = Date.now();
 
     try {
@@ -287,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         mongoWriteMs: null,
         tags: [...(businessIntelligence?.suggestedTags ?? []), ...gstins.map((gstn) => `gstn:${gstn}`)],
         userId: (req as any).user?.id,
-        enterpriseId: 'pharm_007'
+        enterpriseId: req.tenantId
       });
 
       res.json({
@@ -337,10 +337,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/products/:id", async (req, res) => {
+  app.get("/api/products/:id", tenantContext, async (req: TenantRequest, res) => {
     try {
       const product = await storage.getProduct(req.params.id);
-      if (!product) {
+      if (!product || product.tenantId !== req.tenantId) {
         return res.status(404).json({ error: "Product not found" });
       }
       res.json(product);
@@ -377,9 +377,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/stock/product/:productId", async (req, res) => {
+  app.get("/api/stock/product/:productId", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const stock = await storage.getStockByProduct(req.params.productId);
+      const stock = await storage.getStockByProduct(req.params.productId, req.tenantId);
       res.json(stock);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch stock" });
@@ -387,7 +387,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Barcode lookup route
-  app.post("/api/barcode/lookup", async (req, res) => {
+  app.post("/api/barcode/lookup", tenantContext, async (req: TenantRequest, res) => {
     try {
       const { barcode } = req.body;
       
@@ -401,8 +401,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const productId = mockProductMapping[barcode];
       
       if (productId) {
-        // Get product details
-        const products = await storage.getProducts();
+        // Get product details for this tenant only
+        const products = await storage.getProducts(req.tenantId);
         const product = products.find(p => p.id === productId);
         
         if (product) {
