@@ -281,6 +281,10 @@ export default function PosScreen() {
               : item
           )
         );
+        toast({
+          title: "Added to cart",
+          description: `${product.name} quantity increased`,
+        });
       } else {
         toast({
           title: "Insufficient stock",
@@ -295,9 +299,13 @@ export default function PosScreen() {
         quantity: 1,
         price: product.price
       }]);
+      toast({
+        title: "Added to cart",
+        description: `${product.name} - ₹${product.price.toFixed(2)}`,
+      });
     }
 
-    setShowBillDrawer(true);
+    // Don't auto-open drawer - let user continue shopping
   };
 
   const updateQuantity = (productId: string, stockId: string, change: number) => {
@@ -579,21 +587,32 @@ export default function PosScreen() {
         )}
       </div>
 
-      {/* Sticky Charge Bar - shows when bill has items but drawer is closed */}
+      {/* Sticky Cart Bar - shows when bill has items but drawer is closed */}
       {billItems.length > 0 && !showBillDrawer && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 elevation-3">
-          <div className="flex items-center justify-between max-w-md mx-auto">
-            <div className="flex items-center space-x-2">
-              <span className="text-sm font-medium">Total</span>
-              <span className="text-lg font-bold text-primary">₹{getBillTotal().toFixed(2)}</span>
-            </div>
-            <Button 
-              onClick={() => setShowPayment(true)}
-              className="px-6"
-              data-testid="sticky-charge-button"
+        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-3 elevation-3 z-20">
+          <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
+            <Button
+              variant="outline"
+              onClick={() => setShowBillDrawer(true)}
+              className="flex items-center gap-2"
+              data-testid="view-cart-button"
             >
-              Charge ₹{getBillTotal().toFixed(2)}
+              <span className="material-icons text-lg">shopping_cart</span>
+              <span className="font-medium">View Cart ({billItems.length})</span>
             </Button>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-lg font-bold text-primary">₹{getBillTotal().toFixed(2)}</p>
+              </div>
+              <Button 
+                onClick={() => setShowPayment(true)}
+                className="px-6"
+                data-testid="sticky-charge-button"
+              >
+                Charge
+              </Button>
+            </div>
           </div>
         </div>
       )}
