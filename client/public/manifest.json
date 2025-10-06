@@ -4,8 +4,8 @@
   "description": "Offline-first pharmacy POS and compliance platform",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#10b981",
+  "background_color": "#4D94FF",
+  "theme_color": "#4D94FF",
   "orientation": "portrait-primary",
   "icons": [
     {

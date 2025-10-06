@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" fill="#4D94FF" rx="4"/>
+  <g transform="translate(8, 6)">
+    <rect x="1" y="5" width="14" height="14" rx="2" fill="white"/>
+    <path d="M 5 5 Q 5 3, 8 3 Q 11 3, 11 5" stroke="white" stroke-width="1.5" fill="none"/>
+    <g transform="translate(8, 12)">
+      <rect x="-1" y="-4" width="2" height="8" fill="#4D94FF" rx="0.5"/>
+      <rect x="-4" y="-1" width="8" height="2" fill="#4D94FF" rx="0.5"/>
+    </g>
+  </g>
+</svg>
