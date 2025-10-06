@@ -20,7 +20,7 @@ export function SetupGate({ children }: SetupGateProps) {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               AushadiExpress
             </h1>
-            <p className="text-muted-foreground text-sm">Pharmacy Management System</p>
+            <p className="text-muted-foreground text-sm">Smart Pharmacy. Simplified.</p>
           </div>
           <SetupWizard onComplete={refetch} />
         </div>
