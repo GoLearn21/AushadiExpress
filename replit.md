@@ -94,6 +94,15 @@ The application follows a monorepo structure with clear separation between clien
 - Session data includes userId, tenantId, and userRole
 - Tenant ID cached in session for performance
 
+### October 06, 2025 - Setup Wizard Fix & Complete Multi-Tenancy Security
+
+**Setup Wizard Restored:**
+- Fixed SetupGate component to properly display setup wizard for new users
+- Users must now register/login before accessing the app and submitting invoices
+- Setup wizard shows when user is not authenticated or hasn't completed onboarding
+- Clear onboarding flow: Pharmacy Name → Password → Confirm Password → Complete Setup
+- Automatic session creation and redirect after successful registration
+
 ### October 06, 2025 - Multi-Tenancy Security Hardening (Production-Ready)
 
 **Complete Tenant Isolation Achieved:**
