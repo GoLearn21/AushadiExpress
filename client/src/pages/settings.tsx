@@ -82,13 +82,16 @@ export default function Settings() {
       setShowOnboarding(true);
     }
     
-    // Load tenant ID from user data in localStorage
+    // Load tenant ID and username from user data in localStorage
     const userStr = localStorage.getItem('user');
     if (userStr) {
       try {
         const userData = JSON.parse(userStr);
         if (userData.tenantId) {
           setCurrentTenantId(userData.tenantId);
+        }
+        if (userData.username) {
+          setBusinessName(userData.username);
         }
       } catch (e) {
         console.error('Failed to parse user data:', e);
@@ -393,8 +396,18 @@ export default function Settings() {
             variant="outline" 
             size="sm" 
             onClick={() => {
-              setOnboardingStep(1); // Always start from step 1
-              setBusinessName(''); // Clear previous data
+              setOnboardingStep(1);
+              const userStr = localStorage.getItem('user');
+              if (userStr) {
+                try {
+                  const userData = JSON.parse(userStr);
+                  if (userData.username) {
+                    setBusinessName(userData.username);
+                  }
+                } catch (e) {
+                  console.error('Failed to parse user data:', e);
+                }
+              }
               setShowOnboarding(true);
             }}
             data-testid="button-rerun-onboarding"
