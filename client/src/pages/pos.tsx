@@ -471,8 +471,8 @@ export default function PosScreen() {
           )}
 
           {/* Product Grid */}
-          <div className="flex-1 p-4 overflow-y-auto pb-20">
-            <div className="grid grid-cols-3 gap-3">
+          <div className="flex-1 p-4 overflow-y-auto pb-24">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {filteredProducts.map((product) => {
                 const availableStock = stockData.filter(s => s.productId === product.id && s.quantity > 0);
                 const totalStock = availableStock.reduce((sum, stock) => sum + stock.quantity, 0);
@@ -485,12 +485,12 @@ export default function PosScreen() {
                     className="hover:elevation-2 transition-all"
                     data-testid={`product-tile-${product.id}`}
                   >
-                    <CardContent className="p-3 space-y-2">
-                      <div onClick={() => addProductToBill(product.id)} className="cursor-pointer">
-                        <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+                    <CardContent className="p-4 flex flex-col gap-3">
+                      <div onClick={() => addProductToBill(product.id)} className="cursor-pointer flex-1">
+                        <h3 className="font-semibold text-sm mb-2 line-clamp-2 min-h-[2.5rem]">
                           {product.name}
                         </h3>
-                        <p className="text-lg font-bold text-primary">
+                        <p className="text-xl font-bold text-primary mb-1">
                           ₹{product.price.toFixed(2)}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -500,11 +500,11 @@ export default function PosScreen() {
                       
                       {/* Quantity Controls */}
                       {cartQuantity > 0 ? (
-                        <div className="flex items-center justify-between gap-1 bg-primary/10 rounded-md p-1">
+                        <div className="flex items-center justify-between gap-2 bg-primary/10 rounded-lg p-2">
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 w-7 p-0"
+                            className="h-8 w-8 p-0 rounded-md"
                             onClick={(e) => {
                               e.stopPropagation();
                               if (inCart) {
@@ -513,29 +513,29 @@ export default function PosScreen() {
                             }}
                             data-testid={`decrease-tile-${product.id}`}
                           >
-                            <span className="material-icons text-sm">remove</span>
+                            <span className="material-icons text-base">remove</span>
                           </Button>
-                          <span className="text-sm font-bold min-w-[20px] text-center">
+                          <span className="text-base font-bold min-w-[24px] text-center">
                             {cartQuantity}
                           </span>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-7 w-7 p-0"
+                            className="h-8 w-8 p-0 rounded-md"
                             onClick={(e) => {
                               e.stopPropagation();
                               addProductToBill(product.id);
                             }}
                             data-testid={`increase-tile-${product.id}`}
                           >
-                            <span className="material-icons text-sm">add</span>
+                            <span className="material-icons text-base">add</span>
                           </Button>
                         </div>
                       ) : (
                         <Button
                           size="sm"
                           variant="outline"
-                          className="w-full h-7 text-xs"
+                          className="w-full h-9 text-sm font-medium"
                           onClick={(e) => {
                             e.stopPropagation();
                             addProductToBill(product.id);
