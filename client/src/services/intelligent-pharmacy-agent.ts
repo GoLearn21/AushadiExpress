@@ -39,10 +39,8 @@ export class IntelligentPharmacyAgent {
   
   private async callIntelligentAgent(query: string, context: PharmacyContext): Promise<string> {
     try {
-      // Get tenant ID from context, localStorage, or default
-      const tenantId = context.tenantId || 
-                      localStorage.getItem('currentTenantId') || 
-                      'pharm_007';
+      // Get tenant ID from context (passed from authenticated session)
+      const tenantId = context.tenantId || 'default';
       
       const requestBody = {
         query,

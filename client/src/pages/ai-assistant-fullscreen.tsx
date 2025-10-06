@@ -3,6 +3,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { useToast } from "../hooks/use-toast";
+import { useAuth } from "../hooks/use-auth";
 import { Textarea } from "../components/ui/textarea";
 import { Send, Upload, Mic, MicOff, Sparkles, Camera, FileText, X, Zap, User, Plus, Trash2 } from 'lucide-react';
 import { useLocation } from 'wouter';
@@ -1109,8 +1110,9 @@ export default function AIAssistantFullscreenPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const invoiceAssetsRef = useRef<{ files: Map<string, File> }>({ files: new Map() });
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const tenantId = useMemo(() => localStorage.getItem('currentTenantId') || 'default', []);
+  const tenantId = useMemo(() => user?.tenantId || 'default', [user?.tenantId]);
   const [pendingInvoices, setPendingInvoices] = useState<PendingInvoiceEntry[]>([]);
 
   const buildImagePayload = useCallback(async (messageId: string, fallbackName?: string) => {

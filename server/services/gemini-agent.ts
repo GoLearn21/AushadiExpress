@@ -441,10 +441,10 @@ Answer the question now:`;
           return response;
         }
         
-        // If asking ONLY for stock/quantity
-        if ((queryLower.includes('how many') || queryLower.includes('stock')) && !queryLower.includes('value')) {
+        // If asking ONLY for stock/quantity/count
+        if ((queryLower.includes('how many') || queryLower.includes('stock') || queryLower.includes('count')) && !queryLower.includes('value')) {
           response = `📦 **${foundProduct.name}**\n\n`;
-          response += `Stock: ${foundProduct.total_stock} units\n`;
+          response += `Stock Count: ${foundProduct.total_stock} units\n`;
           if (foundProduct.batches && foundProduct.batches > 1) {
             response += `(${foundProduct.batches} batches)\n`;
           }
