@@ -471,8 +471,8 @@ export default function PosScreen() {
           )}
 
           {/* Product Grid */}
-          <div className="flex-1 p-4 overflow-y-auto pb-24">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="flex-1 p-4 overflow-y-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pb-28">
               {filteredProducts.map((product) => {
                 const availableStock = stockData.filter(s => s.productId === product.id && s.quantity > 0);
                 const totalStock = availableStock.reduce((sum, stock) => sum + stock.quantity, 0);
