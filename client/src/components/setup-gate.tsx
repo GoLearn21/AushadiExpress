@@ -18,7 +18,7 @@ export function SetupGate({ children }: SetupGateProps) {
               <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <rect x="6" y="4" width="12" height="16" rx="1.5" />
                 <rect x="8" y="2" width="8" height="3" rx="0.5" />
-                <path d="M10 10h4M12 8v4" stroke="rgb(59, 130, 246)" strokeWidth="1.5" strokeLinecap="round" />
+                <path d="M10 12h4M12 10v4" stroke="rgb(59, 130, 246)" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
             <h1 className="text-4xl font-bold text-white">
