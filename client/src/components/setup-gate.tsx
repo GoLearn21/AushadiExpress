@@ -11,19 +11,20 @@ export function SetupGate({ children }: SetupGateProps) {
 
   if (needsSetup) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-primary/5">
+      <div className="min-h-screen w-full flex items-center justify-center p-4 bg-primary">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8 space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary mb-4 shadow-lg">
-              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="5" y="4" width="14" height="17" rx="2" />
-                <path d="M9 9h6M12 6v6" />
+          <div className="text-center mb-8 space-y-3">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm mb-2">
+              <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="4" width="12" height="16" rx="1.5" />
+                <rect x="8" y="2" width="8" height="3" rx="0.5" />
+                <path d="M10 10h4M12 8v4" stroke="rgb(59, 130, 246)" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-white">
               AushadiExpress
             </h1>
-            <p className="text-muted-foreground text-sm">Smart Pharmacy. Simplified.</p>
+            <p className="text-white/80 text-sm font-medium">Smart Pharmacy. Simplified.</p>
           </div>
           <SetupWizard onComplete={refetch} />
         </div>

@@ -143,12 +143,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   };
 
   return (
-    <Card className="w-full border-border/50 backdrop-blur-sm bg-card/95 shadow-xl">
+    <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
       <CardHeader className="space-y-1 pb-4">
-        <CardTitle className="text-xl font-bold">
+        <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
           {mode === 'register' ? 'Create Account' : 'Welcome Back'}
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-gray-600 dark:text-gray-400">
           {mode === 'register' ? (
             'Set up your pharmacy account to get started'
           ) : (
