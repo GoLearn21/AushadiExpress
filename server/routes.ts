@@ -458,13 +458,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     messageId: z.string().optional(),
   });
 
-  app.get('/api/pending-invoices', async (req, res) => {
+  app.get('/api/pending-invoices', tenantContext, async (req: TenantRequest, res) => {
     try {
-      const tenantId = req.query.tenantId as string | undefined;
-      if (!tenantId) {
-        return res.status(400).json({ error: 'tenantId query parameter is required' });
-      }
-      const invoices = await storage.getPendingInvoices(tenantId);
+      const invoices = await storage.getPendingInvoices(req.tenantId);
       res.json(invoices);
     } catch (error) {
       console.error('[PENDING-INVOICE] Fetch failed:', error);
@@ -472,9 +468,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/pending-invoices', async (req, res) => {
+  app.post('/api/pending-invoices', tenantContext, async (req: TenantRequest, res) => {
     try {
-      const data = pendingInvoiceCreateSchema.parse(req.body);
+      const data = pendingInvoiceCreateSchema.parse({
+        ...req.body,
+        tenantId: req.tenantId
+      });
       const pending = await storage.upsertPendingInvoice({
         ...data,
         updatedAt: new Date()
@@ -489,12 +488,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch('/api/pending-invoices/:messageId', async (req, res) => {
+  app.patch('/api/pending-invoices/:messageId', tenantContext, async (req: TenantRequest, res) => {
     try {
       const messageId = req.params.messageId;
       const updates = pendingInvoiceUpdateSchema.parse(req.body);
-      const pending = await storage.updatePendingInvoice(messageId, {
-        ...updates,
+      // SECURITY: Prevent tenantId from being changed via update
+      const { tenantId: _, ...safeUpdates } = updates as any;
+      const pending = await storage.updatePendingInvoice(messageId, req.tenantId, {
+        ...safeUpdates,
         updatedAt: new Date()
       });
       if (!pending) {
@@ -510,10 +511,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete('/api/pending-invoices/:messageId', async (req, res) => {
+  app.delete('/api/pending-invoices/:messageId', tenantContext, async (req: TenantRequest, res) => {
     try {
       const messageId = req.params.messageId;
-      const deleted = await storage.deletePendingInvoice(messageId);
+      const deleted = await storage.deletePendingInvoice(messageId, req.tenantId);
       if (!deleted) {
         return res.status(404).json({ error: 'Pending invoice not found' });
       }
