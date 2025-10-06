@@ -476,24 +476,75 @@ export default function PosScreen() {
               {filteredProducts.map((product) => {
                 const availableStock = stockData.filter(s => s.productId === product.id && s.quantity > 0);
                 const totalStock = availableStock.reduce((sum, stock) => sum + stock.quantity, 0);
+                const inCart = billItems.find(item => item.product.id === product.id);
+                const cartQuantity = inCart?.quantity || 0;
                 
                 return (
                   <Card
                     key={product.id}
-                    className="cursor-pointer hover:elevation-2 transition-all"
-                    onClick={() => addProductToBill(product.id)}
+                    className="hover:elevation-2 transition-all"
                     data-testid={`product-tile-${product.id}`}
                   >
-                    <CardContent className="p-3">
-                      <h3 className="font-semibold text-sm mb-1 line-clamp-2">
-                        {product.name}
-                      </h3>
-                      <p className="text-lg font-bold text-primary">
-                        ₹{product.price.toFixed(2)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Stock: {totalStock}
-                      </p>
+                    <CardContent className="p-3 space-y-2">
+                      <div onClick={() => addProductToBill(product.id)} className="cursor-pointer">
+                        <h3 className="font-semibold text-sm mb-1 line-clamp-2">
+                          {product.name}
+                        </h3>
+                        <p className="text-lg font-bold text-primary">
+                          ₹{product.price.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Stock: {totalStock}
+                        </p>
+                      </div>
+                      
+                      {/* Quantity Controls */}
+                      {cartQuantity > 0 ? (
+                        <div className="flex items-center justify-between gap-1 bg-primary/10 rounded-md p-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (inCart) {
+                                updateQuantity(product.id, inCart.stock.id, -1);
+                              }
+                            }}
+                            data-testid={`decrease-tile-${product.id}`}
+                          >
+                            <span className="material-icons text-sm">remove</span>
+                          </Button>
+                          <span className="text-sm font-bold min-w-[20px] text-center">
+                            {cartQuantity}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 w-7 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              addProductToBill(product.id);
+                            }}
+                            data-testid={`increase-tile-${product.id}`}
+                          >
+                            <span className="material-icons text-sm">add</span>
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full h-7 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            addProductToBill(product.id);
+                          }}
+                          data-testid={`add-tile-${product.id}`}
+                        >
+                          Add to Cart
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 );
