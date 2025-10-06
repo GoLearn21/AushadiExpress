@@ -143,26 +143,25 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   };
 
   return (
-    <Card className="w-full max-w-md shadow-2xl">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">
-          {mode === 'register' ? 'Welcome to AushadiExpress' : 'Welcome Back'}
+    <Card className="w-full border-border/50 backdrop-blur-sm bg-card/95 shadow-xl">
+      <CardHeader className="space-y-1 pb-4">
+        <CardTitle className="text-xl font-bold">
+          {mode === 'register' ? 'Create Account' : 'Welcome Back'}
         </CardTitle>
-        <CardDescription className="space-y-2">
+        <CardDescription>
           {mode === 'register' ? (
-            <>
-              <p className="font-medium text-base">Complete this one-time setup to unlock your dashboard</p>
-              <p className="text-xs text-muted-foreground">Create your secure account with a unique pharmacy ID</p>
-            </>
+            'Set up your pharmacy account to get started'
           ) : (
-            <p className="font-medium text-base">Log in to access your pharmacy dashboard</p>
+            'Log in to access your dashboard'
           )}
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="pharmacyName">Business Name</Label>
+            <Label htmlFor="pharmacyName" className="text-sm font-medium">
+              Business Name
+            </Label>
             <Input
               id="pharmacyName"
               type="text"
@@ -171,40 +170,47 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               onChange={(e) => setPharmacyName(e.target.value)}
               disabled={isLoading}
               required
+              className="h-11"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-sm font-medium">
+              Password
+            </Label>
             <Input
               id="password"
               type="password"
-              placeholder={mode === 'register' ? 'Create a password (min. 6 characters)' : 'Enter your password'}
+              placeholder={mode === 'register' ? 'Min. 6 characters' : 'Enter password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
+              className="h-11"
             />
           </div>
 
           {mode === 'register' && (
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirm Password
+              </Label>
               <Input
                 id="confirmPassword"
                 type="password"
-                placeholder="Re-enter your password"
+                placeholder="Re-enter password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={isLoading}
                 required
+                className="h-11"
               />
             </div>
           )}
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full h-11 font-medium"
             disabled={isLoading}
           >
             {isLoading 
@@ -213,7 +219,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             }
           </Button>
 
-          <div className="text-center text-sm">
+          <div className="text-center">
             <button
               type="button"
               onClick={() => {
@@ -221,7 +227,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                 setPassword('');
                 setConfirmPassword('');
               }}
-              className="text-primary hover:underline"
+              className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-2 py-1"
               disabled={isLoading}
             >
               {mode === 'login' 
