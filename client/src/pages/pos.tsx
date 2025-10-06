@@ -407,9 +407,9 @@ export default function PosScreen() {
         </div>
       </div>
 
-      <div className="flex-1 flex relative">
+      <div className="flex-1 flex relative min-h-0">
         {/* Main Content */}
-        <div className={`flex-1 flex flex-col ${showBillDrawer ? 'hidden md:flex' : ''}`}>
+        <div className={`flex-1 flex flex-col min-h-0 ${showBillDrawer ? 'hidden md:flex' : ''}`}>
           {/* Search and Scan Bar */}
           <div className="p-4 border-b border-border">
             <div className="flex space-x-2">
