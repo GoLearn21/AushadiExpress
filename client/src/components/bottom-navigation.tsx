@@ -12,7 +12,7 @@ export function BottomNavigation() {
   ];
 
   return (
-    <nav className="bg-card border-t border-border px-4 py-2 elevation-2" data-testid="bottom-navigation">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 elevation-2 z-50" data-testid="bottom-navigation">
       <div className="flex justify-around">
         {navItems.map(({ path, icon, label }) => (
           <Link key={path} href={path} data-testid={`nav-${label.toLowerCase()}`}>

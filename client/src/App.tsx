@@ -42,7 +42,7 @@ function Router() {
   return (
     <SetupGate>
       <div className="flex flex-col h-screen">
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-hidden pb-20">
           <Switch>
             <Route path="/" component={Dashboard} />
             <Route path="/products" component={Inventory} />
