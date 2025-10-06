@@ -392,7 +392,11 @@ export default function Settings() {
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => setShowOnboarding(true)}
+            onClick={() => {
+              setOnboardingStep(1); // Always start from step 1
+              setBusinessName(''); // Clear previous data
+              setShowOnboarding(true);
+            }}
             data-testid="button-rerun-onboarding"
           >
             Setup Wizard
