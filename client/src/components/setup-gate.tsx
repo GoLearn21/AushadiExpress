@@ -14,8 +14,11 @@ export function SetupGate({ children }: SetupGateProps) {
       <div className="min-h-screen w-full flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-primary/5">
         <div className="w-full max-w-md">
           <div className="text-center mb-8 space-y-2">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary mb-4 shadow-lg">
-              <span className="text-3xl">🏪</span>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-primary mb-4 shadow-lg">
+              <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="5" y="4" width="14" height="17" rx="2" />
+                <path d="M9 9h6M12 6v6" />
+              </svg>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               AushadiExpress
