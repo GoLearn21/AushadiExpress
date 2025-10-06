@@ -368,6 +368,68 @@ Answer the question now:`;
     try {
       const queryLower = query.toLowerCase();
       
+      // SPECIFIC PRODUCT QUERIES - Search by product name
+      const productSearchMatch = query.match(/\b([A-Z][A-Z\s\d]+(?:SUSP|SYP|TAB|CAP|CREAM|INJ|DROPS|SYRUP)?)\b/i);
+      if (productSearchMatch && (
+        queryLower.includes('expiry') || 
+        queryLower.includes('expire') ||
+        queryLower.includes('batch') ||
+        queryLower.includes('price') ||
+        queryLower.includes('how many') ||
+        queryLower.includes('do we have') ||
+        queryLower.includes('stock of')
+      )) {
+        const productName = productSearchMatch[1].trim();
+        const result = await this.handleGoodsInLookup({ tenant_id: context.tenantId }, context);
+        
+        // Search for the product (case-insensitive)
+        const foundProduct = result.inventory?.find((item: any) => 
+          item.name?.toLowerCase().includes(productName.toLowerCase()) ||
+          productName.toLowerCase().includes(item.name?.toLowerCase())
+        );
+        
+        if (!foundProduct) {
+          return `No, I couldn't find "${productName}" in your inventory.\n\nYou currently have ${result.total_products} products in stock.\n\nQuick Actions: Show me all products|Add new product|Search inventory`;
+        }
+        
+        // Build response based on what was asked
+        let response = `📦 **${foundProduct.name}**\n\n`;
+        response += `• Stock: ${foundProduct.total_stock} units`;
+        
+        if (foundProduct.batches && foundProduct.batches > 1) {
+          response += ` (${foundProduct.batches} batches)`;
+        }
+        response += `\n`;
+        
+        response += `• Price: ₹${foundProduct.price?.toFixed(2) || 'N/A'}\n`;
+        
+        // Get batch and expiry from stock_details
+        if (foundProduct.stock_details && foundProduct.stock_details.length > 0) {
+          const firstBatch = foundProduct.stock_details[0];
+          response += `• Batch: ${firstBatch.batch || 'N/A'}\n`;
+          
+          if (firstBatch.expiry) {
+            response += `• Expiry: ${new Date(firstBatch.expiry).toLocaleDateString()}\n`;
+          } else {
+            response += `• Expiry: Not recorded\n`;
+          }
+          
+          // If multiple batches, show all batch details
+          if (foundProduct.stock_details.length > 1) {
+            response += `\n**All Batches:**\n`;
+            foundProduct.stock_details.forEach((batch: any, idx: number) => {
+              response += `${idx + 1}. Batch ${batch.batch || 'N/A'} - ${batch.quantity} units - Exp: ${batch.expiry ? new Date(batch.expiry).toLocaleDateString() : 'N/A'}\n`;
+            });
+          }
+        } else {
+          response += `• Batch: Not recorded\n`;
+          response += `• Expiry: Not recorded\n`;
+        }
+        
+        response += `\nQuick Actions: Show me low stock items|What is our total inventory value|Show me all products`;
+        return response;
+      }
+      
       // LOW STOCK - Actually query the database
       if (queryLower.includes('low stock') || queryLower.includes('running low') || queryLower.includes('reorder')) {
         const result = await this.handleGoodsInLookup({ tenant_id: context.tenantId }, context);
@@ -377,9 +439,10 @@ Answer the question now:`;
           return `✅ All products are well stocked! No items below 20 units.\n\nCurrent inventory: ${result.total_products} products\n\nQuick Actions: Show me all products|What is our most expensive product|Show me sales summary`;
         }
         
-        const itemsList = lowStockItems.slice(0, 10).map((item: any) => 
-          `• ${item.name} - ${item.total_stock} units (Batch: ${item.batch_number})`
-        ).join('\n');
+        const itemsList = lowStockItems.slice(0, 10).map((item: any) => {
+          const batch = item.stock_details?.[0]?.batch || 'N/A';
+          return `• ${item.name} - ${item.total_stock} units (Batch: ${batch})`;
+        }).join('\n');
         
         return `⚠️ **Low Stock Alert:** ${lowStockItems.length} products below 20 units\n\n${itemsList}\n${lowStockItems.length > 10 ? `\n...and ${lowStockItems.length - 10} more` : ''}\n\nQuick Actions: Show me all products|What is our total inventory value|Show me sales summary`;
       }
