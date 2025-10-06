@@ -171,6 +171,7 @@ export const insertProductSchema = createInsertSchema(products, {
 export const insertStockSchema = createInsertSchema(stock, {
   productName: (schema) => schema.optional(),
   tenantId: (schema) => schema.optional(),
+  expiryDate: z.union([z.date(), z.string().transform((val) => new Date(val))]).optional().nullable(),
 }).omit({
   id: true,
   createdAt: true,
