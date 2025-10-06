@@ -82,9 +82,18 @@ export default function Settings() {
       setShowOnboarding(true);
     }
     
-    // Load tenant ID from localStorage or use default
-    const tenantSettings = localStorage.getItem('currentTenantId');
-    setCurrentTenantId(tenantSettings || 'pharm_007');
+    // Load tenant ID from user data in localStorage
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        if (userData.tenantId) {
+          setCurrentTenantId(userData.tenantId);
+        }
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+      }
+    }
   }, []);
 
   const handleCashOnlyToggle = (enabled: boolean) => {
@@ -127,14 +136,73 @@ export default function Settings() {
     });
   };
 
-  const completeOnboarding = () => {
-    localStorage.setItem('onboardingCompleted', 'true');
-    localStorage.setItem('businessName', businessName);
-    setShowOnboarding(false);
-    toast({
-      title: "Welcome to AushadiExpress!",
-      description: "Setup completed. Start scanning invoices to capture GSTN and supplier data.",
-    });
+  const completeOnboarding = async () => {
+    if (!businessName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your business name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      // Generate a secure password (user can change it later if needed)
+      const tempPassword = `${businessName.toLowerCase().replace(/\s+/g, '')}123456`;
+      
+      // Register user with backend
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          username: businessName,
+          password: tempPassword,
+          tenantName: businessName,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Registration failed');
+      }
+
+      // Store user data including tenant ID
+      const userData = { 
+        ...data, 
+        onboarded: true,
+        role: userRole 
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('onboardingCompleted', 'true');
+      localStorage.setItem('businessName', businessName);
+      localStorage.setItem('userRole', userRole);
+      
+      // Update current tenant ID display
+      setCurrentTenantId(data.tenantId);
+      
+      setShowOnboarding(false);
+      toast({
+        title: "Welcome to AushadiExpress!",
+        description: `Setup completed! Your unique Tenant ID: ${data.tenantId}`,
+      });
+      
+      // Reload to refresh auth state
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (error: any) {
+      toast({
+        title: "Setup Failed",
+        description: error.message || "Failed to complete setup. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -308,8 +376,9 @@ export default function Settings() {
                   onClick={completeOnboarding} 
                   className="w-full"
                   data-testid="button-complete-onboarding"
+                  disabled={isSubmitting}
                 >
-                  Complete Setup
+                  {isSubmitting ? 'Setting up...' : 'Complete Setup'}
                 </Button>
               </>
             )}
