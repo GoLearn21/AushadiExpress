@@ -8,6 +8,8 @@ import { OfflineIndicator } from "../components/offline-indicator";
 import { CredibilityRibbon } from "../components/credibility-ribbon";
 import { tw } from "../lib/theme";
 import { SmartActionFAB } from "../components/smart-action-fab";
+import { useAuth } from "../hooks/use-auth";
+import { Alert, AlertDescription } from "../components/ui/alert";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -16,6 +18,8 @@ export default function Dashboard() {
   const [trialBadgeHidden, setTrialBadgeHidden] = useState(false);
   const [fabTipShown, setFabTipShown] = useState(false);
   const [showFabTip, setShowFabTip] = useState(false);
+  const { needsSetup } = useAuth();
+  const [setupAlertDismissed, setSetupAlertDismissed] = useState(false);
 
   // Check localStorage for persistent flags
   useEffect(() => {
@@ -214,6 +218,26 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto space-y-6 p-4">
+        
+        {/* Setup Alert */}
+        {needsSetup && !setupAlertDismissed && (
+          <Alert className="bg-orange-50 border-orange-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1">
+                <span className="material-icons text-orange-600">info</span>
+                <AlertDescription className="text-orange-900">
+                  <strong>Complete your setup</strong> to get started. Go to <Link href="/settings" className="underline font-semibold">Settings</Link> to finish.
+                </AlertDescription>
+              </div>
+              <button
+                onClick={() => setSetupAlertDismissed(true)}
+                className="text-orange-600 hover:text-orange-800 ml-2"
+              >
+                <span className="material-icons text-lg">close</span>
+              </button>
+            </div>
+          </Alert>
+        )}
         
         {/* Hero Action */}
         <section>
