@@ -369,16 +369,27 @@ Answer the question now:`;
       const queryLower = query.toLowerCase();
       
       // SPECIFIC PRODUCT QUERIES - Search by product name
+      // Look for product names (usually in CAPS) in the query
       const productSearchMatch = query.match(/\b([A-Z][A-Z\s\d]+(?:SUSP|SYP|TAB|CAP|CREAM|INJ|DROPS|SYRUP)?)\b/i);
-      if (productSearchMatch && (
-        queryLower.includes('expiry') || 
-        queryLower.includes('expire') ||
-        queryLower.includes('batch') ||
-        queryLower.includes('price') ||
-        queryLower.includes('how many') ||
-        queryLower.includes('do we have') ||
-        queryLower.includes('stock of')
-      )) {
+      
+      // Check if this is a query about a specific product (not asking for "all products" or general inventory)
+      const isSpecificProductQuery = productSearchMatch && 
+        !queryLower.includes('all products') &&
+        !queryLower.includes('show me products') &&
+        !queryLower.includes('list products') &&
+        (queryLower.includes('for ' + productSearchMatch[1].toLowerCase()) || 
+         queryLower.includes('of ' + productSearchMatch[1].toLowerCase()) ||
+         queryLower.includes('expiry') || 
+         queryLower.includes('expire') ||
+         queryLower.includes('batch') ||
+         queryLower.includes('price') ||
+         queryLower.includes('value') ||
+         queryLower.includes('how many') ||
+         queryLower.includes('do we have') ||
+         queryLower.includes('stock of') ||
+         queryLower.includes('only for'));
+      
+      if (isSpecificProductQuery) {
         const productName = productSearchMatch[1].trim();
         const result = await this.handleGoodsInLookup({ tenant_id: context.tenantId }, context);
         
@@ -392,8 +403,65 @@ Answer the question now:`;
           return `No, I couldn't find "${productName}" in your inventory.\n\nYou currently have ${result.total_products} products in stock.\n\nQuick Actions: Show me all products|Add new product|Search inventory`;
         }
         
-        // Build response based on what was asked
-        let response = `📦 **${foundProduct.name}**\n\n`;
+        // Build response based ONLY on what was specifically asked
+        let response = '';
+        
+        // If asking ONLY for value/price
+        if (queryLower.includes('value only') || queryLower.includes('only value') || (queryLower.includes('value') && queryLower.includes('only'))) {
+          const totalValue = foundProduct.total_stock * (foundProduct.price || 0);
+          response = `💰 **${foundProduct.name}**\n\n`;
+          response += `Total Value: ₹${totalValue.toFixed(2)}\n`;
+          response += `(${foundProduct.total_stock} units @ ₹${foundProduct.price?.toFixed(2) || '0'})\n`;
+          response += `\nQuick Actions: Show me all product details|Show me low stock items|What is our total inventory value`;
+          return response;
+        }
+        
+        // If asking ONLY for expiry
+        if ((queryLower.includes('expiry') || queryLower.includes('expire')) && !queryLower.includes('and')) {
+          response = `📦 **${foundProduct.name}**\n\n`;
+          if (foundProduct.stock_details && foundProduct.stock_details.length > 0) {
+            const firstBatch = foundProduct.stock_details[0];
+            if (firstBatch.expiry) {
+              response += `Expiry Date: ${new Date(firstBatch.expiry).toLocaleDateString()}\n`;
+              response += `Batch: ${firstBatch.batch || 'N/A'}\n`;
+            } else {
+              response += `Expiry date not recorded for this product.\n`;
+            }
+            
+            if (foundProduct.stock_details.length > 1) {
+              response += `\n**All Batches:**\n`;
+              foundProduct.stock_details.forEach((batch: any, idx: number) => {
+                response += `${idx + 1}. Batch ${batch.batch || 'N/A'} - Exp: ${batch.expiry ? new Date(batch.expiry).toLocaleDateString() : 'N/A'}\n`;
+              });
+            }
+          } else {
+            response += `Expiry date not recorded.\n`;
+          }
+          response += `\nQuick Actions: Show me all product details|Show me low stock items|Show me all products`;
+          return response;
+        }
+        
+        // If asking ONLY for stock/quantity
+        if ((queryLower.includes('how many') || queryLower.includes('stock')) && !queryLower.includes('value')) {
+          response = `📦 **${foundProduct.name}**\n\n`;
+          response += `Stock: ${foundProduct.total_stock} units\n`;
+          if (foundProduct.batches && foundProduct.batches > 1) {
+            response += `(${foundProduct.batches} batches)\n`;
+          }
+          response += `\nQuick Actions: Show me all product details|Show me low stock items|Show me all products`;
+          return response;
+        }
+        
+        // If asking ONLY for price
+        if (queryLower.includes('price') && !queryLower.includes('value')) {
+          response = `📦 **${foundProduct.name}**\n\n`;
+          response += `Price: ₹${foundProduct.price?.toFixed(2) || 'N/A'}\n`;
+          response += `\nQuick Actions: Show me all product details|Show me stock level|Show me all products`;
+          return response;
+        }
+        
+        // DEFAULT: Show all details
+        response = `📦 **${foundProduct.name}**\n\n`;
         response += `• Stock: ${foundProduct.total_stock} units`;
         
         if (foundProduct.batches && foundProduct.batches > 1) {
