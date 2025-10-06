@@ -315,25 +315,36 @@ ${recentHistory.map(msg => `${msg.role.toUpperCase()}: ${msg.content}`).join('\n
 CURRENT QUESTION: ${query}
 
 CRITICAL INSTRUCTIONS:
-- Answer ONLY from the provided enterprise data above
+- Answer ONLY from the provided enterprise data above - NEVER make up information
+- Search through the complete data carefully to find exact matches
 - Be extremely specific with product names, quantities, prices, and batch information
-- If asking about specific products, search through ALL products in the data carefully
-- For inventory questions, provide exact stock levels and batch details
-- For "low stock" or "running low" queries: ONLY show products with quantity less than 20 units
+- For specific product queries: Search ALL products and return exact match or say "No, [product name] not found in inventory"
+- For "low stock" queries: ONLY show products with quantity less than 20 units (filter, don't show all)
 - For "out of stock" queries: ONLY show products with 0 units
+- For sales queries: Provide exact transaction data, totals, and dates
+- For financial queries: Calculate accurate totals from the data
 - Include relevant financial data (prices, values, totals) with ₹ symbol
+- If data is NOT found: Respond politely with "No, I couldn't find [what they asked for] in your database" and suggest what data IS available
 - End with 3 relevant quick actions in format: Quick Actions: Question1|Question2|Question3
-- Quick actions should be meaningful questions that would provide useful business insights
-- Keep responses concise but comprehensive
-- If a specific product isn't found, clearly state that and suggest alternatives
-- NEVER show all products when asked for "low stock" - filter to only items below 20 units
+- Keep responses concise, accurate, and helpful
 
 QUICK ACTION EXAMPLES:
-- "How many units of [product name] do we have in stock"
+- "How many units of [product name] do we have in stock?"
 - "Show me all products expiring in next 30 days"
-- "What is our total inventory value"
-- "Which products are running low on stock"
+- "What is our total inventory value?"
+- "Which products are running low on stock?"
 - "Show me this month's sales performance"
+- "Do we have [specific product] in stock?"
+- "What are our top 5 selling products?"
+- "Show me today's total sales"
+
+HANDLING "NOT FOUND" SCENARIOS:
+When the user asks about something not in the data, respond like:
+- "No, I couldn't find [product name] in your current inventory. You currently have [X] products in stock."
+- "No sales data available for that period. Your most recent sales were on [date]."
+- "No, that information is not available in your database yet."
+
+Always be helpful and suggest what information IS available when something is not found.
 
 Answer the question now:`;
     
