@@ -286,7 +286,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ocrDurationMs: parsedExtractedData.metadata?.ocrDurationMs ?? null,
         mongoWriteMs: null,
         tags: [...(businessIntelligence?.suggestedTags ?? []), ...gstins.map((gstn) => `gstn:${gstn}`)],
-        userId: (req as any).user?.id,
+        userId: req.userId,
         enterpriseId: req.tenantId
       });
 
