@@ -954,46 +954,25 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
-  private async ensureDefaultUser(): Promise<string> {
-    try {
-      // Check if default user exists
-      const defaultUser = await db.select()
-        .from(users)
-        .where(eq(users.username, 'default-user'))
-        .limit(1);
-
-      if (defaultUser.length > 0) {
-        return defaultUser[0].id;
-      }
-
-      // Create default user if not exists
-      console.log('[STORAGE] Creating default user for document storage');
-      const [newUser] = await db.insert(users)
-        .values({
-          username: 'default-user',
-          password: 'default-password', // In a real app, this should be hashed
-          role: 'admin',
-          onboarded: true
-        })
-        .returning();
-      
-      return newUser.id;
-    } catch (error) {
-      console.error('Error ensuring default user:', error);
-      throw new Error('Failed to ensure default user exists');
-    }
-  }
 
   async createDocument(insertDoc: InsertDocument): Promise<Document> {
     console.log('[STORAGE] Creating document with data:', {
       docType: insertDoc.docType,
       fileName: insertDoc.fileName,
+      userId: insertDoc.userId,
+      enterpriseId: insertDoc.enterpriseId,
       hasHeader: !!insertDoc.header,
       hasLineItems: Array.isArray(insertDoc.lineItems) && insertDoc.lineItems.length > 0,
       tags: insertDoc.tags?.length || 0
     });
 
-    const defaultUserId = await this.ensureDefaultUser();
+    if (!insertDoc.userId) {
+      throw new Error('User ID is required for document creation');
+    }
+
+    if (!insertDoc.enterpriseId) {
+      throw new Error('Enterprise ID (tenant ID) is required for document creation');
+    }
 
     const docData = {
       id: randomUUID(),
@@ -1012,8 +991,8 @@ export class DatabaseStorage implements IStorage {
       ocrDurationMs: insertDoc.ocrDurationMs ?? null,
       mongoWriteMs: insertDoc.mongoWriteMs ?? null,
       tags: Array.isArray(insertDoc.tags) ? insertDoc.tags : [],
-      enterpriseId: insertDoc.enterpriseId ?? 'default',
-      userId: insertDoc.userId ?? defaultUserId,
+      enterpriseId: insertDoc.enterpriseId,
+      userId: insertDoc.userId,
       createdAt: new Date(),
       updatedAt: new Date()
     };
