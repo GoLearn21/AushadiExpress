@@ -293,12 +293,12 @@ export default function Dashboard() {
               <div className="flex items-center space-x-4">
                 <div className="text-4xl">📷</div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold mb-1">Bill Fast</h2>
-                  <p className="text-primary-foreground/90 text-sm">Offline in 15 s – No Internet, No Hassle</p>
+                  <h2 className="text-xl font-bold mb-1" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Bill Fast</h2>
+                  <p className="text-primary-foreground/90 text-sm" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Offline in 15 s – No Internet, No Hassle</p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="material-icons text-2xl opacity-75">arrow_forward</span>
-                  <span className="text-xs opacity-60 mt-1">swipe →</span>
+                  <span className="material-icons text-2xl opacity-75" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>arrow_forward</span>
+                  <span className="text-xs opacity-60 mt-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>swipe →</span>
                 </div>
               </div>
             </div>
