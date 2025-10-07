@@ -294,7 +294,7 @@ export default function Dashboard() {
                 </button>
               )}
               <div className="flex items-center space-x-4 relative z-10">
-                <div className="text-4xl">📷</div>
+                <div className="text-4xl">⚡</div>
                 <div className="flex-1">
                   <h2 className="text-xl font-bold mb-1">Bill Fast</h2>
                   <p className="text-white/95 text-sm">Offline in 15 s – No Internet, No Hassle</p>
