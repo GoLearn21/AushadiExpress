@@ -242,7 +242,7 @@ export default function Dashboard() {
         {/* Hero Action */}
         <section>
           <div 
-            className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground p-6 rounded-xl elevation-2 hover:elevation-3 transition-all duration-200 cursor-pointer relative" 
+            className="bg-gradient-to-r from-primary to-primary/80 text-white p-6 rounded-xl elevation-2 hover:elevation-3 transition-all duration-200 cursor-pointer relative overflow-hidden" 
             data-testid="button-bill-fast"
             onClick={() => setLocation('/pos')}
             onTouchStart={(e) => {
@@ -277,9 +277,12 @@ export default function Dashboard() {
               document.addEventListener('touchend', handleTouchEnd);
             }}
           >
+              {/* Dark overlay for text contrast */}
+              <div className="absolute inset-0 bg-black/20" />
+              
               {!trialBadgeHidden && (
                 <button 
-                  className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-orange-500/90 text-white text-[10px] leading-none flex items-center gap-1"
+                  className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-orange-500 text-white text-[10px] leading-none flex items-center gap-1 z-10"
                   onClick={(e) => {
                     e.preventDefault();
                     hideTrialBadge();
@@ -290,15 +293,15 @@ export default function Dashboard() {
                   <span className="text-[8px]">✕</span>
                 </button>
               )}
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4 relative z-10">
                 <div className="text-4xl">📷</div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold mb-1" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>Bill Fast</h2>
-                  <p className="text-primary-foreground/90 text-sm" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Offline in 15 s – No Internet, No Hassle</p>
+                  <h2 className="text-xl font-bold mb-1">Bill Fast</h2>
+                  <p className="text-white/95 text-sm">Offline in 15 s – No Internet, No Hassle</p>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="material-icons text-2xl opacity-75" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>arrow_forward</span>
-                  <span className="text-xs opacity-60 mt-1" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>swipe →</span>
+                  <span className="material-icons text-2xl opacity-90">arrow_forward</span>
+                  <span className="text-xs opacity-75 mt-1">swipe →</span>
                 </div>
               </div>
             </div>
