@@ -472,7 +472,7 @@ export default function PosScreen() {
 
           {/* Product Grid */}
           <div className="flex-1 p-4 overflow-y-auto">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pb-28">
+            <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 ${billItems.length > 0 ? 'pb-40' : 'pb-20'}`}>
               {filteredProducts.map((product) => {
                 const availableStock = stockData.filter(s => s.productId === product.id && s.quantity > 0);
                 const totalStock = availableStock.reduce((sum, stock) => sum + stock.quantity, 0);
@@ -640,7 +640,7 @@ export default function PosScreen() {
 
       {/* Sticky Cart Bar - shows when bill has items but drawer is closed */}
       {billItems.length > 0 && !showBillDrawer && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-3 elevation-3 z-20">
+        <div className="fixed bottom-20 left-0 right-0 bg-card border-t border-border p-3 elevation-3 z-[60]">
           <div className="flex items-center justify-between gap-3 max-w-md mx-auto">
             <Button
               variant="outline"

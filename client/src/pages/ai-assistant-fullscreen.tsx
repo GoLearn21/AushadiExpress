@@ -2286,7 +2286,7 @@ export default function AIAssistantFullscreenPage() {
 
         {/* Input Area */}
         <div className="border-t border-border bg-background p-4 shrink-0" style={{ 
-          paddingBottom: 'max(env(safe-area-inset-bottom, 16px), 16px)'
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 80px)'
         }}>
           {/* Action Buttons */}
           <div className="flex justify-center space-x-3 mb-4">
