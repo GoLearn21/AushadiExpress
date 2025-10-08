@@ -320,7 +320,7 @@ export default function Settings() {
       id: "role",
       icon: "person",
       title: "My Role",
-      description: "Select your business role (persisted offline)",
+      description: "Your account type (set during registration)",
       disabled: false,
       role: true,
       selectedRole: userRole,
@@ -567,15 +567,9 @@ export default function Settings() {
                       <p className="text-sm text-muted-foreground">{item.description}</p>
                     </div>
                   </div>
-                  <Select value={item.selectedRole} onValueChange={item.onRoleChange} data-testid="select-user-role">
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="customer">Customer</SelectItem>
-                      <SelectItem value="retailer">Retailer</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="px-3 py-1.5 bg-primary/10 text-primary rounded-md font-medium capitalize" data-testid="display-user-role">
+                    {item.selectedRole || 'Retailer'}
+                  </div>
                 </div>
               ) : item.tenant ? (
                 <div className="p-4 space-y-3">
