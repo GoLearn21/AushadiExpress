@@ -486,26 +486,17 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">Current Tenant ID</Label>
+                    <Label className="text-sm font-medium">Business Name</Label>
+                    <div className="p-2 bg-muted rounded text-sm">
+                      {businessName || 'Not set'}
+                    </div>
+                    <Label className="text-sm font-medium mt-3">Tenant ID</Label>
                     <div className="p-2 bg-muted rounded text-sm font-mono">
                       {item.currentTenant}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       AI Assistant queries are scoped to this tenant/enterprise. All data is filtered by this ID.
                     </div>
-                    <Label className="text-xs">Switch tenant for testing:</Label>
-                    <Select value={item.currentTenant} onValueChange={item.onTenantChange} data-testid="select-tenant-id">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {item.availableTenants.map((tenant: string) => (
-                          <SelectItem key={tenant} value={tenant}>
-                            {tenant} {tenant === 'pharm_007' ? '(Primary)' : tenant === 'default' ? '(System Default)' : '(Test)'}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
               ) : item.dialog ? (
