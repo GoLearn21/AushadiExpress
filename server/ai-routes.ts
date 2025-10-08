@@ -11,12 +11,13 @@ export function registerAIRoutes(app: Express) {
     apiKey: process.env.OPENAI_API_KEY
   });
 
-  // AI Chat endpoint
+  // AI Chat endpoint with database context
   app.post('/api/ai/chat', async (req, res) => {
     try {
       console.log('[AI] Chat request received');
       
       const { message, systemPrompt, context } = req.body;
+      const session = (req as any).session;
       
       if (!message) {
         return res.status(400).json({ error: 'Message is required' });
@@ -26,20 +27,82 @@ export function registerAIRoutes(app: Express) {
         return res.status(500).json({ error: 'OpenAI API key not configured' });
       }
       
+      // Get tenant ID from session
+      const tenantId = session?.tenantId || context?.tenantId || 'default';
+      console.log('[AI] Fetching database context for tenant:', tenantId);
+      
+      // Fetch database context for this tenant
+      const { storage } = await import('./storage');
+      const [products, stock, sales] = await Promise.all([
+        storage.getProducts(tenantId),
+        storage.getStock(tenantId),
+        storage.getSales(tenantId)
+      ]);
+      
+      console.log('[AI] Database context:', {
+        productsCount: products.length,
+        stockCount: stock.length,
+        salesCount: sales.length
+      });
+      
+      // Build enhanced system prompt with actual database data
+      let enhancedSystemPrompt = systemPrompt || "You are a helpful AI assistant for a pharmacy management system.";
+      
+      // Add database context if available
+      if (products.length > 0 || stock.length > 0 || sales.length > 0) {
+        enhancedSystemPrompt += `\n\n**CURRENT DATABASE DATA FOR TENANT ${tenantId}:**\n`;
+        
+        if (products.length > 0) {
+          enhancedSystemPrompt += `\n**Products (${products.length} total):**\n`;
+          products.slice(0, 50).forEach(p => {
+            enhancedSystemPrompt += `- ${p.name} (ID: ${p.id}, Price: ₹${p.price}, Total Qty: ${p.totalQuantity}${p.batchNumber ? `, Batch: ${p.batchNumber}` : ''})\n`;
+          });
+          if (products.length > 50) {
+            enhancedSystemPrompt += `... and ${products.length - 50} more products\n`;
+          }
+        }
+        
+        if (stock.length > 0) {
+          enhancedSystemPrompt += `\n**Stock Items (${stock.length} total):**\n`;
+          stock.slice(0, 50).forEach(s => {
+            enhancedSystemPrompt += `- ${s.productName}, Batch: ${s.batchNumber}, Qty: ${s.quantity}${s.expiryDate ? `, Expiry: ${new Date(s.expiryDate).toLocaleDateString()}` : ''}\n`;
+          });
+          if (stock.length > 50) {
+            enhancedSystemPrompt += `... and ${stock.length - 50} more stock items\n`;
+          }
+        }
+        
+        if (sales.length > 0) {
+          const totalRevenue = sales.reduce((sum, s) => sum + (s.total || 0), 0);
+          enhancedSystemPrompt += `\n**Sales Summary (${sales.length} transactions, Total Revenue: ₹${totalRevenue.toFixed(2)}):**\n`;
+          sales.slice(0, 20).forEach(s => {
+            const saleDate = s.date ? new Date(s.date).toLocaleDateString() : 'Unknown date';
+            enhancedSystemPrompt += `- ${saleDate}: ₹${s.total}\n`;
+          });
+          if (sales.length > 20) {
+            enhancedSystemPrompt += `... and ${sales.length - 20} more sales\n`;
+          }
+        }
+        
+        enhancedSystemPrompt += `\n**IMPORTANT:** Use this actual data to answer the user's question. Be specific and reference the exact items, quantities, and values from the database.`;
+      } else {
+        enhancedSystemPrompt += `\n\n**NOTE:** No data found in the database yet. The user needs to upload invoices or add products manually to enable data-driven insights.`;
+      }
+      
       // Using gpt-4o for better compatibility and vision support
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: systemPrompt || "You are a helpful AI assistant for a pharmacy management system."
+            content: enhancedSystemPrompt
           },
           {
             role: "user", 
             content: message
           }
         ],
-        max_completion_tokens: 500,
+        max_completion_tokens: 800,
         temperature: 0.7
       });
       
