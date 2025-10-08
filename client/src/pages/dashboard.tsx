@@ -244,9 +244,15 @@ export default function Dashboard() {
               {showNotificationDropdown && (
                 <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
                   <div className="p-3 border-b border-gray-200 bg-gray-50">
-                    <h3 className="font-semibold text-gray-900">Pending Invoices</h3>
+                    <h3 className="font-semibold text-gray-900">
+                      {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 
+                        ? 'Pending Invoices' 
+                        : 'Notifications'}
+                    </h3>
                     <p className="text-xs text-gray-600 mt-0.5">
-                      {Array.isArray(pendingInvoices) ? pendingInvoices.length : 0} invoices not submitted
+                      {Array.isArray(pendingInvoices) && pendingInvoices.length > 0
+                        ? `${pendingInvoices.length} invoices not submitted`
+                        : 'No pending items'}
                     </p>
                   </div>
                   
@@ -316,7 +322,7 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <div className="p-4 text-center text-gray-500 text-sm">
-                      No pending invoices
+                      You're all caught up
                     </div>
                   )}
                 </div>
