@@ -6,11 +6,11 @@ import bcrypt from 'bcrypt';
 const router = Router();
 
 const registerSchema = z.object({
-  username: z.string().min(3).max(50),
+  username: z.string().min(3).max(50).optional(),
   password: z.string().min(6),
   tenantName: z.string().optional(),
   role: z.string().optional(),
-  pincode: z.string().max(10).optional(),
+  pincode: z.string().regex(/^\d{6}$/, 'Pincode must be exactly 6 digits').optional(),
 });
 
 const loginSchema = z.object({
@@ -22,18 +22,46 @@ router.post('/register', async (req, res) => {
   try {
     const { username, password, tenantName, role, pincode } = registerSchema.parse(req.body);
     
-    const existingUser = await storage.getUserByUsername(username);
+    // Validate role-specific requirements
+    const userRole = role || 'retailer';
+    
+    // Determine the final username based on role
+    let finalUsername: string;
+    
+    if (userRole === 'customer') {
+      // Customers: use username (their name)
+      if (!username) {
+        return res.status(400).json({ error: 'Name is required for customer registration' });
+      }
+      if (!pincode) {
+        return res.status(400).json({ error: 'Pincode is required for customer registration' });
+      }
+      finalUsername = username;
+    } else {
+      // Business roles: use tenantName (business name)
+      if (!tenantName) {
+        return res.status(400).json({ error: 'Business name is required for business registration' });
+      }
+      finalUsername = tenantName;
+    }
+    
+    // Check if username already exists
+    const existingUser = await storage.getUserByUsername(finalUsername);
     if (existingUser) {
-      return res.status(400).json({ error: 'Username already exists' });
+      return res.status(400).json({ 
+        error: userRole === 'customer' 
+          ? 'This name is already registered' 
+          : 'This business name is already registered' 
+      });
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
     
     const user = await storage.createUser({
-      username,
+      username: finalUsername,
       password: hashedPassword,
-      role: role || 'retailer',
-      pincode: pincode || null,
+      role: userRole,
+      pincode: userRole === 'customer' ? pincode : null,
       onboarded: true,
     });
     
@@ -173,6 +201,21 @@ router.patch('/update-profile', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
+    // Determine the final role (current or updated)
+    const finalRole = role || user.role;
+    
+    // If changing to or already customer, validate pincode requirement
+    if (finalRole === 'customer') {
+      const finalPincode = pincode !== undefined ? pincode : user.pincode;
+      if (!finalPincode || !/^\d{6}$/.test(finalPincode)) {
+        return res.status(400).json({ error: 'Valid 6-digit pincode is required for customer role' });
+      }
+      user.pincode = finalPincode;
+    } else {
+      // Business roles don't need pincode, clear it if provided
+      user.pincode = null;
+    }
+    
     // Update user role if provided
     if (role) {
       user.role = role;
@@ -181,11 +224,6 @@ router.patch('/update-profile', async (req, res) => {
     // Update business name (username) if provided
     if (businessName) {
       user.username = businessName;
-    }
-    
-    // Update pincode if provided
-    if (pincode !== undefined) {
-      user.pincode = pincode || null;
     }
     
     await storage.updateUser(user);

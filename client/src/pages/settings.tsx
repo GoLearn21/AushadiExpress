@@ -141,13 +141,34 @@ export default function Settings() {
   };
 
   const completeOnboarding = async () => {
-    if (!businessName.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter your business name",
-        variant: "destructive",
-      });
-      return;
+    // Validate based on role
+    if (userRole === 'customer') {
+      if (!businessName.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter your name",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (!pincode.trim() || pincode.trim().length !== 6) {
+        toast({
+          title: "Error",
+          description: "Please enter a valid 6-digit pincode",
+          variant: "destructive",
+        });
+        return;
+      }
+    } else {
+      // Business roles require business name
+      if (!businessName.trim()) {
+        toast({
+          title: "Error",
+          description: "Please enter your business name",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
