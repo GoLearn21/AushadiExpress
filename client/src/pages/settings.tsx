@@ -567,9 +567,15 @@ export default function Settings() {
                       <p className="text-sm text-muted-foreground">{item.description}</p>
                     </div>
                   </div>
-                  <div className="px-3 py-1.5 bg-primary/10 text-primary rounded-md font-medium capitalize" data-testid="display-user-role">
-                    {item.selectedRole || 'Retailer'}
-                  </div>
+                  <Select value={item.selectedRole} disabled data-testid="select-user-role">
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="customer">Customer</SelectItem>
+                      <SelectItem value="retailer">Retailer</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               ) : item.tenant ? (
                 <div className="p-4 space-y-3">
