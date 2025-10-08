@@ -136,6 +136,14 @@ export default function Sales() {
               const header = doc.header || {};
               const lineItems = doc.lineItems || [];
               const productCount = lineItems.length;
+              const totals = doc.totals || {};
+              
+              const invoiceDate = header.invoiceDate || header.date || doc.createdAt;
+              const formattedDate = invoiceDate ? new Date(invoiceDate).toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+              }) : '';
               
               return (
                 <Card key={doc.id} className="elevation-1" data-testid={`invoice-${doc.id}`}>
@@ -152,26 +160,38 @@ export default function Sales() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-semibold text-lg">
-                              {header.supplier || doc.fileName || 'Supplier Invoice'}
+                              {header.supplier || 'Unknown Supplier'}
                             </p>
-                            {header.buyer && (
-                              <p className="text-sm text-muted-foreground mt-1">
-                                Buyer: {header.buyer}
+                            {header.supplierAddress && (
+                              <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                {header.supplierAddress}
                               </p>
                             )}
-                            <div className="flex items-center gap-4 mt-2">
-                              <div className="flex items-center gap-1">
-                                <span className="material-icons text-sm text-muted-foreground">inventory_2</span>
-                                <span className="text-sm text-muted-foreground">
-                                  {productCount} {productCount === 1 ? 'product' : 'products'}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <span className="material-icons text-sm text-muted-foreground">schedule</span>
-                                <span className="text-sm text-muted-foreground">
-                                  {new Date(doc.createdAt).toLocaleDateString()} at {new Date(doc.createdAt).toLocaleTimeString()}
-                                </span>
-                              </div>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                              {header.invoiceNo && (
+                                <div className="flex items-center gap-1">
+                                  <span className="material-icons text-sm text-muted-foreground">receipt</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {header.invoiceNo}
+                                  </span>
+                                </div>
+                              )}
+                              {formattedDate && (
+                                <div className="flex items-center gap-1">
+                                  <span className="material-icons text-sm text-muted-foreground">event</span>
+                                  <span className="text-sm text-muted-foreground">
+                                    {formattedDate}
+                                  </span>
+                                </div>
+                              )}
+                              {(totals.net || totals.grandTotal) && (
+                                <div className="flex items-center gap-1">
+                                  <span className="material-icons text-sm text-muted-foreground">currency_rupee</span>
+                                  <span className="text-sm font-medium text-foreground">
+                                    {(totals.net || totals.grandTotal).toFixed(2)}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
