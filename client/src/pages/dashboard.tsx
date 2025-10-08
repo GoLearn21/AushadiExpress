@@ -192,6 +192,20 @@ export default function Dashboard() {
   });
 
   const [showPendingAlert, setShowPendingAlert] = useState(false);
+  const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showNotificationDropdown && !target.closest('.notification-dropdown-container')) {
+        setShowNotificationDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotificationDropdown]);
 
   // Calculate stats
   const lowStockCount = Array.isArray(stock) ? stock.filter((s: any) => s.quantity < 10).length : 0;
@@ -214,17 +228,94 @@ export default function Dashboard() {
             <span className={`${tw.bodySm} text-primary-foreground/80`}>Online</span>
             
             {/* Notification Bell */}
-            <button 
-              className="text-primary-foreground/80 hover:text-primary-foreground transition-colors relative"
-              onClick={() => setShowPendingAlert(!showPendingAlert)}
-            >
-              <span className="material-icons text-lg">notifications</span>
-              {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {pendingInvoices.length}
-                </span>
+            <div className="relative notification-dropdown-container">
+              <button 
+                className="text-primary-foreground/80 hover:text-primary-foreground transition-colors relative"
+                onClick={() => setShowNotificationDropdown(!showNotificationDropdown)}
+              >
+                <span className="material-icons text-lg">notifications</span>
+                {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {pendingInvoices.length}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {showNotificationDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-y-auto">
+                  <div className="p-3 border-b border-gray-200 bg-gray-50">
+                    <h3 className="font-semibold text-gray-900">Pending Invoices</h3>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {Array.isArray(pendingInvoices) ? pendingInvoices.length : 0} invoices not submitted
+                    </p>
+                  </div>
+                  
+                  {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 ? (
+                    <div className="divide-y divide-gray-100">
+                      {pendingInvoices.map((invoice: any) => (
+                        <div key={invoice.messageId} className="p-3 hover:bg-gray-50">
+                          <div className="flex items-start gap-3">
+                            {invoice.imageData && (
+                              <img 
+                                src={invoice.imageData} 
+                                alt="Invoice" 
+                                className="w-12 h-12 object-cover rounded"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-gray-900 truncate">
+                                {invoice.summaryText || 'Invoice'}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                State: <span className={`font-medium ${
+                                  invoice.submissionState === 'idle' ? 'text-gray-600' :
+                                  invoice.submissionState === 'pending' ? 'text-yellow-600' :
+                                  'text-red-600'
+                                }`}>{invoice.submissionState}</span>
+                              </p>
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {new Date(invoice.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <button
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                if (confirm('Delete this pending invoice?')) {
+                                  try {
+                                    await fetch(`/api/pending-invoices/${invoice.messageId}`, {
+                                      method: 'DELETE',
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ['/api/pending-invoices'] });
+                                    toast({
+                                      title: "Deleted",
+                                      description: "Pending invoice removed",
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to delete invoice",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1"
+                            >
+                              <span className="material-icons text-sm">delete</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500 text-sm">
+                      No pending invoices
+                    </div>
+                  )}
+                </div>
               )}
-            </button>
+            </div>
             
             <button className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
               <span className="material-icons text-lg">refresh</span>
