@@ -153,4 +153,46 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// Update user role and business name
+router.patch('/update-profile', async (req, res) => {
+  try {
+    const session = (req as any).session;
+    
+    if (!session?.userId) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    const { role, businessName } = req.body;
+    const user = await storage.getUser(session.userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Update user role if provided
+    if (role) {
+      user.role = role;
+    }
+    
+    // Update business name (username) if provided
+    if (businessName) {
+      user.username = businessName;
+    }
+    
+    await storage.updateUser(user);
+    
+    console.log('[AUTH] Updated profile for user:', user.username);
+    
+    res.json({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      tenantId: user.tenantId
+    });
+  } catch (error) {
+    console.error('[AUTH ERROR] Failed to update profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
 export default router;

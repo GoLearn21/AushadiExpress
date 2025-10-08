@@ -20,6 +20,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(user: User): Promise<User>;
   
   // Products
   getProducts(tenantId?: string): Promise<Product[]>;
@@ -161,6 +162,11 @@ export class MemStorage implements IStorage {
       onboarded: (insertUser as any).onboarded || false 
     };
     this.users.set(id, user);
+    return user;
+  }
+
+  async updateUser(user: User): Promise<User> {
+    this.users.set(user.id, user);
     return user;
   }
 
@@ -591,6 +597,23 @@ export class DatabaseStorage implements IStorage {
       return user;
     } catch (error) {
       console.error('Database error in createUser:', error);
+      throw error;
+    }
+  }
+
+  async updateUser(user: User): Promise<User> {
+    try {
+      const [updatedUser] = await db.update(users)
+        .set({
+          username: user.username,
+          role: user.role,
+          password: user.password
+        })
+        .where(eq(users.id, user.id))
+        .returning();
+      return updatedUser;
+    } catch (error) {
+      console.error('Database error in updateUser:', error);
       throw error;
     }
   }

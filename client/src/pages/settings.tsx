@@ -155,8 +155,8 @@ export default function Settings() {
       // Generate a secure password (user can change it later if needed)
       const tempPassword = `${businessName.toLowerCase().replace(/\s+/g, '')}123456`;
       
-      // Register user with backend
-      const res = await fetch('/api/auth/register', {
+      // First, try to register as a new user
+      const registerRes = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -167,10 +167,49 @@ export default function Settings() {
         }),
       });
 
-      const data = await res.json();
+      let data = await registerRes.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Registration failed');
+      if (!registerRes.ok) {
+        // If username already exists, try to login and update profile
+        if (data.error && data.error.includes('already exists')) {
+          console.log('[SETUP] User already exists, attempting login and profile update');
+          
+          // Try to login with the generated password
+          const loginRes = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              username: businessName,
+              password: tempPassword,
+            }),
+          });
+
+          if (!loginRes.ok) {
+            throw new Error('Username already exists with a different password. Please use the login page.');
+          }
+
+          data = await loginRes.json();
+          
+          // Update the user's profile with the new role and business name
+          const updateRes = await fetch('/api/auth/update-profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              role: userRole,
+              businessName: businessName,
+            }),
+          });
+
+          if (!updateRes.ok) {
+            throw new Error('Failed to update profile');
+          }
+
+          data = await updateRes.json();
+        } else {
+          throw new Error(data.error || 'Registration failed');
+        }
       }
 
       // Store user data including tenant ID
