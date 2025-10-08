@@ -160,7 +160,7 @@ export default function Sales() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-semibold text-lg">
-                              {header.supplier || 'Unknown Supplier'}
+                              {header.supplierName || 'Unknown Supplier'}
                             </p>
                             {header.supplierAddress && (
                               <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
@@ -168,11 +168,11 @@ export default function Sales() {
                               </p>
                             )}
                             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                              {header.invoiceNo && (
+                              {header.invoiceNumber && (
                                 <div className="flex items-center gap-1">
                                   <span className="material-icons text-sm text-muted-foreground">receipt</span>
                                   <span className="text-sm text-muted-foreground">
-                                    {header.invoiceNo}
+                                    {header.invoiceNumber}
                                   </span>
                                 </div>
                               )}
