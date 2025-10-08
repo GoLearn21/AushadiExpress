@@ -148,59 +148,48 @@ export default function Sales() {
               return (
                 <Card key={doc.id} className="elevation-1" data-testid={`invoice-${doc.id}`}>
                   <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      {doc.fileUrl && (
-                        <img 
-                          src={doc.fileUrl} 
-                          alt="Invoice" 
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
+                    <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className="font-semibold text-lg">
-                              {header.supplierName || 'Unknown Supplier'}
-                            </p>
-                            {header.supplierAddress && (
-                              <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                                {header.supplierAddress}
-                              </p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                              {header.invoiceNumber && (
-                                <div className="flex items-center gap-1">
-                                  <span className="material-icons text-sm text-muted-foreground">receipt</span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {header.invoiceNumber}
-                                  </span>
-                                </div>
-                              )}
-                              {formattedDate && (
-                                <div className="flex items-center gap-1">
-                                  <span className="material-icons text-sm text-muted-foreground">event</span>
-                                  <span className="text-sm text-muted-foreground">
-                                    {formattedDate}
-                                  </span>
-                                </div>
-                              )}
-                              {(totals.net || totals.grandTotal) && (
-                                <div className="flex items-center gap-1">
-                                  <span className="material-icons text-sm text-muted-foreground">currency_rupee</span>
-                                  <span className="text-sm font-medium text-foreground">
-                                    {(totals.net || totals.grandTotal).toFixed(2)}
-                                  </span>
-                                </div>
-                              )}
+                        <p className="font-semibold text-lg">
+                          {header.supplierName || 'Unknown Supplier'}
+                        </p>
+                        {header.supplierAddress && (
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                            {header.supplierAddress}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
+                          {header.invoiceNumber && (
+                            <div className="flex items-center gap-1">
+                              <span className="material-icons text-sm text-muted-foreground">receipt</span>
+                              <span className="text-sm text-muted-foreground">
+                                {header.invoiceNumber}
+                              </span>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                            <span className="text-xs text-muted-foreground">
-                              Submitted
-                            </span>
-                          </div>
+                          )}
+                          {formattedDate && (
+                            <div className="flex items-center gap-1">
+                              <span className="material-icons text-sm text-muted-foreground">event</span>
+                              <span className="text-sm text-muted-foreground">
+                                {formattedDate}
+                              </span>
+                            </div>
+                          )}
+                          {(totals.net || totals.grandTotal) && (
+                            <div className="flex items-center gap-1">
+                              <span className="material-icons text-sm text-muted-foreground">currency_rupee</span>
+                              <span className="text-sm font-medium text-foreground">
+                                {(totals.net || totals.grandTotal).toFixed(2)}
+                              </span>
+                            </div>
+                          )}
                         </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <span className="text-xs text-muted-foreground">
+                          Submitted
+                        </span>
                       </div>
                     </div>
                   </CardContent>
