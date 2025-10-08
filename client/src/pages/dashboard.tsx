@@ -253,7 +253,14 @@ export default function Dashboard() {
                   {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 ? (
                     <div className="divide-y divide-gray-100">
                       {pendingInvoices.map((invoice: any) => (
-                        <div key={invoice.messageId} className="p-3 hover:bg-gray-50">
+                        <div 
+                          key={invoice.messageId} 
+                          className="p-3 hover:bg-gray-50 cursor-pointer"
+                          onClick={() => {
+                            setShowNotificationDropdown(false);
+                            setLocation('/ai-assistant');
+                          }}
+                        >
                           <div className="flex items-start gap-3">
                             {invoice.imageData && (
                               <img 
