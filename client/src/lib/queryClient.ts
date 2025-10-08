@@ -12,8 +12,11 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  // Add /api prefix to all requests to be handled by the proxy
-  const apiUrl = url.startsWith('http') ? url : `/api${url.startsWith('/') ? '' : '/'}${url}`;
+  // Add /api prefix only if not already present
+  let apiUrl = url;
+  if (!url.startsWith('http') && !url.startsWith('/api/')) {
+    apiUrl = `/api${url.startsWith('/') ? '' : '/'}${url}`;
+  }
   
   console.log(`[API Request] ${method} ${apiUrl}`, data ? { data } : '');
   

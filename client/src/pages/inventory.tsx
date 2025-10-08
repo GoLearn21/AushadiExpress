@@ -59,8 +59,7 @@ export default function Inventory() {
         productId: newProduct.id,
         productName: newProduct.name,
         ...stockForm,
-        expiryDate: new Date(stockForm.expiryDate).toISOString(),
-        tenantId: newProduct.tenantId ?? localStorage.getItem('currentTenantId') ?? 'default'
+        expiryDate: new Date(stockForm.expiryDate).toISOString()
       });
     },
     onError: (error: any) => {
@@ -74,8 +73,7 @@ export default function Inventory() {
 
   const createStock = useMutation({
     mutationFn: async (stockData: any) => {
-      const tenantId = stockData.tenantId ?? localStorage.getItem('currentTenantId') ?? 'default';
-      const response = await apiRequest('POST', '/api/stock', { ...stockData, tenantId });
+      const response = await apiRequest('POST', '/api/stock', stockData);
       return response.json();
     },
     onSuccess: () => {
@@ -93,8 +91,7 @@ export default function Inventory() {
   });
 
   const handleAddProduct = () => {
-    const tenantId = localStorage.getItem('currentTenantId') || 'default';
-    createProduct.mutate({ ...productForm, tenantId });
+    createProduct.mutate(productForm);
   };
 
   if (productsLoading || stockLoading) {
