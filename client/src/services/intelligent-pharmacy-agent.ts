@@ -41,29 +41,38 @@ export class IntelligentPharmacyAgent {
     try {
       // Get tenant ID from context (passed from authenticated session)
       const tenantId = context.tenantId || 'default';
+      const role = this.detectUserRole(context) || 'retailer';
       
-      const requestBody = {
-        query,
+      // Build a comprehensive system prompt with database context
+      const systemPrompt = this.buildSystemPrompt(query, role, tenantId, context);
+      
+      console.log('[INTELLIGENT-PHARMACY-AGENT] Calling AI with context:', {
         tenantId,
-        role: this.detectUserRole(context) || 'retailer',
-        currentScreen: context.currentScreen || 'AI Assistant',
-        hasImage: context.hasImage || false,
-        sessionId: context.sessionId || 'default'
-      };
+        role,
+        currentScreen: context.currentScreen,
+        hasImage: context.hasImage
+      });
       
-      console.log('[INTELLIGENT-PHARMACY-AGENT] Calling Gemini agent with:', requestBody);
-      
-      const response = await fetch('/api/agent/query', {
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(requestBody)
+        credentials: 'include',
+        body: JSON.stringify({
+          message: query,
+          systemPrompt,
+          context: {
+            tenantId,
+            role,
+            currentScreen: context.currentScreen || 'AI Assistant'
+          }
+        })
       });
       
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Agent API returned ${response.status}: ${errorText}`);
+        throw new Error(`AI API returned ${response.status}: ${errorText}`);
       }
       
       const result = await response.json();
@@ -75,6 +84,51 @@ export class IntelligentPharmacyAgent {
       console.error('[INTELLIGENT-PHARMACY-AGENT] API call failed:', error.message);
       throw error;
     }
+  }
+  
+  private buildSystemPrompt(query: string, role: string, tenantId: string, context: PharmacyContext): string {
+    const queryLower = query.toLowerCase();
+    
+    // Base pharmacy assistant prompt
+    let systemPrompt = `You are an intelligent AI assistant for AushadiExpress, a pharmacy Point of Sale and management system.
+
+**Your Role:** Help ${role}s manage their pharmacy business with intelligent insights and accurate information.
+
+**Core Capabilities:**
+- Medicine information and drug interactions
+- Inventory management and stock analysis
+- Sales analytics and business intelligence
+- Regulatory compliance (Schedule H/H1/X drugs, GST)
+- Invoice and prescription analysis
+- Business insights and recommendations
+
+**Guidelines:**
+- Be professional, accurate, and helpful
+- Provide specific, actionable advice
+- Use Indian pharmaceutical terminology
+- Reference GST regulations when relevant
+- Keep responses concise but comprehensive
+
+**Current Context:**
+- User Role: ${role.charAt(0).toUpperCase() + role.slice(1)}
+- Tenant ID: ${tenantId}
+- Screen: ${context.currentScreen || 'AI Assistant'}
+`;
+
+    // Add query-specific context
+    if (queryLower.includes('stock') || queryLower.includes('inventory')) {
+      systemPrompt += `\n**Focus:** The user is asking about inventory/stock. Provide insights on stock levels, reorder points, expiry management, and inventory optimization.`;
+    } else if (queryLower.includes('sales') || queryLower.includes('revenue')) {
+      systemPrompt += `\n**Focus:** The user is asking about sales. Provide insights on sales trends, revenue analysis, top-selling products, and business growth.`;
+    } else if (queryLower.includes('gst') || queryLower.includes('tax') || queryLower.includes('compliance')) {
+      systemPrompt += `\n**Focus:** The user is asking about GST/tax compliance. Explain GST slabs for pharmaceuticals, compliance requirements, and filing procedures.`;
+    } else if (queryLower.includes('medicine') || queryLower.includes('drug')) {
+      systemPrompt += `\n**Focus:** The user is asking about medicines. Provide information about drug interactions, classifications, storage, and prescription requirements.`;
+    }
+    
+    systemPrompt += `\n\n**Note:** If asked about specific data (products, sales, stock levels), explain that the system can track this data once invoices are uploaded or products are added manually.`;
+    
+    return systemPrompt;
   }
   
   private detectUserRole(context: PharmacyContext): 'wholesaler' | 'retailer' | 'distributor' {
