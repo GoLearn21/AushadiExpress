@@ -9,9 +9,16 @@ interface SetupWizardProps {
   onComplete: () => void;
 }
 
+type UserRole = 'customer' | 'retailer' | 'wholesaler' | 'distributor';
+
 export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [pharmacyName, setPharmacyName] = useState('');
+  const [step, setStep] = useState<'role' | 'details'>('role');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
+  
+  const [username, setUsername] = useState('');
+  const [businessName, setBusinessName] = useState('');
+  const [pincode, setPincode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,17 +27,17 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   useEffect(() => {
     const savedBusinessName = localStorage.getItem('lastBusinessName');
     if (savedBusinessName) {
-      setPharmacyName(savedBusinessName);
+      setUsername(savedBusinessName);
     }
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!pharmacyName.trim() || !password) {
+    if (!username.trim() || !password) {
       toast({
         title: 'Error',
-        description: 'Please enter your pharmacy name and password',
+        description: 'Please enter your username and password',
         variant: 'destructive',
       });
       return;
@@ -44,7 +51,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          username: pharmacyName,
+          username: username,
           password: password,
         }),
       });
@@ -55,11 +62,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         throw new Error(data.error || 'Login failed');
       }
 
-      localStorage.setItem('lastBusinessName', pharmacyName);
+      localStorage.setItem('lastBusinessName', username);
 
       toast({
         title: 'Welcome back!',
-        description: `Logged in as ${pharmacyName}`,
+        description: `Logged in successfully`,
       });
 
       onComplete();
@@ -76,13 +83,33 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!pharmacyName.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please enter your pharmacy name',
-        variant: 'destructive',
-      });
-      return;
+    if (selectedRole === 'customer') {
+      if (!username.trim()) {
+        toast({
+          title: 'Error',
+          description: 'Please enter your name',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!/^\d{6}$/.test(pincode)) {
+        toast({
+          title: 'Error',
+          description: 'Please enter a valid 6-digit pincode',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } else {
+      if (!businessName.trim()) {
+        toast({
+          title: 'Error',
+          description: 'Please enter your business name',
+          variant: 'destructive',
+        });
+        return;
+      }
     }
 
     if (password.length < 6) {
@@ -106,14 +133,23 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setIsLoading(true);
 
     try {
+      const payload: any = {
+        password: password,
+        role: selectedRole,
+      };
+
+      if (selectedRole === 'customer') {
+        payload.username = username;
+        payload.pincode = pincode;
+      } else {
+        payload.tenantName = businessName;
+      }
+
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({
-          username: pharmacyName,
-          password: password,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -124,11 +160,16 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
       const updatedUser = { ...data, onboarded: true };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      localStorage.setItem('lastBusinessName', pharmacyName);
+      
+      if (selectedRole !== 'customer') {
+        localStorage.setItem('lastBusinessName', businessName);
+      }
       
       toast({
         title: 'Welcome!',
-        description: `${pharmacyName} is ready to go!`,
+        description: selectedRole === 'customer' 
+          ? `Welcome ${username}! Start searching for medicines.`
+          : `${businessName} is ready to go!`,
       });
 
       onComplete();
@@ -142,37 +183,260 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     }
   };
 
+  const roleOptions = [
+    { 
+      value: 'customer' as UserRole, 
+      label: 'Customer', 
+      emoji: '🛒',
+      description: 'Search and order medicines'
+    },
+    { 
+      value: 'retailer' as UserRole, 
+      label: 'Retailer', 
+      emoji: '🏪',
+      description: 'Manage pharmacy inventory'
+    },
+    { 
+      value: 'wholesaler' as UserRole, 
+      label: 'Wholesaler', 
+      emoji: '📦',
+      description: 'Distribute to pharmacies'
+    },
+    { 
+      value: 'distributor' as UserRole, 
+      label: 'Distributor', 
+      emoji: '🚚',
+      description: 'Supply to wholesalers'
+    },
+  ];
+
+  const switchToRegister = () => {
+    setMode('register');
+    setStep('role');
+    setPassword('');
+    setConfirmPassword('');
+    setUsername('');
+    setBusinessName('');
+    setPincode('');
+  };
+
+  const switchToLogin = () => {
+    setMode('login');
+    setPassword('');
+    setConfirmPassword('');
+  };
+
+  if (mode === 'login') {
+    return (
+      <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
+            Log in to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium">
+                Username
+              </Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Enter your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading}
+                required
+                className="h-11"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-sm font-medium">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
+                required
+                className="h-11"
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full h-11 font-medium"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Logging in...' : 'Log In'}
+            </Button>
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={switchToRegister}
+                className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-2 py-1"
+                disabled={isLoading}
+              >
+                Don't have an account? Register
+              </button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (step === 'role') {
+    return (
+      <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
+        <CardHeader className="space-y-1 pb-4">
+          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+            Choose Account Type
+          </CardTitle>
+          <CardDescription className="text-gray-600 dark:text-gray-400">
+            Select how you'll use AushadiExpress
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3">
+            {roleOptions.map((option) => (
+              <button
+                key={option.value}
+                onClick={() => setSelectedRole(option.value)}
+                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                  selectedRole === option.value
+                    ? 'border-primary bg-primary/5'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">{option.emoji}</span>
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 dark:text-white">
+                      {option.label}
+                    </div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                      {option.description}
+                    </div>
+                  </div>
+                  {selectedRole === option.value && (
+                    <div className="text-primary">✓</div>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <Button
+            onClick={() => setStep('details')}
+            className="w-full h-11 font-medium"
+          >
+            Continue
+          </Button>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={switchToLogin}
+              className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-2 py-1"
+            >
+              Already have an account? Log in
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
       <CardHeader className="space-y-1 pb-4">
-        <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
-          {mode === 'register' ? 'Create Account' : 'Welcome Back'}
-        </CardTitle>
-        <CardDescription className="text-gray-600 dark:text-gray-400">
-          {mode === 'register' ? (
-            'Set up your pharmacy account to get started'
-          ) : (
-            'Log in to access your dashboard'
-          )}
-        </CardDescription>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setStep('role')}
+            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          >
+            ←
+          </button>
+          <div>
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+              Create {roleOptions.find(r => r.value === selectedRole)?.label} Account
+            </CardTitle>
+            <CardDescription className="text-gray-600 dark:text-gray-400">
+              {selectedRole === 'customer' 
+                ? 'Enter your details to start ordering medicines'
+                : 'Set up your business account to get started'
+              }
+            </CardDescription>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="pharmacyName" className="text-sm font-medium">
-              Business Name
-            </Label>
-            <Input
-              id="pharmacyName"
-              type="text"
-              placeholder="Enter your pharmacy name"
-              value={pharmacyName}
-              onChange={(e) => setPharmacyName(e.target.value)}
-              disabled={isLoading}
-              required
-              className="h-11"
-            />
-          </div>
+        <form onSubmit={handleRegister} className="space-y-4">
+          {selectedRole === 'customer' ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm font-medium">
+                  Your Name
+                </Label>
+                <Input
+                  id="username"
+                  type="text"
+                  placeholder="Enter your name"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  disabled={isLoading}
+                  required
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pincode" className="text-sm font-medium">
+                  Pincode
+                </Label>
+                <Input
+                  id="pincode"
+                  type="text"
+                  placeholder="Enter 6-digit pincode"
+                  value={pincode}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    setPincode(value);
+                  }}
+                  disabled={isLoading}
+                  required
+                  maxLength={6}
+                  className="h-11"
+                />
+              </div>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="businessName" className="text-sm font-medium">
+                Business Name
+              </Label>
+              <Input
+                id="businessName"
+                type="text"
+                placeholder="Enter your business name"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                disabled={isLoading}
+                required
+                className="h-11"
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-medium">
@@ -181,7 +445,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             <Input
               id="password"
               type="password"
-              placeholder={mode === 'register' ? 'Min. 6 characters' : 'Enter password'}
+              placeholder="Min. 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
@@ -190,50 +454,38 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
             />
           </div>
 
-          {mode === 'register' && (
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirm Password
-              </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Re-enter password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-                required
-                className="h-11"
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-sm font-medium">
+              Confirm Password
+            </Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              placeholder="Re-enter password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading}
+              required
+              className="h-11"
+            />
+          </div>
 
           <Button
             type="submit"
             className="w-full h-11 font-medium"
             disabled={isLoading}
           >
-            {isLoading 
-              ? (mode === 'login' ? 'Logging in...' : 'Setting up...') 
-              : (mode === 'login' ? 'Log In' : 'Complete Setup')
-            }
+            {isLoading ? 'Setting up...' : 'Complete Setup'}
           </Button>
 
           <div className="text-center">
             <button
               type="button"
-              onClick={() => {
-                setMode(mode === 'login' ? 'register' : 'login');
-                setPassword('');
-                setConfirmPassword('');
-              }}
+              onClick={switchToLogin}
               className="text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary/20 rounded px-2 py-1"
               disabled={isLoading}
             >
-              {mode === 'login' 
-                ? "Don't have an account? Register" 
-                : 'Already have an account? Log in'
-              }
+              Already have an account? Log in
             </button>
           </div>
         </form>
