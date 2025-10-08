@@ -4,14 +4,57 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { tw } from '@/lib/theme';
+import { useToast } from '@/hooks/use-toast';
 
 export default function CustomerSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [pincode, setPincode] = useState('');
+  const { toast } = useToast();
 
   const handleSearch = () => {
     console.log('Searching for:', searchTerm, 'in pincode:', pincode);
     // TODO: Implement search functionality
+  };
+
+  const handleNearMe = () => {
+    if (navigator.geolocation) {
+      toast({ title: "Finding pharmacies near you..." });
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('Location:', position.coords);
+          toast({ title: "Location found", description: "Searching nearby pharmacies..." });
+          // TODO: Search pharmacies near location
+        },
+        (error) => {
+          toast({ 
+            title: "Location access denied", 
+            description: "Please enable location or enter pincode manually",
+            variant: "destructive" 
+          });
+        }
+      );
+    } else {
+      toast({ 
+        title: "Location not supported", 
+        description: "Please enter pincode manually",
+        variant: "destructive" 
+      });
+    }
+  };
+
+  const handleRecent = () => {
+    toast({ title: "Recent Searches", description: "Your recent searches will appear here" });
+    // TODO: Implement recent searches
+  };
+
+  const handleSaved = () => {
+    toast({ title: "Saved Medicines", description: "Your saved medicines will appear here" });
+    // TODO: Implement saved medicines
+  };
+
+  const handleUploadRx = () => {
+    toast({ title: "Upload Prescription", description: "Camera/file picker will open here" });
+    // TODO: Implement prescription upload
   };
 
   const popularMedicines = [
@@ -22,10 +65,10 @@ export default function CustomerSearchPage() {
   ];
 
   const quickActions = [
-    { icon: 'local_pharmacy', label: 'Near Me', color: 'bg-blue-500' },
-    { icon: 'history', label: 'Recent', color: 'bg-purple-500' },
-    { icon: 'favorite', label: 'Saved', color: 'bg-pink-500' },
-    { icon: 'receipt_long', label: 'Upload Rx', color: 'bg-green-500' },
+    { icon: 'local_pharmacy', label: 'Near Me', color: 'bg-blue-500', onClick: handleNearMe },
+    { icon: 'history', label: 'Recent', color: 'bg-purple-500', onClick: handleRecent },
+    { icon: 'favorite', label: 'Saved', color: 'bg-pink-500', onClick: handleSaved },
+    { icon: 'receipt_long', label: 'Upload Rx', color: 'bg-green-500', onClick: handleUploadRx },
   ];
 
   return (
@@ -104,7 +147,8 @@ export default function CustomerSearchPage() {
                 {quickActions.map((action, index) => (
                   <button
                     key={index}
-                    className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow"
+                    onClick={action.onClick}
+                    className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow active:scale-95"
                   >
                     <div className={`${action.color} w-12 h-12 rounded-full flex items-center justify-center mb-2`}>
                       <span className="material-icons text-white text-xl">{action.icon}</span>
