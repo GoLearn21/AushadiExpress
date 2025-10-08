@@ -328,9 +328,9 @@ export default function Settings() {
     },
     {
       id: "tenant",
-      icon: "business",
-      title: "Enterprise/Tenant ID",
-      description: "Data scope for AI Assistant queries",
+      icon: userRole === 'customer' ? "person" : "business",
+      title: userRole === 'customer' ? "Account Information" : "Enterprise/Tenant ID",
+      description: userRole === 'customer' ? "Your account details" : "Data scope for AI Assistant queries",
       disabled: false,
       tenant: true,
       currentTenant: currentTenantId,
@@ -589,16 +589,18 @@ export default function Settings() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">Business Name</Label>
+                    <Label className="text-sm font-medium">{userRole === 'customer' ? 'Name' : 'Business Name'}</Label>
                     <div className="p-2 bg-muted rounded text-sm">
                       {businessName || 'Not set'}
                     </div>
-                    <Label className="text-sm font-medium mt-3">Tenant ID</Label>
+                    <Label className="text-sm font-medium mt-3">{userRole === 'customer' ? 'Account ID' : 'Tenant ID'}</Label>
                     <div className="p-2 bg-muted rounded text-sm font-mono">
                       {item.currentTenant}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      AI Assistant queries are scoped to this tenant/enterprise. All data is filtered by this ID.
+                      {userRole === 'customer' 
+                        ? 'Your unique account identifier' 
+                        : 'AI Assistant queries are scoped to this tenant/enterprise. All data is filtered by this ID.'}
                     </div>
                   </div>
                 </div>
