@@ -14,8 +14,8 @@ export default function Sales() {
     queryKey: ['/api/sales/today'],
   });
 
-  const { data: pendingInvoices = [] } = useQuery({
-    queryKey: ['/api/pending-invoices'],
+  const { data: submittedInvoices = [] } = useQuery({
+    queryKey: ['/api/documents'],
   });
 
   if (isLoading) {
@@ -131,18 +131,19 @@ export default function Sales() {
           )
         ) : (
           // Receiving Tab Content
-          Array.isArray(pendingInvoices) && pendingInvoices.length > 0 ? (
-            pendingInvoices.map((invoice: any) => {
-              const invoiceData = invoice.invoiceData || {};
-              const productCount = invoiceData.items?.length || 0;
+          Array.isArray(submittedInvoices) && submittedInvoices.length > 0 ? (
+            submittedInvoices.map((doc: any) => {
+              const header = doc.header || {};
+              const lineItems = doc.lineItems || [];
+              const productCount = lineItems.length;
               
               return (
-                <Card key={invoice.messageId} className="elevation-1" data-testid={`invoice-${invoice.messageId}`}>
+                <Card key={doc.id} className="elevation-1" data-testid={`invoice-${doc.id}`}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
-                      {invoice.imageData && (
+                      {doc.fileUrl && (
                         <img 
-                          src={invoice.imageData} 
+                          src={doc.fileUrl} 
                           alt="Invoice" 
                           className="w-16 h-16 object-cover rounded"
                         />
@@ -151,11 +152,11 @@ export default function Sales() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <p className="font-semibold text-lg">
-                              {invoiceData.supplierName || invoice.summaryText || 'Supplier Invoice'}
+                              {header.supplier || doc.fileName || 'Supplier Invoice'}
                             </p>
-                            {invoiceData.supplierDetails && (
+                            {header.buyer && (
                               <p className="text-sm text-muted-foreground mt-1">
-                                {invoiceData.supplierDetails}
+                                Buyer: {header.buyer}
                               </p>
                             )}
                             <div className="flex items-center gap-4 mt-2">
@@ -168,19 +169,15 @@ export default function Sales() {
                               <div className="flex items-center gap-1">
                                 <span className="material-icons text-sm text-muted-foreground">schedule</span>
                                 <span className="text-sm text-muted-foreground">
-                                  {new Date(invoice.createdAt).toLocaleDateString()} at {new Date(invoice.createdAt).toLocaleTimeString()}
+                                  {new Date(doc.createdAt).toLocaleDateString()} at {new Date(doc.createdAt).toLocaleTimeString()}
                                 </span>
                               </div>
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <div className={`w-2 h-2 rounded-full ${
-                              invoice.submissionState === 'idle' ? 'bg-gray-400' :
-                              invoice.submissionState === 'pending' ? 'bg-yellow-500' :
-                              'bg-green-500'
-                            }`}></div>
-                            <span className="text-xs text-muted-foreground capitalize">
-                              {invoice.submissionState}
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span className="text-xs text-muted-foreground">
+                              Submitted
                             </span>
                           </div>
                         </div>
