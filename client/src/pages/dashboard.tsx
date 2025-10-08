@@ -212,6 +212,20 @@ export default function Dashboard() {
           <div className="flex items-center space-x-2" data-testid="headerOnline">
             <div className={tw.statusOnline}></div>
             <span className={`${tw.bodySm} text-primary-foreground/80`}>Online</span>
+            
+            {/* Notification Bell */}
+            <button 
+              className="text-primary-foreground/80 hover:text-primary-foreground transition-colors relative"
+              onClick={() => setShowPendingAlert(!showPendingAlert)}
+            >
+              <span className="material-icons text-lg">notifications</span>
+              {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {pendingInvoices.length}
+                </span>
+              )}
+            </button>
+            
             <button className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
               <span className="material-icons text-lg">refresh</span>
             </button>
