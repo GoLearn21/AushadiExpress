@@ -152,10 +152,61 @@ export default function Settings() {
     setIsSubmitting(true);
     
     try {
-      // Generate a secure password (user can change it later if needed)
+      // Check if user is already logged in
+      const currentUserRes = await fetch('/api/auth/me', {
+        credentials: 'include',
+      });
+
+      if (currentUserRes.ok) {
+        // User is already logged in, just update their profile
+        const currentUser = await currentUserRes.json();
+        console.log('[SETUP] User already logged in, updating profile');
+        
+        const updateRes = await fetch('/api/auth/update-profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            role: userRole,
+            businessName: businessName,
+          }),
+        });
+
+        if (!updateRes.ok) {
+          throw new Error('Failed to update profile');
+        }
+
+        const data = await updateRes.json();
+        
+        // Store updated user data
+        const userData = { 
+          ...data, 
+          onboarded: true,
+          role: userRole 
+        };
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('onboardingCompleted', 'true');
+        localStorage.setItem('businessName', businessName);
+        localStorage.setItem('userRole', userRole);
+        
+        setCurrentTenantId(data.tenantId);
+        setShowOnboarding(false);
+        
+        toast({
+          title: "Profile Updated!",
+          description: `Your role has been set to ${userRole}`,
+        });
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        
+        return;
+      }
+
+      // User is not logged in, try to register as a new user
       const tempPassword = `${businessName.toLowerCase().replace(/\s+/g, '')}123456`;
       
-      // First, try to register as a new user
       const registerRes = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -167,49 +218,13 @@ export default function Settings() {
         }),
       });
 
-      let data = await registerRes.json();
+      const data = await registerRes.json();
 
       if (!registerRes.ok) {
-        // If username already exists, try to login and update profile
         if (data.error && data.error.includes('already exists')) {
-          console.log('[SETUP] User already exists, attempting login and profile update');
-          
-          // Try to login with the generated password
-          const loginRes = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              username: businessName,
-              password: tempPassword,
-            }),
-          });
-
-          if (!loginRes.ok) {
-            throw new Error('Username already exists with a different password. Please use the login page.');
-          }
-
-          data = await loginRes.json();
-          
-          // Update the user's profile with the new role and business name
-          const updateRes = await fetch('/api/auth/update-profile', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({
-              role: userRole,
-              businessName: businessName,
-            }),
-          });
-
-          if (!updateRes.ok) {
-            throw new Error('Failed to update profile');
-          }
-
-          data = await updateRes.json();
-        } else {
-          throw new Error(data.error || 'Registration failed');
+          throw new Error('This business name is already registered. Please use a different name or log in with your existing account.');
         }
+        throw new Error(data.error || 'Registration failed');
       }
 
       // Store user data including tenant ID
@@ -223,16 +238,14 @@ export default function Settings() {
       localStorage.setItem('businessName', businessName);
       localStorage.setItem('userRole', userRole);
       
-      // Update current tenant ID display
       setCurrentTenantId(data.tenantId);
-      
       setShowOnboarding(false);
+      
       toast({
         title: "Welcome to AushadiExpress!",
         description: `Setup completed! Your unique Tenant ID: ${data.tenantId}`,
       });
       
-      // Reload to refresh auth state
       setTimeout(() => {
         window.location.reload();
       }, 1500);
