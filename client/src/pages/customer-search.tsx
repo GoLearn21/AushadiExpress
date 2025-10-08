@@ -53,10 +53,10 @@ export default function CustomerSearchPage() {
             
             {/* Hero Section */}
             <div className="mb-6">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              <h1 className="text-2xl font-medium text-gray-900 dark:text-white mb-1 tracking-tight">
                 Find Your Medicine
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-gray-600 dark:text-gray-400 font-normal">
                 Discover nearby pharmacies with your medicine in stock
               </p>
             </div>
