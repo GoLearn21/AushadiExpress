@@ -148,20 +148,30 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         throw new Error(data.error || 'Registration failed');
       }
 
-      localStorage.setItem('user', JSON.stringify(data));
-      
-      if (selectedRole !== 'customer') {
+      if (selectedRole === 'customer') {
+        // For customers: redirect to login after registration
+        toast({
+          title: 'Registration Successful!',
+          description: 'Please log in to continue',
+        });
+        
+        setMode('login');
+        setUsername(username);
+        setPassword('');
+        setConfirmPassword('');
+        setIsLoading(false);
+      } else {
+        // For businesses: auto-login as before
+        localStorage.setItem('user', JSON.stringify(data));
         localStorage.setItem('lastBusinessName', businessName);
-      }
-      
-      toast({
-        title: 'Welcome!',
-        description: selectedRole === 'customer' 
-          ? `Welcome ${username}!`
-          : `${businessName} is ready to go!`,
-      });
+        
+        toast({
+          title: 'Welcome!',
+          description: `${businessName} is ready to go!`,
+        });
 
-      onComplete();
+        onComplete();
+      }
     } catch (error: any) {
       toast({
         title: 'Registration Failed',
