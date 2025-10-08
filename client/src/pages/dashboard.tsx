@@ -11,7 +11,72 @@ import { SmartActionFAB } from "../components/smart-action-fab";
 import { useAuth } from "../hooks/use-auth";
 import { Alert, AlertDescription } from "../components/ui/alert";
 
-export default function Dashboard() {
+// Customer Dashboard Component
+function CustomerDashboard() {
+  const [, setLocation] = useLocation();
+
+  return (
+    <div className="p-4 pb-24">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-2">Welcome Back!</h1>
+        <p className="text-muted-foreground mb-6">Find medicines from nearby pharmacies</p>
+
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <button
+              onClick={() => setLocation('/search')}
+              className="w-full p-4 bg-primary text-primary-foreground rounded-lg flex items-center gap-3 hover:opacity-90 transition-opacity"
+            >
+              <span className="material-icons">search</span>
+              <span className="text-lg font-medium">Search for Medicines</span>
+            </button>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold">Quick Actions</h2>
+          
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setLocation('/orders')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-50 rounded-lg">
+                  <span className="material-icons text-blue-600">shopping_bag</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold">My Orders</h3>
+                  <p className="text-sm text-muted-foreground">Track your medicine orders</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setLocation('/settings')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-50 rounded-lg">
+                  <span className="material-icons text-green-600">person</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Profile Settings</h3>
+                  <p className="text-sm text-muted-foreground">Update your information</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Business Dashboard Component (Retailer, Wholesaler, Distributor)
+function BusinessDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
@@ -529,4 +594,23 @@ export default function Dashboard() {
       />
     </div>
   );
+}
+
+// Main Dashboard Component - Renders based on user role
+export default function Dashboard() {
+  const [userRole, setUserRole] = useState<string>('retailer');
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      setUserRole(storedRole);
+    }
+  }, []);
+
+  // Render appropriate dashboard based on user role
+  if (userRole === 'customer') {
+    return <CustomerDashboard />;
+  }
+
+  return <BusinessDashboard />;
 }
