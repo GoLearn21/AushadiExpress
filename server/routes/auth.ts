@@ -33,9 +33,6 @@ router.post('/register', async (req, res) => {
       if (!username) {
         return res.status(400).json({ error: 'Name is required for customer registration' });
       }
-      if (!pincode) {
-        return res.status(400).json({ error: 'Pincode is required for customer registration' });
-      }
       finalUsername = username;
     } else {
       // Business roles: use tenantName (business name)
@@ -61,8 +58,8 @@ router.post('/register', async (req, res) => {
       username: finalUsername,
       password: hashedPassword,
       role: userRole,
-      pincode: userRole === 'customer' ? pincode : null,
-      onboarded: true,
+      pincode: pincode || null,
+      onboarded: userRole === 'customer' ? false : true,
     });
     
     (req.session as any).userId = user.id;
@@ -87,7 +84,9 @@ router.post('/register', async (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role,
-        tenantId: user.tenantId
+        tenantId: user.tenantId,
+        onboarded: user.onboarded,
+        pincode: user.pincode
       });
     });
   } catch (error) {
@@ -130,7 +129,9 @@ router.post('/login', async (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role,
-        tenantId: user.tenantId
+        tenantId: user.tenantId,
+        onboarded: user.onboarded,
+        pincode: user.pincode
       });
     });
   } catch (error) {
@@ -177,7 +178,9 @@ router.get('/me', async (req, res) => {
       id: user.id,
       username: user.username,
       role: user.role,
-      tenantId: user.tenantId
+      tenantId: user.tenantId,
+      onboarded: user.onboarded,
+      pincode: user.pincode
     });
   } catch (error) {
     console.error('[AUTH ERROR] Failed to get current user:', error);
@@ -211,6 +214,11 @@ router.patch('/update-profile', async (req, res) => {
         return res.status(400).json({ error: 'Valid 6-digit pincode is required for customer role' });
       }
       user.pincode = finalPincode;
+      
+      // Mark customer as onboarded once they provide pincode
+      if (pincode && !user.onboarded) {
+        user.onboarded = true;
+      }
     } else {
       // Business roles don't need pincode, clear it if provided
       user.pincode = null;
@@ -234,7 +242,9 @@ router.patch('/update-profile', async (req, res) => {
       id: user.id,
       username: user.username,
       role: user.role,
-      tenantId: user.tenantId
+      tenantId: user.tenantId,
+      onboarded: user.onboarded,
+      pincode: user.pincode
     });
   } catch (error) {
     console.error('[AUTH ERROR] Failed to update profile:', error);

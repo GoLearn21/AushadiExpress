@@ -1,13 +1,14 @@
 import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { SetupWizard } from './setup-wizard';
+import { PincodeOnboarding } from './pincode-onboarding';
 
 interface SetupGateProps {
   children: ReactNode;
 }
 
 export function SetupGate({ children }: SetupGateProps) {
-  const { needsSetup, refetch } = useAuth();
+  const { user, needsSetup, refetch } = useAuth();
 
   if (needsSetup) {
     return (
@@ -35,6 +36,11 @@ export function SetupGate({ children }: SetupGateProps) {
         </div>
       </div>
     );
+  }
+
+  // Check if user is a customer without pincode
+  if (user && user.role === 'customer' && !user.pincode) {
+    return <PincodeOnboarding onComplete={refetch} />;
   }
 
   return <>{children}</>;

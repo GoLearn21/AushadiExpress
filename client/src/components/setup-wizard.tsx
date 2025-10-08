@@ -18,7 +18,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   
   const [username, setUsername] = useState('');
   const [businessName, setBusinessName] = useState('');
-  const [pincode, setPincode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -92,15 +91,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         });
         return;
       }
-
-      if (!/^\d{6}$/.test(pincode)) {
-        toast({
-          title: 'Error',
-          description: 'Please enter a valid 6-digit pincode',
-          variant: 'destructive',
-        });
-        return;
-      }
     } else {
       if (!businessName.trim()) {
         toast({
@@ -140,7 +130,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
       if (selectedRole === 'customer') {
         payload.username = username;
-        payload.pincode = pincode;
       } else {
         payload.tenantName = businessName;
       }
@@ -158,8 +147,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         throw new Error(data.error || 'Registration failed');
       }
 
-      const updatedUser = { ...data, onboarded: true };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
+      localStorage.setItem('user', JSON.stringify(data));
       
       if (selectedRole !== 'customer') {
         localStorage.setItem('lastBusinessName', businessName);
@@ -168,7 +156,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       toast({
         title: 'Welcome!',
         description: selectedRole === 'customer' 
-          ? `Welcome ${username}! Start searching for medicines.`
+          ? `Welcome ${username}!`
           : `${businessName} is ready to go!`,
       });
 
@@ -217,7 +205,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setConfirmPassword('');
     setUsername('');
     setBusinessName('');
-    setPincode('');
   };
 
   const switchToLogin = () => {
@@ -383,43 +370,21 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       <CardContent className="space-y-4">
         <form onSubmit={handleRegister} className="space-y-4">
           {selectedRole === 'customer' ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="username" className="text-sm font-medium">
-                  Your Name
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter your name"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  disabled={isLoading}
-                  required
-                  className="h-11"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="pincode" className="text-sm font-medium">
-                  Pincode
-                </Label>
-                <Input
-                  id="pincode"
-                  type="text"
-                  placeholder="Enter 6-digit pincode"
-                  value={pincode}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                    setPincode(value);
-                  }}
-                  disabled={isLoading}
-                  required
-                  maxLength={6}
-                  className="h-11"
-                />
-              </div>
-            </>
+            <div className="space-y-2">
+              <Label htmlFor="username" className="text-sm font-medium">
+                Your Name
+              </Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Enter your name"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoading}
+                required
+                className="h-11"
+              />
+            </div>
           ) : (
             <div className="space-y-2">
               <Label htmlFor="businessName" className="text-sm font-medium">

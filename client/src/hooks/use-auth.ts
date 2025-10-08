@@ -6,6 +6,7 @@ interface User {
   role: string;
   tenantId: string;
   onboarded?: boolean;
+  pincode?: string | null;
 }
 
 export function useAuth() {
