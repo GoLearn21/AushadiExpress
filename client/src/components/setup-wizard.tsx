@@ -61,6 +61,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         throw new Error(data.error || 'Login failed');
       }
 
+      localStorage.setItem('user', JSON.stringify(data));
       localStorage.setItem('lastBusinessName', username);
 
       toast({
