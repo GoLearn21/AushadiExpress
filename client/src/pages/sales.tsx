@@ -14,6 +14,10 @@ export default function Sales() {
     queryKey: ['/api/sales/today'],
   });
 
+  const { data: pendingInvoices = [] } = useQuery({
+    queryKey: ['/api/pending-invoices'],
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -49,79 +53,154 @@ export default function Sales() {
       />
 
       <div className="space-y-4">
-        {sales.length > 0 ? (
-          sales.map((sale: any) => (
-            <Card key={sale.id} className="elevation-1" data-testid={`sale-${sale.id}`}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="material-icons text-primary">receipt</span>
+        {activeTab === 'sales' ? (
+          // Sales Tab Content
+          sales.length > 0 ? (
+            sales.map((sale: any) => (
+              <Card key={sale.id} className="elevation-1" data-testid={`sale-${sale.id}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="material-icons text-primary">receipt</span>
+                      </div>
+                      <div>
+                        <p className="font-semibold" data-testid={`sale-id-${sale.id}`}>
+                          {sale.id.toUpperCase()}
+                        </p>
+                        <p className="text-sm text-muted-foreground" data-testid={`sale-date-${sale.id}`}>
+                          {new Date(sale.date).toLocaleDateString()} at {new Date(sale.date).toLocaleTimeString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold" data-testid={`sale-id-${sale.id}`}>
-                        {sale.id.toUpperCase()}
+                    
+                    <div className="text-right">
+                      <p className="text-2xl font-bold" data-testid={`sale-total-${sale.id}`}>
+                        ₹{sale.total.toFixed(2)}
                       </p>
-                      <p className="text-sm text-muted-foreground" data-testid={`sale-date-${sale.id}`}>
-                        {new Date(sale.date).toLocaleDateString()} at {new Date(sale.date).toLocaleTimeString()}
-                      </p>
+                      <div className="flex items-center space-x-1 justify-end mt-1">
+                        <div className={`w-2 h-2 rounded-full ${sale.synced ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                        <span className="text-xs text-muted-foreground" data-testid={`sale-sync-status-${sale.id}`}>
+                          {sale.synced ? 'Synced' : 'Pending Sync'}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  
-                  <div className="text-right">
-                    <p className="text-2xl font-bold" data-testid={`sale-total-${sale.id}`}>
-                      ₹{sale.total.toFixed(2)}
-                    </p>
-                    <div className="flex items-center space-x-1 justify-end mt-1">
-                      <div className={`w-2 h-2 rounded-full ${sale.synced ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                      <span className="text-xs text-muted-foreground" data-testid={`sale-sync-status-${sale.id}`}>
-                        {sale.synced ? 'Synced' : 'Pending Sync'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                {sale.items && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Items</h4>
-                    <div className="space-y-2">
-                      {(() => {
-                        try {
-                          const items = JSON.parse(sale.items);
-                          return items.map((item: any, index: number) => (
-                            <div key={index} className="flex justify-between items-center text-sm">
-                              <div className="flex-1">
-                                <p className="font-medium">{item.productName || item.name}</p>
-                                {item.batchNumber && (
-                                  <p className="text-xs text-muted-foreground">Batch: {item.batchNumber}</p>
-                                )}
+                  {sale.items && (
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Items</h4>
+                      <div className="space-y-2">
+                        {(() => {
+                          try {
+                            const items = JSON.parse(sale.items);
+                            return items.map((item: any, index: number) => (
+                              <div key={index} className="flex justify-between items-center text-sm">
+                                <div className="flex-1">
+                                  <p className="font-medium">{item.productName || item.name}</p>
+                                  {item.batchNumber && (
+                                    <p className="text-xs text-muted-foreground">Batch: {item.batchNumber}</p>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                  <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
+                                </div>
                               </div>
-                              <div className="text-right">
-                                <p className="font-medium">₹{(item.price * item.quantity).toFixed(2)}</p>
-                                <p className="text-xs text-muted-foreground">Qty: {item.quantity}</p>
-                              </div>
-                            </div>
-                          ));
-                        } catch (e) {
-                          return <p className="text-xs text-muted-foreground">Unable to display items</p>;
-                        }
-                      })()}
+                            ));
+                          } catch (e) {
+                            return <p className="text-xs text-muted-foreground">Unable to display items</p>;
+                          }
+                        })()}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card className="elevation-1">
+              <CardContent className="p-8 text-center">
+                <span className="material-icons text-6xl text-muted-foreground mb-4">assessment</span>
+                <h3 className="text-lg font-semibold mb-2">No sales yet</h3>
+                <p className="text-muted-foreground">
+                  Start making sales to see them appear here
+                </p>
               </CardContent>
             </Card>
-          ))
+          )
         ) : (
-          <Card className="elevation-1">
-            <CardContent className="p-8 text-center">
-              <span className="material-icons text-6xl text-muted-foreground mb-4">assessment</span>
-              <h3 className="text-lg font-semibold mb-2">No sales yet</h3>
-              <p className="text-muted-foreground">
-                Start making sales to see them appear here
-              </p>
-            </CardContent>
-          </Card>
+          // Receiving Tab Content
+          Array.isArray(pendingInvoices) && pendingInvoices.length > 0 ? (
+            pendingInvoices.map((invoice: any) => {
+              const invoiceData = invoice.invoiceData || {};
+              const productCount = invoiceData.items?.length || 0;
+              
+              return (
+                <Card key={invoice.messageId} className="elevation-1" data-testid={`invoice-${invoice.messageId}`}>
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      {invoice.imageData && (
+                        <img 
+                          src={invoice.imageData} 
+                          alt="Invoice" 
+                          className="w-16 h-16 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className="font-semibold text-lg">
+                              {invoiceData.supplierName || invoice.summaryText || 'Supplier Invoice'}
+                            </p>
+                            {invoiceData.supplierDetails && (
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {invoiceData.supplierDetails}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-4 mt-2">
+                              <div className="flex items-center gap-1">
+                                <span className="material-icons text-sm text-muted-foreground">inventory_2</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {productCount} {productCount === 1 ? 'product' : 'products'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="material-icons text-sm text-muted-foreground">schedule</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {new Date(invoice.createdAt).toLocaleDateString()} at {new Date(invoice.createdAt).toLocaleTimeString()}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <div className={`w-2 h-2 rounded-full ${
+                              invoice.submissionState === 'idle' ? 'bg-gray-400' :
+                              invoice.submissionState === 'pending' ? 'bg-yellow-500' :
+                              'bg-green-500'
+                            }`}></div>
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {invoice.submissionState}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <Card className="elevation-1">
+              <CardContent className="p-8 text-center">
+                <span className="material-icons text-6xl text-muted-foreground mb-4">inbox</span>
+                <h3 className="text-lg font-semibold mb-2">No invoices received</h3>
+                <p className="text-muted-foreground">
+                  Uploaded invoices will appear here
+                </p>
+              </CardContent>
+            </Card>
+          )
         )}
       </div>
     </div>
