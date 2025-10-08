@@ -275,27 +275,6 @@ export default function Settings() {
       onToggle: handleCashOnlyToggle
     },
     {
-      id: "receiving",
-      icon: "inbox",
-      title: "Receiving Beta",
-      description: "Enable inbound stock features",
-      disabled: false,
-      toggle: true,
-      toggled: enableReceivingBeta,
-      toggleLabel: "Enable receiving workflow",
-      onToggle: handleReceivingBetaToggle,
-      beta: true
-    },
-    {
-      id: "ai-assistant",
-      icon: "psychology",
-      title: "AI Assistant (Beta)",
-      description: "Join the beta for Q4 2025",
-      disabled: false,
-      beta: true,
-      dialog: true
-    },
-    {
       id: "data",
       icon: "storage",
       title: "Data & Sync",
