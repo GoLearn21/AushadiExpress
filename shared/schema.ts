@@ -7,9 +7,10 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").default("retailer"), // retailer, wholesaler, distributor
+  role: text("role").default("retailer"), // customer, retailer, wholesaler, distributor
   tenantId: varchar("tenant_id").notNull(),
   pharmacyName: text("pharmacy_name"),
+  pincode: varchar("pincode", { length: 10 }), // for customers and retailers (serviceability)
   onboarded: boolean("onboarded").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
