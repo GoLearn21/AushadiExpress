@@ -9,7 +9,7 @@ interface SetupWizardProps {
   onComplete: () => void;
 }
 
-type UserRole = 'customer' | 'retailer' | 'wholesaler' | 'distributor';
+type UserRole = 'customer' | 'retailer';
 
 export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -194,18 +194,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       label: 'Retailer', 
       emoji: '🏪',
       description: 'Manage pharmacy inventory'
-    },
-    { 
-      value: 'wholesaler' as UserRole, 
-      label: 'Wholesaler', 
-      emoji: '📦',
-      description: 'Distribute to pharmacies'
-    },
-    { 
-      value: 'distributor' as UserRole, 
-      label: 'Distributor', 
-      emoji: '🚚',
-      description: 'Supply to wholesalers'
     },
   ];
 

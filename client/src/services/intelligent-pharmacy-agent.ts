@@ -131,11 +131,12 @@ export class IntelligentPharmacyAgent {
     return systemPrompt;
   }
   
-  private detectUserRole(context: PharmacyContext): 'wholesaler' | 'retailer' | 'distributor' {
+  private detectUserRole(context: PharmacyContext): 'customer' | 'retailer' {
     // Simple role detection based on context
     // In a real app, this would be stored in user profile
-    if (context.currentScreen?.includes('wholesale')) return 'wholesaler';
-    if (context.currentScreen?.includes('distribution')) return 'distributor';
+    if (context.currentScreen?.includes('customer') || context.currentScreen?.includes('search')) {
+      return 'customer';
+    }
     return 'retailer'; // Default
   }
   

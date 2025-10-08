@@ -7,7 +7,7 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  role: text("role").default("retailer"), // customer, retailer, wholesaler, distributor
+  role: text("role").default("retailer"), // customer, retailer
   tenantId: varchar("tenant_id").notNull(),
   pharmacyName: text("pharmacy_name"),
   pincode: varchar("pincode", { length: 10 }), // for customers and retailers (serviceability)
@@ -66,7 +66,7 @@ export const captures = pgTable("captures", {
   uri: text("uri").notNull(), // file path or base64
   mode: text("mode").notNull(), // 'barcode', 'invoice', 'prescription'
   ownerId: varchar("owner_id").references(() => users.id).notNull(),
-  persona: text("persona").notNull(), // retailer, wholesaler, distributor
+  persona: text("persona").notNull(), // retailer, customer
   saleId: varchar("sale_id").references(() => sales.id), // optional link to sale
   processed: boolean("processed").default(false),
   metadata: text("metadata"), // JSON string for extracted data
@@ -89,7 +89,7 @@ export const receiveInvoices = pgTable("receive_invoices", {
 
 export const userProfile = pgTable("user_profile", {
   id: text("id").primaryKey().default("ME"),
-  role: text("role").notNull().default("retailer"), // retailer, wholesaler, distributor
+  role: text("role").notNull().default("retailer"), // retailer, customer
   createdAt: timestamp("created_at").defaultNow(),
 });
 
