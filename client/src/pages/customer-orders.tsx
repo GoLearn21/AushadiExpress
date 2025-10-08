@@ -29,7 +29,7 @@ export default function CustomerOrdersPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-4 pb-24">
           <div className="max-w-2xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">My Orders</h1>
+            <h1 className="text-2xl font-medium text-gray-900 dark:text-white mb-6 tracking-tight">My Orders</h1>
             
             {orders.length === 0 ? (
               <Card>
