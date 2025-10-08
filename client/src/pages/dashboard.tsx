@@ -16,7 +16,11 @@ function CustomerDashboard() {
   const [, setLocation] = useLocation();
 
   return (
-    <div className="p-4 pb-24">
+    <>
+      <CredibilityRibbon />
+      <OfflineIndicator />
+      
+      <div className="p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-2">Welcome Back!</h1>
         <p className="text-muted-foreground mb-6">Find medicines from nearby pharmacies</p>
@@ -72,6 +76,7 @@ function CustomerDashboard() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 

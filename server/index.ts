@@ -24,6 +24,13 @@ if (!process.env.SESSION_SECRET) {
 const isProduction = process.env.NODE_ENV === 'production';
 const isReplit = !!process.env.REPLIT_DOMAINS;
 
+console.log('🔧 Environment:', {
+  NODE_ENV: process.env.NODE_ENV,
+  isProduction,
+  isReplit,
+  REPLIT_DOMAINS: process.env.REPLIT_DOMAINS
+});
+
 app.use(session({
   store: new PgSession({
     pool: pgPool,
@@ -35,10 +42,10 @@ app.use(session({
   saveUninitialized: false,
   rolling: true,
   cookie: {
-    secure: true, // Required for SameSite=None in production
+    secure: isProduction || isReplit, // Only require HTTPS in production/Replit
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    sameSite: 'none', // Required for cookies in iframes/cross-origin contexts
+    sameSite: (isProduction || isReplit) ? 'none' : 'lax', // 'none' for iframes, 'lax' in local dev
     path: '/',
   },
   name: 'pharma.sid',

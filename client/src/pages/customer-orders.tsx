@@ -1,12 +1,18 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { OfflineIndicator } from '@/components/offline-indicator';
+import { CredibilityRibbon } from '@/components/credibility-ribbon';
 
 export default function CustomerOrdersPage() {
   // TODO: Fetch orders from API
   const orders: any[] = [];
 
   return (
-    <div className="container mx-auto p-4 pb-24">
+    <>
+      <CredibilityRibbon />
+      <OfflineIndicator />
+      
+      <div className="container mx-auto p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">My Orders</h1>
         
@@ -47,5 +53,6 @@ export default function CustomerOrdersPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
