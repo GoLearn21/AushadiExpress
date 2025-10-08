@@ -16,14 +16,29 @@ function CustomerDashboard() {
   const [, setLocation] = useLocation();
 
   return (
-    <>
-      <CredibilityRibbon />
+    <div className="flex flex-col h-screen overflow-hidden">
       <OfflineIndicator />
       
-      <div className="p-4 pb-24">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-2">Welcome Back!</h1>
-        <p className="text-muted-foreground mb-6">Find medicines from nearby pharmacies</p>
+      {/* App Bar */}
+      <header className="app-bar text-primary-foreground px-4 py-3 elevation-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <span className="material-icons text-xl">medication</span>
+            <h1 className={`${tw.headingLg} text-primary-foreground`}>AushadiExpress</h1>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <div className={tw.statusOnline}></div>
+            <span className={`${tw.bodySm} text-primary-foreground/80`}>Online</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-4 pb-24">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-2xl font-bold mb-2">Welcome Back!</h1>
+          <p className="text-muted-foreground mb-6">Find medicines from nearby pharmacies</p>
 
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -74,9 +89,10 @@ function CustomerDashboard() {
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
     </div>
-    </>
+  </div>
   );
 }
 
