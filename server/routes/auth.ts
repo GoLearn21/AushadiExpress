@@ -9,6 +9,8 @@ const registerSchema = z.object({
   username: z.string().min(3).max(50),
   password: z.string().min(6),
   tenantName: z.string().optional(),
+  role: z.string().optional(),
+  pincode: z.string().max(10).optional(),
 });
 
 const loginSchema = z.object({
@@ -18,7 +20,7 @@ const loginSchema = z.object({
 
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, tenantName } = registerSchema.parse(req.body);
+    const { username, password, tenantName, role, pincode } = registerSchema.parse(req.body);
     
     const existingUser = await storage.getUserByUsername(username);
     if (existingUser) {
@@ -30,6 +32,8 @@ router.post('/register', async (req, res) => {
     const user = await storage.createUser({
       username,
       password: hashedPassword,
+      role: role || 'retailer',
+      pincode: pincode || null,
       onboarded: true,
     });
     
@@ -162,7 +166,7 @@ router.patch('/update-profile', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
     
-    const { role, businessName } = req.body;
+    const { role, businessName, pincode } = req.body;
     const user = await storage.getUser(session.userId);
     
     if (!user) {
@@ -177,6 +181,11 @@ router.patch('/update-profile', async (req, res) => {
     // Update business name (username) if provided
     if (businessName) {
       user.username = businessName;
+    }
+    
+    // Update pincode if provided
+    if (pincode !== undefined) {
+      user.pincode = pincode || null;
     }
     
     await storage.updateUser(user);

@@ -607,7 +607,8 @@ export class DatabaseStorage implements IStorage {
         .set({
           username: user.username,
           role: user.role,
-          password: user.password
+          password: user.password,
+          pincode: user.pincode
         })
         .where(eq(users.id, user.id))
         .returning();

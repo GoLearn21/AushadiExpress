@@ -21,6 +21,7 @@ export default function Settings() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1);
   const [businessName, setBusinessName] = useState("");
+  const [pincode, setPincode] = useState("");
 
   const handleBetaSignup = async () => {
     if (!email.trim()) {
@@ -169,6 +170,7 @@ export default function Settings() {
           body: JSON.stringify({
             role: userRole,
             businessName: businessName,
+            pincode: userRole === 'customer' ? pincode : undefined,
           }),
         });
 
@@ -215,6 +217,8 @@ export default function Settings() {
           username: businessName,
           password: tempPassword,
           tenantName: businessName,
+          role: userRole,
+          pincode: userRole === 'customer' ? pincode : undefined,
         }),
       });
 
@@ -354,37 +358,67 @@ export default function Settings() {
             {onboardingStep === 1 && (
               <>
                 <p className="text-sm text-muted-foreground">
-                  Let's set up your pharmacy management system to capture invoice data and GSTN compliance information.
+                  {userRole === 'customer' 
+                    ? "Let's get you started finding medicines from nearby pharmacies."
+                    : "Let's set up your pharmacy management system to capture invoice data and GSTN compliance information."}
                 </p>
                 <div className="space-y-3">
                   <div>
-                    <Label htmlFor="business-name">Business Name</Label>
-                    <Input
-                      id="business-name"
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      placeholder="Enter your pharmacy name"
-                      data-testid="input-business-name"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="user-role">Your Role</Label>
+                    <Label htmlFor="user-role">I am a...</Label>
                     <Select value={userRole} onValueChange={setUserRole} data-testid="select-onboarding-role">
                       <SelectTrigger>
-                        <SelectValue placeholder="Select your business role" />
+                        <SelectValue placeholder="Select your role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="retailer">Retailer</SelectItem>
-                        <SelectItem value="wholesaler">Wholesaler</SelectItem>
-                        <SelectItem value="distributor">Distributor</SelectItem>
+                        <SelectItem value="customer">🛒 Customer - I want to buy medicines</SelectItem>
+                        <SelectItem value="retailer">🏪 Retailer - I run a pharmacy</SelectItem>
+                        <SelectItem value="wholesaler">📦 Wholesaler</SelectItem>
+                        <SelectItem value="distributor">🚚 Distributor</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {userRole === 'customer' ? (
+                    <>
+                      <div>
+                        <Label htmlFor="customer-name">Your Name</Label>
+                        <Input
+                          id="customer-name"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          placeholder="Enter your name"
+                          data-testid="input-customer-name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="pincode">Your Pincode</Label>
+                        <Input
+                          id="pincode"
+                          value={pincode}
+                          onChange={(e) => setPincode(e.target.value)}
+                          placeholder="Enter your area pincode"
+                          maxLength={6}
+                          data-testid="input-pincode"
+                        />
+                      </div>
+                    </>
+                  ) : userRole && (
+                    <div>
+                      <Label htmlFor="business-name">Business Name</Label>
+                      <Input
+                        id="business-name"
+                        value={businessName}
+                        onChange={(e) => setBusinessName(e.target.value)}
+                        placeholder="Enter your pharmacy name"
+                        data-testid="input-business-name"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button 
                     onClick={() => setOnboardingStep(2)} 
-                    disabled={!businessName || !userRole}
+                    disabled={!businessName || !userRole || (userRole === 'customer' && !pincode)}
                     className="flex-1"
                     data-testid="button-continue-onboarding"
                   >
@@ -396,14 +430,26 @@ export default function Settings() {
             {onboardingStep === 2 && (
               <>
                 <p className="text-sm text-muted-foreground">
-                  Perfect! Now you can start using AushadiExpress to scan invoices and capture GSTN, supplier, and buyer information for compliance.
+                  {userRole === 'customer' 
+                    ? "Perfect! You're all set to start searching for medicines from nearby pharmacies."
+                    : "Perfect! Now you can start using AushadiExpress to scan invoices and capture GSTN, supplier, and buyer information for compliance."}
                 </p>
                 <div className="bg-blue-50 p-3 rounded-lg border">
                   <h4 className="font-semibold text-blue-900">Next Steps:</h4>
                   <ul className="text-sm text-blue-800 mt-1 space-y-1">
-                    <li>• Use the AI Assistant to ask about your business data</li>
-                    <li>• Scan invoices to automatically extract GSTN information</li>
-                    <li>• View all captured supplier and buyer details in one place</li>
+                    {userRole === 'customer' ? (
+                      <>
+                        <li>• Search for medicines you need</li>
+                        <li>• View pharmacies that have them in stock</li>
+                        <li>• Place orders for pickup from nearby stores</li>
+                      </>
+                    ) : (
+                      <>
+                        <li>• Use the AI Assistant to ask about your business data</li>
+                        <li>• Scan invoices to automatically extract GSTN information</li>
+                        <li>• View all captured supplier and buyer details in one place</li>
+                      </>
+                    )}
                   </ul>
                 </div>
                 <Button 
