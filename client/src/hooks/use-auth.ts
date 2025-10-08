@@ -29,6 +29,10 @@ export function useAuth() {
             userData.onboarded = true;
             localStorage.setItem('user', JSON.stringify(userData));
           }
+          // Also set userRole separately for UI components
+          if (userData?.role) {
+            localStorage.setItem('userRole', userData.role);
+          }
           setUser(userData);
           setIsLoading(false);
           return;
@@ -50,6 +54,10 @@ export function useAuth() {
         }
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
+        // Also set userRole separately for UI components
+        if (userData?.role) {
+          localStorage.setItem('userRole', userData.role);
+        }
       } else {
         // Session failed, but don't clear localStorage - rely on cached user
         setUser(null);

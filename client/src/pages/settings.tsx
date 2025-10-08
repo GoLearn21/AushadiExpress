@@ -78,9 +78,13 @@ export default function Settings() {
     setEnableReceivingBeta(receivingBetaSettings === 'true');
     setUserRole(roleSettings || 'retailer');
     
-    // Show onboarding for first-time users
-    if (!onboardingCompleted && !roleSettings) {
-      setShowOnboarding(true);
+    // Show onboarding only for business users who haven't completed it
+    // Customers complete onboarding during registration and shouldn't see this
+    if (!onboardingCompleted && roleSettings !== 'customer') {
+      // Don't show for customers at all
+      if (roleSettings && roleSettings !== 'customer') {
+        setShowOnboarding(true);
+      }
     }
     
     // Load tenant ID and username from user data in localStorage
@@ -490,28 +494,30 @@ export default function Settings() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" data-testid="settings-title">Settings</h1>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              setOnboardingStep(1);
-              const userStr = localStorage.getItem('user');
-              if (userStr) {
-                try {
-                  const userData = JSON.parse(userStr);
-                  if (userData.username) {
-                    setBusinessName(userData.username);
+          {userRole !== 'customer' && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                setOnboardingStep(1);
+                const userStr = localStorage.getItem('user');
+                if (userStr) {
+                  try {
+                    const userData = JSON.parse(userStr);
+                    if (userData.username) {
+                      setBusinessName(userData.username);
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse user data:', e);
                   }
-                } catch (e) {
-                  console.error('Failed to parse user data:', e);
                 }
-              }
-              setShowOnboarding(true);
-            }}
-            data-testid="button-rerun-onboarding"
-          >
-            Setup Wizard
-          </Button>
+                setShowOnboarding(true);
+              }}
+              data-testid="button-rerun-onboarding"
+            >
+              Setup Wizard
+            </Button>
+          )}
           <Button 
             variant="destructive" 
             size="sm" 
