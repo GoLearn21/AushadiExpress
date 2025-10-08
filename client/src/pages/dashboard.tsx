@@ -191,7 +191,6 @@ export default function Dashboard() {
     queryKey: ['/api/pending-invoices'],
   });
 
-  const [showPendingAlert, setShowPendingAlert] = useState(false);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
   // Close dropdown when clicking outside
@@ -345,97 +344,6 @@ export default function Dashboard() {
               >
                 <span className="material-icons text-lg">close</span>
               </button>
-            </div>
-          </Alert>
-        )}
-
-        {/* Pending Invoices Alert */}
-        {Array.isArray(pendingInvoices) && pendingInvoices.length > 0 && (
-          <Alert className="bg-amber-50 border-amber-300 border-2">
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between cursor-pointer" onClick={() => setShowPendingAlert(!showPendingAlert)}>
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="relative">
-                    <span className="material-icons text-amber-600 text-3xl">warning</span>
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                      {pendingInvoices.length}
-                    </span>
-                  </div>
-                  <div className="flex-1">
-                    <AlertDescription className="text-amber-900">
-                      <strong className="text-base">Pending Invoices - Not Submitted</strong>
-                      <p className="text-sm mt-1">
-                        {pendingInvoices.length} {pendingInvoices.length === 1 ? 'invoice' : 'invoices'} waiting to be submitted
-                      </p>
-                    </AlertDescription>
-                  </div>
-                </div>
-                <span className="material-icons text-amber-600">
-                  {showPendingAlert ? 'expand_less' : 'expand_more'}
-                </span>
-              </div>
-
-              {showPendingAlert && (
-                <div className="space-y-2 mt-2 border-t border-amber-200 pt-3">
-                  {pendingInvoices.map((invoice: any) => (
-                    <div key={invoice.messageId} className="bg-white rounded-lg p-3 border border-amber-200">
-                      <div className="flex items-start gap-3">
-                        {invoice.imageData && (
-                          <img 
-                            src={invoice.imageData} 
-                            alt="Invoice" 
-                            className="w-16 h-16 object-cover rounded"
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">
-                                {invoice.summaryText || 'Invoice'}
-                              </p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                State: <span className={`font-medium ${
-                                  invoice.submissionState === 'idle' ? 'text-gray-600' :
-                                  invoice.submissionState === 'pending' ? 'text-yellow-600' :
-                                  'text-red-600'
-                                }`}>{invoice.submissionState}</span>
-                              </p>
-                              <p className="text-xs text-gray-400 mt-0.5">
-                                {new Date(invoice.createdAt).toLocaleString()}
-                              </p>
-                            </div>
-                            <button
-                              onClick={async () => {
-                                if (confirm('Delete this pending invoice?')) {
-                                  try {
-                                    await fetch(`/api/pending-invoices/${invoice.messageId}`, {
-                                      method: 'DELETE',
-                                    });
-                                    queryClient.invalidateQueries({ queryKey: ['/api/pending-invoices'] });
-                                    toast({
-                                      title: "Deleted",
-                                      description: "Pending invoice removed",
-                                    });
-                                  } catch (error) {
-                                    toast({
-                                      title: "Error",
-                                      description: "Failed to delete invoice",
-                                      variant: "destructive",
-                                    });
-                                  }
-                                }
-                              }}
-                              className="text-red-500 hover:text-red-700 p-1"
-                            >
-                              <span className="material-icons text-sm">delete</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </Alert>
         )}
