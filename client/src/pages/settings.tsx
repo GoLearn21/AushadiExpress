@@ -572,9 +572,8 @@ export default function Settings() {
                       <SelectValue placeholder="Role" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="wholesaler">Wholesaler</SelectItem>
+                      <SelectItem value="customer">Customer</SelectItem>
                       <SelectItem value="retailer">Retailer</SelectItem>
-                      <SelectItem value="distributor">Distributor</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
