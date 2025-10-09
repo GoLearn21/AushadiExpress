@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { tw } from '@/lib/theme';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/hooks/use-cart';
 
 interface Product {
   id: string;
@@ -30,14 +31,36 @@ export default function CustomerStoreProductsPage() {
   const [stock, setStock] = useState<Stock[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [storeName, setStoreName] = useState('');
+  const [storeAddress, setStoreAddress] = useState<string | null>(null);
+  const [storePhone, setStorePhone] = useState<string | null>(null);
   const { toast } = useToast();
+  const { addToCart, getCartItemCount } = useCart();
   const tenantId = params?.tenantId;
 
   useEffect(() => {
     if (tenantId) {
+      fetchStoreInfo();
       fetchStoreProducts();
     }
   }, [tenantId]);
+
+  const fetchStoreInfo = async () => {
+    try {
+      const response = await fetch('/api/retail-stores', { credentials: 'include' });
+      if (response.ok) {
+        const stores = await response.json();
+        const store = stores.find((s: any) => s.tenantId === tenantId);
+        if (store) {
+          setStoreName(store.buyerName);
+          setStoreAddress(store.buyerAddress);
+          setStorePhone(store.buyerPhone);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching store info:', error);
+    }
+  };
 
   const fetchStoreProducts = async () => {
     setLoading(true);
@@ -71,6 +94,27 @@ export default function CustomerStoreProductsPage() {
     }
   };
 
+  const handleAddToCart = (product: Product) => {
+    if (!tenantId) return;
+    
+    addToCart({
+      productId: product.id,
+      productName: product.name,
+      description: product.description,
+      price: product.price,
+      quantity: 1,
+      storeName: storeName || 'Unknown Store',
+      storeId: tenantId,
+      storeAddress,
+      storePhone,
+    });
+
+    toast({
+      title: "Added to cart",
+      description: `${product.name} added to your cart`,
+    });
+  };
+
   const filteredProducts = products.filter(product =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -91,8 +135,19 @@ export default function CustomerStoreProductsPage() {
             <button onClick={() => setLocation('/nearby-stores')} className="material-icons text-xl">
               arrow_back
             </button>
-            <h1 className={`${tw.headingLg} text-primary-foreground`}>Available Medicines</h1>
+            <h1 className={`${tw.headingLg} text-primary-foreground`}>{storeName || 'Available Medicines'}</h1>
           </div>
+          <button
+            onClick={() => setLocation('/cart')}
+            className="relative p-2 hover:bg-blue-700 rounded-full transition-colors"
+          >
+            <span className="material-icons text-xl">shopping_cart</span>
+            {getCartItemCount() > 0 && (
+              <span className="absolute -top-1 -right-1 bg-white text-blue-600 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {getCartItemCount()}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -191,9 +246,19 @@ export default function CustomerStoreProductsPage() {
                               </div>
                             )}
                           </div>
-                          <div className="ml-4">
+                          <div className="ml-4 flex flex-col items-center space-y-2">
                             {totalStock > 0 ? (
-                              <span className="material-icons text-green-500 text-3xl">check_circle</span>
+                              <>
+                                <span className="material-icons text-green-500 text-2xl">check_circle</span>
+                                <Button 
+                                  onClick={() => handleAddToCart(product)}
+                                  size="sm"
+                                  className="w-full"
+                                >
+                                  <span className="material-icons text-sm mr-1">add_shopping_cart</span>
+                                  Add
+                                </Button>
+                              </>
                             ) : (
                               <span className="material-icons text-gray-300 text-3xl">cancel</span>
                             )}
