@@ -442,6 +442,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Retail stores from invoice headers (for customer "Near Me" feature)
+  app.get("/api/retail-stores", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const stores = await storage.getRetailStores(req.tenantId);
+      console.log(`[API] Found ${stores.length} retail stores for tenant ${req.tenantId}`);
+      res.json(stores);
+    } catch (error) {
+      console.error('[API] Failed to fetch retail stores:', error);
+      res.status(500).json({ error: "Failed to fetch retail stores" });
+    }
+  });
+
   const pendingInvoiceCreateSchema = insertPendingInvoiceSchema.pick({
     tenantId: true,
     messageId: true,

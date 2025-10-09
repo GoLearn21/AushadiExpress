@@ -5,10 +5,26 @@ import { Card, CardContent } from '@/components/ui/card';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { tw } from '@/lib/theme';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+
+interface RetailStore {
+  buyerName: string;
+  buyerAddress: string | null;
+  buyerPhone: string | null;
+}
 
 export default function CustomerSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [pincode, setPincode] = useState('');
+  const [showStores, setShowStores] = useState(false);
+  const [retailStores, setRetailStores] = useState<RetailStore[]>([]);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   const handleSearch = () => {
@@ -16,29 +32,34 @@ export default function CustomerSearchPage() {
     // TODO: Implement search functionality
   };
 
-  const handleNearMe = () => {
-    if (navigator.geolocation) {
-      toast({ title: "Finding pharmacies near you..." });
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log('Location:', position.coords);
-          toast({ title: "Location found", description: "Searching nearby pharmacies..." });
-          // TODO: Search pharmacies near location
-        },
-        (error) => {
-          toast({ 
-            title: "Location access denied", 
-            description: "Please enable location or enter pincode manually",
-            variant: "destructive" 
-          });
-        }
-      );
-    } else {
+  const handleNearMe = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/retail-stores', {
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        const stores = await response.json();
+        setRetailStores(stores);
+        setShowStores(true);
+        toast({ title: "Found retail stores", description: `${stores.length} stores available` });
+      } else {
+        toast({ 
+          title: "Unable to fetch stores", 
+          description: "Please try again later",
+          variant: "destructive" 
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching retail stores:', error);
       toast({ 
-        title: "Location not supported", 
-        description: "Please enter pincode manually",
+        title: "Network error", 
+        description: "Please check your connection",
         variant: "destructive" 
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -148,10 +169,15 @@ export default function CustomerSearchPage() {
                   <button
                     key={index}
                     onClick={action.onClick}
-                    className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow active:scale-95"
+                    disabled={loading && action.label === 'Near Me'}
+                    className="flex flex-col items-center justify-center p-3 rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className={`${action.color} w-12 h-12 rounded-full flex items-center justify-center mb-2`}>
-                      <span className="material-icons text-white text-xl">{action.icon}</span>
+                      {loading && action.label === 'Near Me' ? (
+                        <span className="material-icons text-white text-xl animate-spin">refresh</span>
+                      ) : (
+                        <span className="material-icons text-white text-xl">{action.icon}</span>
+                      )}
                     </div>
                     <span className="text-xs font-medium text-gray-700">{action.label}</span>
                   </button>
@@ -200,6 +226,56 @@ export default function CustomerSearchPage() {
           </div>
         </div>
       </div>
+
+      {/* Retail Stores Dialog */}
+      <Dialog open={showStores} onOpenChange={setShowStores}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Nearby Pharmacies</DialogTitle>
+            <DialogDescription>
+              {retailStores.length > 0 
+                ? `Found ${retailStores.length} retail ${retailStores.length === 1 ? 'pharmacy' : 'pharmacies'}` 
+                : 'No pharmacies found'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 mt-4">
+            {retailStores.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <span className="material-icons text-5xl mb-3">store</span>
+                <p>No retail stores available</p>
+              </div>
+            ) : (
+              retailStores.map((store, index) => (
+                <Card key={index} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="bg-blue-100 p-2 rounded-full">
+                        <span className="material-icons text-blue-600">store</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">{store.buyerName}</h3>
+                        {store.buyerAddress && (
+                          <p className="text-sm text-gray-600 mb-1 flex items-start">
+                            <span className="material-icons text-xs mr-1 mt-0.5">location_on</span>
+                            {store.buyerAddress}
+                          </p>
+                        )}
+                        {store.buyerPhone && (
+                          <p className="text-sm text-gray-600 flex items-center">
+                            <span className="material-icons text-xs mr-1">phone</span>
+                            {store.buyerPhone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

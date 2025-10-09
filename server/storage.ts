@@ -761,6 +761,34 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Retail stores from invoice headers
+  async getRetailStores(tenantId?: string): Promise<Array<{ buyerName: string | null, buyerAddress: string | null, buyerPhone: string | null }>> {
+    try {
+      const { invoiceHeaders, documents } = await import('@shared/schema');
+      
+      const result = await db
+        .selectDistinct({
+          buyerName: invoiceHeaders.buyerName,
+          buyerAddress: invoiceHeaders.buyerAddress,
+          buyerPhone: invoiceHeaders.buyerPhone
+        })
+        .from(invoiceHeaders)
+        .innerJoin(documents, eq(invoiceHeaders.documentId, documents.id))
+        .where(
+          tenantId 
+            ? eq(documents.enterpriseId, tenantId)
+            : sql`1=1`
+        )
+        .orderBy(invoiceHeaders.buyerName);
+      
+      // Filter out entries without buyer name
+      return result.filter(store => store.buyerName);
+    } catch (error) {
+      console.error('Database error in getRetailStores:', error);
+      return [];
+    }
+  }
+
   async getSale(id: string): Promise<Sale | undefined> {
     try {
       const [sale] = await db.select().from(sales).where(eq(sales.id, id));
