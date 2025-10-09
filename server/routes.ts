@@ -443,10 +443,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Retail stores from invoice headers (for customer "Near Me" feature)
+  // Customers should see ALL stores across all tenants for discovery
   app.get("/api/retail-stores", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const stores = await storage.getRetailStores(req.tenantId);
-      console.log(`[API] Found ${stores.length} retail stores for tenant ${req.tenantId}`);
+      const userRole = (req as any).session?.userRole;
+      // For customers, show all stores (no tenant filter). For retailers, could filter if needed.
+      const stores = await storage.getRetailStores();
+      console.log(`[API] Found ${stores.length} retail stores for ${userRole || 'user'}`);
       res.json(stores);
     } catch (error) {
       console.error('[API] Failed to fetch retail stores:', error);

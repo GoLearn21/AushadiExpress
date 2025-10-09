@@ -764,7 +764,7 @@ export class DatabaseStorage implements IStorage {
   // Retail stores from invoice headers
   async getRetailStores(tenantId?: string): Promise<Array<{ buyerName: string | null, buyerAddress: string | null, buyerPhone: string | null }>> {
     try {
-      const { invoiceHeaders, documents } = await import('@shared/schema');
+      const { invoiceHeaders } = await import('@shared/schema');
       
       const result = await db
         .selectDistinct({
@@ -773,12 +773,7 @@ export class DatabaseStorage implements IStorage {
           buyerPhone: invoiceHeaders.buyerPhone
         })
         .from(invoiceHeaders)
-        .innerJoin(documents, eq(invoiceHeaders.documentId, documents.id))
-        .where(
-          tenantId 
-            ? eq(documents.enterpriseId, tenantId)
-            : sql`1=1`
-        )
+        .where(sql`${invoiceHeaders.buyerName} IS NOT NULL`)
         .orderBy(invoiceHeaders.buyerName);
       
       // Filter out entries without buyer name
