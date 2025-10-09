@@ -31,6 +31,9 @@ console.log('🔧 Environment:', {
   REPLIT_DOMAINS: process.env.REPLIT_DOMAINS
 });
 
+// Trust Replit's proxy for secure cookies to work
+app.set('trust proxy', 1);
+
 app.use(session({
   store: new PgSession({
     pool: pgPool,

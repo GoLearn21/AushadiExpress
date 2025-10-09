@@ -2,10 +2,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { tw } from '@/lib/theme';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+
+interface OrderItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  items: OrderItem[];
+  total: number;
+  date: string;
+  status: string;
+  storeName?: string;
+}
 
 export default function CustomerOrdersPage() {
-  // TODO: Fetch orders from API
-  const orders: any[] = [];
+  const { data: orders = [], isLoading } = useQuery<Order[]>({
+    queryKey: ['/api/orders'],
+  });
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -31,7 +50,15 @@ export default function CustomerOrdersPage() {
           <div className="max-w-2xl mx-auto">
             <h1 className="text-2xl font-medium text-gray-900 dark:text-white mb-6 tracking-tight">My Orders</h1>
             
-            {orders.length === 0 ? (
+            {isLoading ? (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center text-muted-foreground py-8">
+                    <p className="text-lg font-medium">Loading orders...</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : orders.length === 0 ? (
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center text-muted-foreground py-8">
@@ -48,8 +75,12 @@ export default function CustomerOrdersPage() {
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div>
-                          <CardTitle className="text-lg">Order #{order.id}</CardTitle>
-                          <CardDescription>{order.pharmacy}</CardDescription>
+                          <CardTitle className="text-lg">
+                            Order #{order.id.slice(0, 8)}
+                          </CardTitle>
+                          <CardDescription>
+                            {order.date && format(new Date(order.date), 'PPp')}
+                          </CardDescription>
                         </div>
                         <Badge variant={order.status === 'ready' ? 'default' : 'secondary'}>
                           {order.status}
@@ -57,9 +88,23 @@ export default function CustomerOrdersPage() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground">{order.items} items</p>
-                        <p className="text-lg font-semibold">₹{order.total}</p>
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          {order.items.map((item, idx) => (
+                            <div key={idx} className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">
+                                {item.productName} x {item.quantity}
+                              </span>
+                              <span className="font-medium">₹{item.price * item.quantity}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="border-t pt-2">
+                          <div className="flex justify-between">
+                            <span className="text-lg font-semibold">Total</span>
+                            <span className="text-lg font-semibold">₹{order.total}</span>
+                          </div>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
