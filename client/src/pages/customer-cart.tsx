@@ -38,6 +38,7 @@ export default function CustomerCartPage() {
             price: item.price,
           })),
           totalAmount: storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+          storeTenantId: storeId, // Seller's tenant ID
           status: 'pending',
         };
 

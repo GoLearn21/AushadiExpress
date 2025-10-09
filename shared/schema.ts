@@ -43,7 +43,9 @@ export const sales = pgTable("sales", {
   date: timestamp("date").defaultNow(),
   items: text("items"), // JSON string of sale items
   synced: boolean("synced").default(false),
-  tenantId: varchar("tenant_id").notNull().default("default"),
+  tenantId: varchar("tenant_id").notNull().default("default"), // Seller's tenant ID
+  customerId: varchar("customer_id").references(() => users.id), // Customer who placed the order
+  customerTenantId: varchar("customer_tenant_id"), // Customer's tenant ID for tracking
 });
 
 export const pendingInvoices = pgTable("pending_invoices", {

@@ -40,6 +40,7 @@ export interface IStorage {
   getSale(id: string): Promise<Sale | undefined>;
   createSale(sale: InsertSale, items?: SaleItemPayload[]): Promise<Sale>;
   getTodaysSales(tenantId: string): Promise<number>;
+  getCustomerOrders(customerId: string): Promise<Sale[]>;
 
   // Pending invoices
   getPendingInvoices(tenantId: string): Promise<PendingInvoice[]>;
@@ -388,6 +389,12 @@ export class MemStorage implements IStorage {
         return saleDate.getTime() === today.getTime();
       })
       .reduce((total, sale) => total + sale.total, 0);
+  }
+
+  async getCustomerOrders(customerId: string): Promise<Sale[]> {
+    return Array.from(this.sales.values())
+      .filter(sale => (sale as any).customerId === customerId)
+      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
   }
 
   async getPendingInvoices(tenantId: string): Promise<PendingInvoice[]> {
@@ -852,6 +859,18 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Database error in getTodaysSales:', error);
       return 0;
+    }
+  }
+
+  async getCustomerOrders(customerId: string): Promise<Sale[]> {
+    try {
+      return await db.select()
+        .from(sales)
+        .where(eq(sales.customerId, customerId))
+        .orderBy(sql`${sales.date} DESC`);
+    } catch (error) {
+      console.error('Database error in getCustomerOrders:', error);
+      return [];
     }
   }
 

@@ -544,6 +544,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Customer orders endpoint - creates a sale record for the seller's tenant
+  app.post("/api/orders", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const { items, totalAmount, storeTenantId } = req.body;
+
+      // Validate customer role
+      if ((req as any).session?.userRole !== 'customer') {
+        return res.status(403).json({ error: "Only customers can place orders" });
+      }
+
+      // Validate store tenant ID
+      if (!storeTenantId || storeTenantId === req.tenantId) {
+        return res.status(400).json({ error: "Invalid store tenant ID" });
+      }
+
+      // Validate items
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ error: "Order must contain at least one item" });
+      }
+
+      // Server-side total validation
+      const computedTotal = items.reduce((sum: number, item: any) => 
+        sum + (item.price * item.quantity), 0
+      );
+
+      if (Math.abs(computedTotal - totalAmount) > 0.01) {
+        return res.status(400).json({ error: "Total amount mismatch" });
+      }
+
+      // Create sale record for seller's tenant with customer tracking
+      const saleData = {
+        total: totalAmount,
+        items: JSON.stringify(items),
+        synced: false,
+        tenantId: storeTenantId, // Seller's tenant ID
+        customerId: (req as any).session?.userId, // Customer user ID
+        customerTenantId: req.tenantId, // Customer's tenant ID
+      };
+
+      const sale = await storage.createSale(saleData, items);
+
+      // Create outbox entry for offline sync
+      await storage.createOutboxItem({
+        tableName: 'sales',
+        rowId: sale.id,
+        operation: 'create',
+        payload: JSON.stringify(sale)
+      });
+
+      geminiAgent.invalidateCache(storeTenantId);
+
+      res.status(201).json({ 
+        success: true, 
+        orderId: sale.id,
+        message: "Order placed successfully" 
+      });
+    } catch (error) {
+      console.error('[ORDERS] Failed to create order:', error);
+      res.status(500).json({ error: "Failed to create order" });
+    }
+  });
+
+  // Get customer order history across all stores
+  app.get("/api/orders", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      // Validate customer role
+      if ((req as any).session?.userRole !== 'customer') {
+        return res.status(403).json({ error: "Only customers can view orders" });
+      }
+
+      const customerId = (req as any).session?.userId;
+      const orders = await storage.getCustomerOrders(customerId);
+
+      res.json(orders);
+    } catch (error) {
+      console.error('[ORDERS] Failed to fetch customer orders:', error);
+      res.status(500).json({ error: "Failed to fetch orders" });
+    }
+  });
+
   app.post("/api/sales", tenantContext, async (req: TenantRequest, res) => {
     try {
       const saleData = insertSaleSchema.parse({
