@@ -74,6 +74,23 @@ function CustomerDashboard() {
 
           <Card
             className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setLocation('/saved-stores')}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-50 rounded-lg">
+                  <span className="material-icons text-red-600">favorite</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold">Saved Stores</h3>
+                  <p className="text-sm text-muted-foreground">Your favorite pharmacies</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card
+            className="cursor-pointer hover:shadow-md transition-shadow"
             onClick={() => setLocation('/settings')}
           >
             <CardContent className="pt-6">

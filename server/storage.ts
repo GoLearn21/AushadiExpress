@@ -1,9 +1,9 @@
-import { type User, type InsertUser, type Product, type InsertProduct, type Stock, type InsertStock, type Sale, type InsertSale, type Outbox, type InsertOutbox, type AssistantBetaLead, type InsertAssistantBetaLead, type Document, type InsertDocument, invoiceHeaders, invoiceLineItems, pendingInvoices, type PendingInvoice, type InsertPendingInvoice } from "@shared/schema";
+import { type User, type InsertUser, type Product, type InsertProduct, type Stock, type InsertStock, type Sale, type InsertSale, type Outbox, type InsertOutbox, type AssistantBetaLead, type InsertAssistantBetaLead, type Document, type InsertDocument, invoiceHeaders, invoiceLineItems, pendingInvoices, type PendingInvoice, type InsertPendingInvoice, type FavoriteStore, type InsertFavoriteStore } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { generateTenantId } from "./utils/tenant-id-generator";
 import { db } from "./db";
 import { and, eq, sql } from "drizzle-orm";
-import { users, products, stock, sales, outbox, assistantBetaLeads, documents, pendingInvoices as pendingInvoicesTable } from "@shared/schema";
+import { users, products, stock, sales, outbox, assistantBetaLeads, documents, pendingInvoices as pendingInvoicesTable, favoriteStores } from "@shared/schema";
 import { normalizeInvoiceExtraction } from "./utils/invoice-normalizer";
 
 interface SaleItemPayload {
@@ -42,6 +42,12 @@ export interface IStorage {
   getTodaysSales(tenantId: string): Promise<number>;
   getCustomerOrders(customerId: string): Promise<Sale[]>;
 
+  // Favorite Stores
+  getFavoriteStores(userId: string): Promise<FavoriteStore[]>;
+  addFavoriteStore(favorite: InsertFavoriteStore): Promise<FavoriteStore>;
+  removeFavoriteStore(userId: string, storeTenantId: string): Promise<boolean>;
+  isFavoriteStore(userId: string, storeTenantId: string): Promise<boolean>;
+
   // Pending invoices
   getPendingInvoices(tenantId: string): Promise<PendingInvoice[]>;
   upsertPendingInvoice(entry: InsertPendingInvoice): Promise<PendingInvoice>;
@@ -71,6 +77,7 @@ export class MemStorage implements IStorage {
   private assistantBetaLeads: Map<string, AssistantBetaLead> = new Map();
   private documents: Map<string, Document> = new Map();
   private pendingInvoices: Map<string, PendingInvoice> = new Map();
+  private favoriteStores: Map<string, FavoriteStore> = new Map();
 
   constructor() {
     // Initialize with some demo data
@@ -395,6 +402,41 @@ export class MemStorage implements IStorage {
     return Array.from(this.sales.values())
       .filter(sale => (sale as any).customerId === customerId)
       .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
+  }
+
+  async getFavoriteStores(userId: string): Promise<FavoriteStore[]> {
+    return Array.from(this.favoriteStores.values())
+      .filter(fav => fav.userId === userId)
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+  }
+
+  async addFavoriteStore(favorite: InsertFavoriteStore): Promise<FavoriteStore> {
+    const id = randomUUID();
+    const newFavorite: FavoriteStore = {
+      id,
+      userId: favorite.userId,
+      storeTenantId: favorite.storeTenantId,
+      storeName: favorite.storeName,
+      storeAddress: favorite.storeAddress ?? null,
+      storePhone: favorite.storePhone ?? null,
+      createdAt: new Date(),
+    };
+    this.favoriteStores.set(id, newFavorite);
+    return newFavorite;
+  }
+
+  async removeFavoriteStore(userId: string, storeTenantId: string): Promise<boolean> {
+    const favorite = Array.from(this.favoriteStores.values())
+      .find(fav => fav.userId === userId && fav.storeTenantId === storeTenantId);
+    if (favorite) {
+      return this.favoriteStores.delete(favorite.id);
+    }
+    return false;
+  }
+
+  async isFavoriteStore(userId: string, storeTenantId: string): Promise<boolean> {
+    return Array.from(this.favoriteStores.values())
+      .some(fav => fav.userId === userId && fav.storeTenantId === storeTenantId);
   }
 
   async getPendingInvoices(tenantId: string): Promise<PendingInvoice[]> {
@@ -819,6 +861,60 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Database error in getCustomerOrders:', error);
       return [];
+    }
+  }
+
+  async getFavoriteStores(userId: string): Promise<FavoriteStore[]> {
+    try {
+      return await db.select()
+        .from(favoriteStores)
+        .where(eq(favoriteStores.userId, userId))
+        .orderBy(sql`${favoriteStores.createdAt} DESC`);
+    } catch (error) {
+      console.error('Database error in getFavoriteStores:', error);
+      return [];
+    }
+  }
+
+  async addFavoriteStore(favorite: InsertFavoriteStore): Promise<FavoriteStore> {
+    try {
+      const [newFavorite] = await db.insert(favoriteStores)
+        .values(favorite)
+        .returning();
+      return newFavorite;
+    } catch (error) {
+      console.error('Database error in addFavoriteStore:', error);
+      throw error;
+    }
+  }
+
+  async removeFavoriteStore(userId: string, storeTenantId: string): Promise<boolean> {
+    try {
+      await db.delete(favoriteStores)
+        .where(and(
+          eq(favoriteStores.userId, userId),
+          eq(favoriteStores.storeTenantId, storeTenantId)
+        ));
+      return true;
+    } catch (error) {
+      console.error('Database error in removeFavoriteStore:', error);
+      return false;
+    }
+  }
+
+  async isFavoriteStore(userId: string, storeTenantId: string): Promise<boolean> {
+    try {
+      const [favorite] = await db.select()
+        .from(favoriteStores)
+        .where(and(
+          eq(favoriteStores.userId, userId),
+          eq(favoriteStores.storeTenantId, storeTenantId)
+        ))
+        .limit(1);
+      return !!favorite;
+    } catch (error) {
+      console.error('Database error in isFavoriteStore:', error);
+      return false;
     }
   }
 

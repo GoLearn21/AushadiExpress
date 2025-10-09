@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
+import { useFavorites } from '@/hooks/use-favorites';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { CustomerHeader } from '@/components/customer-header';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +18,7 @@ export default function CustomerCartPage() {
     getItemsByStore,
     getCartItemCount
   } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -140,6 +142,21 @@ export default function CustomerCartPage() {
                             </p>
                           )}
                         </div>
+                        <button
+                          onClick={() => toggleFavorite(
+                            storeId,
+                            storeItems[0].storeName,
+                            storeItems[0].storeAddress
+                          )}
+                          className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors active:scale-95"
+                          aria-label={isFavorite(storeId) ? "Remove from favorites" : "Add to favorites"}
+                        >
+                          <span className={`material-icons text-xl ${
+                            isFavorite(storeId) ? 'text-red-500' : 'text-gray-400'
+                          }`}>
+                            {isFavorite(storeId) ? 'favorite' : 'favorite_border'}
+                          </span>
+                        </button>
                         <div className="text-right">
                           <p className="text-xs text-gray-500">Store Total</p>
                           <p className="font-bold text-gray-900">₹{storeTotal.toFixed(2)}</p>

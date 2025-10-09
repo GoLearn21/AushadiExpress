@@ -25,6 +25,7 @@ import CustomerOrdersPage from "./pages/customer-orders";
 import CustomerNearbyStoresPage from "./pages/customer-nearby-stores";
 import CustomerStoreProductsPage from "./pages/customer-store-products";
 import CustomerCartPage from "./pages/customer-cart";
+import CustomerSavedStoresPage from "./pages/customer-saved-stores";
 import NotFound from "./pages/not-found";
 import { SetupGate } from "./components/setup-gate";
 import { BottomNavigation } from "./components/bottom-navigation";
@@ -71,6 +72,7 @@ function Router() {
             <Route path="/nearby-stores" component={CustomerNearbyStoresPage} />
             <Route path="/store/:tenantId/:storeName" component={CustomerStoreProductsPage} />
             <Route path="/cart" component={CustomerCartPage} />
+            <Route path="/saved-stores" component={CustomerSavedStoresPage} />
             <Route path="/bill-fast" component={() => <div className="p-4 text-center text-muted-foreground">Bill Fast feature coming in Iteration 1</div>} />
             <Route path="/settings" component={Settings} />
             <Route component={NotFound} />

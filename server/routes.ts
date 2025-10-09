@@ -624,6 +624,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get customer's favorite stores
+  app.get("/api/favorites", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const userId = (req as any).session?.userId;
+      const userRole = (req as any).session?.userRole;
+
+      if (!userId || userRole !== 'customer') {
+        return res.status(401).json({ error: "Unauthorized: customer authentication required" });
+      }
+
+      const favorites = await storage.getFavoriteStores(userId);
+
+      res.json(favorites);
+    } catch (error) {
+      console.error('[FAVORITES] Failed to fetch favorites:', error);
+      res.status(500).json({ error: "Failed to fetch favorites" });
+    }
+  });
+
+  // Add store to favorites
+  app.post("/api/favorites", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const userId = (req as any).session?.userId;
+      const userRole = (req as any).session?.userRole;
+
+      if (!userId || userRole !== 'customer') {
+        return res.status(401).json({ error: "Unauthorized: customer authentication required" });
+      }
+
+      const { storeTenantId, storeName, storeAddress, storePhone } = req.body;
+
+      if (!storeTenantId || !storeName) {
+        return res.status(400).json({ error: "Store tenant ID and name are required" });
+      }
+
+      // Check if already favorited
+      const isFavorite = await storage.isFavoriteStore(userId, storeTenantId);
+      if (isFavorite) {
+        return res.status(400).json({ error: "Store already in favorites" });
+      }
+
+      const favorite = await storage.addFavoriteStore({
+        userId,
+        storeTenantId,
+        storeName,
+        storeAddress,
+        storePhone
+      });
+
+      res.status(201).json(favorite);
+    } catch (error) {
+      console.error('[FAVORITES] Failed to add favorite:', error);
+      res.status(500).json({ error: "Failed to add favorite" });
+    }
+  });
+
+  // Remove store from favorites (idempotent)
+  app.delete("/api/favorites/:storeTenantId", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const userId = (req as any).session?.userId;
+      const userRole = (req as any).session?.userRole;
+
+      if (!userId || userRole !== 'customer') {
+        return res.status(401).json({ error: "Unauthorized: customer authentication required" });
+      }
+
+      const { storeTenantId } = req.params;
+
+      await storage.removeFavoriteStore(userId, storeTenantId);
+
+      // Always return success (idempotent delete)
+      res.json({ success: true, message: "Store removed from favorites" });
+    } catch (error) {
+      console.error('[FAVORITES] Failed to remove favorite:', error);
+      res.status(500).json({ error: "Failed to remove favorite" });
+    }
+  });
+
+  // Check if store is favorited
+  app.get("/api/favorites/check/:storeTenantId", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const userId = (req as any).session?.userId;
+      const userRole = (req as any).session?.userRole;
+
+      if (!userId || userRole !== 'customer') {
+        return res.status(401).json({ error: "Unauthorized: customer authentication required" });
+      }
+
+      const { storeTenantId } = req.params;
+
+      const isFavorite = await storage.isFavoriteStore(userId, storeTenantId);
+
+      res.json({ isFavorite });
+    } catch (error) {
+      console.error('[FAVORITES] Failed to check favorite:', error);
+      res.status(500).json({ error: "Failed to check favorite" });
+    }
+  });
+
   app.post("/api/sales", tenantContext, async (req: TenantRequest, res) => {
     try {
       const saleData = insertSaleSchema.parse({
