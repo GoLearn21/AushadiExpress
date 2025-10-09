@@ -10,6 +10,7 @@ interface RetailStore {
   buyerName: string;
   buyerAddress: string | null;
   buyerPhone: string | null;
+  tenantId: string | null;
 }
 
 export default function CustomerNearbyStoresPage() {
@@ -102,7 +103,11 @@ export default function CustomerNearbyStoresPage() {
               /* Store List */
               <div className="space-y-4">
                 {retailStores.map((store, index) => (
-                  <Card key={index} className="hover:shadow-lg transition-all">
+                  <Card 
+                    key={index} 
+                    className="hover:shadow-lg transition-all cursor-pointer"
+                    onClick={() => store.tenantId && setLocation(`/store/${store.tenantId}`)}
+                  >
                     <CardContent className="p-5">
                       <div className="flex items-start space-x-4">
                         <div className="bg-blue-100 p-3 rounded-full flex-shrink-0">
@@ -119,7 +124,11 @@ export default function CustomerNearbyStoresPage() {
                           {store.buyerPhone && (
                             <p className="text-sm text-gray-600 flex items-center">
                               <span className="material-icons text-sm mr-2 text-gray-500">phone</span>
-                              <a href={`tel:${store.buyerPhone}`} className="text-blue-600 hover:underline">
+                              <a 
+                                href={`tel:${store.buyerPhone}`} 
+                                className="text-blue-600 hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
                                 {store.buyerPhone}
                               </a>
                             </p>

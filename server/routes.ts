@@ -311,8 +311,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products", tenantContext, async (req: TenantRequest, res) => {
     try {
       console.log('[API] Fetching products...');
-      const products = await storage.getProducts(req.tenantId);
-      console.log(`[API] Found ${products.length} products for tenant ${req.tenantId}`);
+      // Allow filtering by specific tenantId via query param (for customers viewing stores)
+      const targetTenantId = (req.query.tenantId as string) || req.tenantId;
+      const products = await storage.getProducts(targetTenantId);
+      console.log(`[API] Found ${products.length} products for tenant ${targetTenantId}`);
       res.json(products);
     } catch (error) {
       console.error('[API ERROR] Failed to fetch products:', error);
@@ -352,8 +354,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stock routes (require authentication)
   app.get("/api/stock", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const stock = await storage.getStock(req.tenantId);
-      console.log(`[API] Found ${stock.length} stock items for tenant ${req.tenantId}`);
+      // Allow filtering by specific tenantId via query param (for customers viewing stores)
+      const targetTenantId = (req.query.tenantId as string) || req.tenantId;
+      const stock = await storage.getStock(targetTenantId);
+      console.log(`[API] Found ${stock.length} stock items for tenant ${targetTenantId}`);
       res.json(stock);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch stock" });

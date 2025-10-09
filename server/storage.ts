@@ -762,17 +762,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Retail stores from invoice headers
-  async getRetailStores(tenantId?: string): Promise<Array<{ buyerName: string | null, buyerAddress: string | null, buyerPhone: string | null }>> {
+  async getRetailStores(tenantId?: string): Promise<Array<{ buyerName: string | null, buyerAddress: string | null, buyerPhone: string | null, tenantId: string | null }>> {
     try {
-      const { invoiceHeaders } = await import('@shared/schema');
+      const { invoiceHeaders, documents } = await import('@shared/schema');
       
       const result = await db
         .selectDistinct({
           buyerName: invoiceHeaders.buyerName,
           buyerAddress: invoiceHeaders.buyerAddress,
-          buyerPhone: invoiceHeaders.buyerPhone
+          buyerPhone: invoiceHeaders.buyerPhone,
+          tenantId: documents.enterpriseId
         })
         .from(invoiceHeaders)
+        .innerJoin(documents, eq(invoiceHeaders.documentId, documents.id))
         .where(sql`${invoiceHeaders.buyerName} IS NOT NULL`)
         .orderBy(invoiceHeaders.buyerName);
       
