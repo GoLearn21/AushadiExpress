@@ -38,6 +38,7 @@ export default function CustomerStoreProductsPage() {
   const { addToCart, getCartItemCount } = useCart();
   const tenantId = params?.tenantId;
   const storeNameFromUrl = params?.storeName ? decodeURIComponent(params.storeName) : '';
+  const [localQuantities, setLocalQuantities] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (tenantId && storeNameFromUrl) {
@@ -105,15 +106,15 @@ export default function CustomerStoreProductsPage() {
     }
   };
 
-  const handleAddToCart = (product: Product) => {
-    if (!tenantId) return;
+  const handleAddToCart = (product: Product, quantity: number) => {
+    if (!tenantId || quantity <= 0) return;
     
     addToCart({
       productId: product.id,
       productName: product.name,
       description: product.description,
       price: product.price,
-      quantity: 1,
+      quantity: quantity,
       storeName: storeName || 'Unknown Store',
       storeId: tenantId,
       storeAddress,
@@ -122,7 +123,7 @@ export default function CustomerStoreProductsPage() {
 
     toast({
       title: "Added to cart",
-      description: `${product.name} added to your cart`,
+      description: `${quantity} × ${product.name} added to your cart`,
     });
   };
 
@@ -261,8 +262,40 @@ export default function CustomerStoreProductsPage() {
                             {totalStock > 0 ? (
                               <>
                                 <span className="material-icons text-green-500 text-2xl">check_circle</span>
+                                <div className="flex items-center bg-blue-50 rounded-lg p-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const currentQty = localQuantities[product.id] || 1;
+                                      if (currentQty > 1) {
+                                        setLocalQuantities({ ...localQuantities, [product.id]: currentQty - 1 });
+                                      }
+                                    }}
+                                    className="p-1 hover:bg-blue-100 rounded transition-colors"
+                                  >
+                                    <span className="material-icons text-sm text-blue-600">remove</span>
+                                  </button>
+                                  <span className="w-8 text-center font-semibold text-blue-700">
+                                    {localQuantities[product.id] || 1}
+                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const currentQty = localQuantities[product.id] || 1;
+                                      if (currentQty < totalStock) {
+                                        setLocalQuantities({ ...localQuantities, [product.id]: currentQty + 1 });
+                                      }
+                                    }}
+                                    className="p-1 hover:bg-blue-100 rounded transition-colors"
+                                  >
+                                    <span className="material-icons text-sm text-blue-600">add</span>
+                                  </button>
+                                </div>
                                 <Button 
-                                  onClick={() => handleAddToCart(product)}
+                                  onClick={() => {
+                                    const qty = localQuantities[product.id] || 1;
+                                    handleAddToCart(product, qty);
+                                  }}
                                   size="sm"
                                   className="w-full"
                                 >
