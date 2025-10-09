@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { OfflineIndicator } from '@/components/offline-indicator';
-import { tw } from '@/lib/theme';
+import { CustomerHeader } from '@/components/customer-header';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CustomerCartPage() {
@@ -77,25 +77,7 @@ export default function CustomerCartPage() {
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <OfflineIndicator />
       
-      {/* App Bar */}
-      <header className="app-bar text-primary-foreground px-4 py-3 elevation-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button onClick={() => window.history.back()} className="material-icons text-xl">
-              arrow_back
-            </button>
-            <h1 className={`${tw.headingLg} text-primary-foreground`}>My Cart</h1>
-          </div>
-          {cartItems.length > 0 && (
-            <button
-              onClick={clearCart}
-              className="text-sm hover:bg-blue-700 px-3 py-1 rounded transition-colors"
-            >
-              Clear All
-            </button>
-          )}
-        </div>
-      </header>
+      <CustomerHeader />
 
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-4 pb-32">

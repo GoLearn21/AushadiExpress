@@ -3,7 +3,7 @@ import { useLocation } from 'wouter';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { OfflineIndicator } from '@/components/offline-indicator';
-import { tw } from '@/lib/theme';
+import { CustomerHeader } from '@/components/customer-header';
 import { useToast } from '@/hooks/use-toast';
 
 interface RetailStore {
@@ -56,17 +56,7 @@ export default function CustomerNearbyStoresPage() {
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <OfflineIndicator />
       
-      {/* App Bar */}
-      <header className="app-bar text-primary-foreground px-4 py-3 elevation-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <button onClick={() => setLocation('/customer-search')} className="material-icons text-xl">
-              arrow_back
-            </button>
-            <h1 className={`${tw.headingLg} text-primary-foreground`}>Nearby Pharmacies</h1>
-          </div>
-        </div>
-      </header>
+      <CustomerHeader />
 
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto p-4 pb-24">

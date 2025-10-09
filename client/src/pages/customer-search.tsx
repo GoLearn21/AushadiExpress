@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { OfflineIndicator } from '@/components/offline-indicator';
-import { tw } from '@/lib/theme';
+import { CustomerHeader } from '@/components/customer-header';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CustomerSearchPage() {
@@ -55,20 +55,7 @@ export default function CustomerSearchPage() {
     <div className="flex flex-col h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <OfflineIndicator />
       
-      {/* App Bar */}
-      <header className="app-bar text-primary-foreground px-4 py-3 elevation-2">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <span className="material-icons text-xl">medication</span>
-            <h1 className={`${tw.headingLg} text-primary-foreground`}>AushadiExpress</h1>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <div className={tw.statusOnline}></div>
-            <span className={`${tw.bodySm} text-primary-foreground/80`}>Online</span>
-          </div>
-        </div>
-      </header>
+      <CustomerHeader />
 
       <div className="flex-1 overflow-y-auto">
         <div className="container mx-auto px-4 py-6 pb-24">
