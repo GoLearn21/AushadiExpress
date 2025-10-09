@@ -449,58 +449,6 @@ export class MemStorage implements IStorage {
     return this.pendingInvoices.delete(messageId);
   }
 
-  async getPendingInvoices(tenantId: string): Promise<PendingInvoice[]> {
-    return Array.from(this.pendingInvoices.values()).filter(entry => entry.tenantId === tenantId);
-  }
-
-  async upsertPendingInvoice(entry: InsertPendingInvoice): Promise<PendingInvoice> {
-    const id = entry.id ?? randomUUID();
-    const pending: PendingInvoice = {
-      id,
-      tenantId: entry.tenantId,
-      messageId: entry.messageId,
-      summaryText: entry.summaryText ?? null,
-      summary: entry.summary ?? null,
-      invoiceData: entry.invoiceData ?? null,
-      rawAnalysis: entry.rawAnalysis ?? null,
-      imageFileName: entry.imageFileName ?? null,
-      imageData: entry.imageData ?? null,
-      submissionState: entry.submissionState ?? 'idle',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.pendingInvoices.set(entry.messageId, pending);
-    return pending;
-  }
-
-  async updatePendingInvoice(messageId: string, tenantId: string, updates: Partial<InsertPendingInvoice>): Promise<PendingInvoice | undefined> {
-    const existing = this.pendingInvoices.get(messageId);
-    if (!existing || existing.tenantId !== tenantId) return undefined;
-    // SECURITY: Ensure tenantId cannot be changed
-    const { tenantId: _, ...safeUpdates } = updates as any;
-    const updated: PendingInvoice = {
-      ...existing,
-      ...safeUpdates,
-      tenantId: existing.tenantId, // Preserve original tenantId
-      summary: safeUpdates.summary ?? existing.summary,
-      summaryText: safeUpdates.summaryText ?? existing.summaryText,
-      invoiceData: safeUpdates.invoiceData ?? existing.invoiceData,
-      rawAnalysis: safeUpdates.rawAnalysis ?? existing.rawAnalysis,
-      imageFileName: safeUpdates.imageFileName ?? existing.imageFileName,
-      imageData: safeUpdates.imageData ?? existing.imageData,
-      submissionState: safeUpdates.submissionState ?? existing.submissionState,
-      updatedAt: new Date()
-    };
-    this.pendingInvoices.set(messageId, updated);
-    return updated;
-  }
-
-  async deletePendingInvoice(messageId: string, tenantId: string): Promise<boolean> {
-    const existing = this.pendingInvoices.get(messageId);
-    if (!existing || existing.tenantId !== tenantId) return false;
-    return this.pendingInvoices.delete(messageId);
-  }
-
   // Documents - Critical for AI/GSTN data
   async getDocuments(tenantId?: string): Promise<Document[]> {
     let docs = Array.from(this.documents.values());
