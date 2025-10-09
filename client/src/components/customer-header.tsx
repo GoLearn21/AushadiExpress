@@ -20,7 +20,7 @@ export function CustomerHeader() {
         <Button
           variant="ghost"
           size="icon"
-          className="relative text-primary-foreground hover:bg-primary-foreground/10"
+          className="relative text-primary-foreground"
           onClick={() => setLocation('/cart')}
         >
           <span className="material-icons">shopping_cart</span>
