@@ -356,6 +356,17 @@ export const userLearningPatterns = pgTable("user_learning_patterns", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Favorite stores for customers
+export const favoriteStores = pgTable("favorite_stores", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(), // Customer who favorited the store
+  storeTenantId: varchar("store_tenant_id").notNull(), // The store's tenant ID
+  storeName: text("store_name").notNull(),
+  storeAddress: text("store_address"),
+  storePhone: text("store_phone"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertDocumentSchema = createInsertSchema(documents).omit({
   id: true,
   createdAt: true,
@@ -363,6 +374,11 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
 });
 
 export const insertUserLearningPatternSchema = createInsertSchema(userLearningPatterns).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFavoriteStoreSchema = createInsertSchema(favoriteStores).omit({
   id: true,
   createdAt: true,
 });
@@ -411,3 +427,5 @@ export type PendingInvoice = typeof pendingInvoices.$inferSelect;
 export type InsertPendingInvoice = typeof pendingInvoices.$inferInsert;
 export type UserLearningPattern = typeof userLearningPatterns.$inferSelect;
 export type InsertUserLearningPattern = z.infer<typeof insertUserLearningPatternSchema>;
+export type FavoriteStore = typeof favoriteStores.$inferSelect;
+export type InsertFavoriteStore = z.infer<typeof insertFavoriteStoreSchema>;
