@@ -14,7 +14,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  items: OrderItem[];
+  items: OrderItem[] | string;
   total: number;
   date: string;
   status: string;
@@ -70,45 +70,61 @@ export default function CustomerOrdersPage() {
               </Card>
             ) : (
               <div className="space-y-4">
-                {orders.map((order) => (
-                  <Card key={order.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="text-lg">
-                            Order #{order.id.slice(0, 8)}
-                          </CardTitle>
-                          <CardDescription>
-                            {order.date && format(new Date(order.date), 'PPp')}
-                          </CardDescription>
+                {orders.map((order) => {
+                  let items: OrderItem[] = [];
+                  
+                  try {
+                    if (typeof order.items === 'string') {
+                      const parsed = JSON.parse(order.items);
+                      items = Array.isArray(parsed) ? parsed : [];
+                    } else if (Array.isArray(order.items)) {
+                      items = order.items;
+                    }
+                  } catch (error) {
+                    console.error('Failed to parse order items:', error);
+                    items = [];
+                  }
+                  
+                  return (
+                    <Card key={order.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg">
+                              Order #{order.id.slice(0, 8)}
+                            </CardTitle>
+                            <CardDescription>
+                              {order.date && format(new Date(order.date), 'PPp')}
+                            </CardDescription>
+                          </div>
+                          <Badge variant={order.status === 'ready' ? 'default' : 'secondary'}>
+                            {order.status}
+                          </Badge>
                         </div>
-                        <Badge variant={order.status === 'ready' ? 'default' : 'secondary'}>
-                          {order.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          {order.items.map((item, idx) => (
-                            <div key={idx} className="flex justify-between text-sm">
-                              <span className="text-muted-foreground">
-                                {item.productName} x {item.quantity}
-                              </span>
-                              <span className="font-medium">₹{item.price * item.quantity}</span>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="space-y-1">
+                            {items.map((item, idx) => (
+                              <div key={idx} className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  {item.productName} x {item.quantity}
+                                </span>
+                                <span className="font-medium">₹{item.price * item.quantity}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="border-t pt-2">
+                            <div className="flex justify-between">
+                              <span className="text-lg font-semibold">Total</span>
+                              <span className="text-lg font-semibold">₹{order.total}</span>
                             </div>
-                          ))}
-                        </div>
-                        <div className="border-t pt-2">
-                          <div className="flex justify-between">
-                            <span className="text-lg font-semibold">Total</span>
-                            <span className="text-lg font-semibold">₹{order.total}</span>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </div>
