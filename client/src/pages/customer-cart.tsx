@@ -125,24 +125,24 @@ export default function CustomerCartPage() {
                 const storeTotal = storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 
                 return (
-                  <div key={storeId} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div key={storeId} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
                     {/* Store Header */}
-                    <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3">
+                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                       <div className="flex items-center gap-2">
-                        <span className="material-icons text-white text-xl">store</span>
+                        <span className="material-icons text-gray-600 text-xl">store</span>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-white text-sm">
+                          <h3 className="font-semibold text-gray-900 text-sm">
                             {storeItems[0].storeName}
                           </h3>
                           {storeItems[0].storeAddress && (
-                            <p className="text-xs text-blue-100 line-clamp-1">
+                            <p className="text-xs text-gray-500 line-clamp-1">
                               {storeItems[0].storeAddress}
                             </p>
                           )}
                         </div>
                         <div className="text-right">
-                          <p className="text-xs text-blue-100">Store Total</p>
-                          <p className="font-bold text-white">₹{storeTotal.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">Store Total</p>
+                          <p className="font-bold text-gray-900">₹{storeTotal.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
@@ -153,8 +153,8 @@ export default function CustomerCartPage() {
                         <div key={`${item.storeId}-${item.productId}`} className="p-4">
                           <div className="flex gap-3">
                             {/* Product Icon */}
-                            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
-                              <span className="material-icons text-blue-600 text-3xl">medication</span>
+                            <div className="w-20 h-20 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                              <span className="material-icons text-gray-600 text-3xl">medication</span>
                             </div>
                             
                             {/* Product Details */}
@@ -184,7 +184,7 @@ export default function CustomerCartPage() {
                                     onClick={() => updateQuantity(item.productId, item.storeId, item.quantity + 1)}
                                     className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform"
                                   >
-                                    <span className="material-icons text-base text-blue-600">add</span>
+                                    <span className="material-icons text-base text-gray-600">add</span>
                                   </button>
                                 </div>
                                 
@@ -235,7 +235,7 @@ export default function CustomerCartPage() {
                 </div>
                 <div className="border-t pt-2 flex justify-between">
                   <span className="font-semibold text-gray-900">Total Amount</span>
-                  <span className="text-2xl font-bold text-blue-600">₹{getCartTotal().toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-gray-900">₹{getCartTotal().toFixed(2)}</span>
                 </div>
               </div>
 
@@ -243,7 +243,7 @@ export default function CustomerCartPage() {
               <Button 
                 onClick={handleCheckout} 
                 disabled={isProcessing}
-                className="w-full h-14 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-base font-bold rounded-xl shadow-lg shadow-blue-600/30 disabled:opacity-50"
+                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base font-bold rounded-xl shadow-lg disabled:opacity-50"
               >
                 {isProcessing ? (
                   <>
