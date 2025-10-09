@@ -15,19 +15,19 @@ export interface CartItem {
 const CART_STORAGE_KEY = 'aushadiexpress_cart';
 
 export function useCart() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-
-  useEffect(() => {
-    // Load cart from localStorage on mount
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    // Initialize state from localStorage
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
     if (savedCart) {
       try {
-        setCartItems(JSON.parse(savedCart));
+        return JSON.parse(savedCart);
       } catch (error) {
         console.error('Failed to load cart:', error);
+        return [];
       }
     }
-  }, []);
+    return [];
+  });
 
   useEffect(() => {
     // Save cart to localStorage whenever it changes
