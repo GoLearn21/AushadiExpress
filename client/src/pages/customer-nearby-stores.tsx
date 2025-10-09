@@ -106,7 +106,7 @@ export default function CustomerNearbyStoresPage() {
                   <Card 
                     key={index} 
                     className="hover:shadow-lg transition-all cursor-pointer"
-                    onClick={() => store.tenantId && setLocation(`/store/${store.tenantId}`)}
+                    onClick={() => store.tenantId && setLocation(`/store/${store.tenantId}/${encodeURIComponent(store.buyerName)}`)}
                   >
                     <CardContent className="p-5">
                       <div className="flex items-start space-x-4">

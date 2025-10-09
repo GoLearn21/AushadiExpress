@@ -69,7 +69,7 @@ function Router() {
             <Route path="/customer-search" component={CustomerSearchPage} />
             <Route path="/orders" component={CustomerOrdersPage} />
             <Route path="/nearby-stores" component={CustomerNearbyStoresPage} />
-            <Route path="/store/:tenantId" component={CustomerStoreProductsPage} />
+            <Route path="/store/:tenantId/:storeName" component={CustomerStoreProductsPage} />
             <Route path="/cart" component={CustomerCartPage} />
             <Route path="/bill-fast" component={() => <div className="p-4 text-center text-muted-foreground">Bill Fast feature coming in Iteration 1</div>} />
             <Route path="/settings" component={Settings} />

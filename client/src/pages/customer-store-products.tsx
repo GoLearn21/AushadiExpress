@@ -25,7 +25,7 @@ interface Stock {
 }
 
 export default function CustomerStoreProductsPage() {
-  const [, params] = useRoute('/store/:tenantId');
+  const [, params] = useRoute('/store/:tenantId/:storeName');
   const [, setLocation] = useLocation();
   const [products, setProducts] = useState<Product[]>([]);
   const [stock, setStock] = useState<Stock[]>([]);
@@ -37,28 +37,39 @@ export default function CustomerStoreProductsPage() {
   const { toast } = useToast();
   const { addToCart, getCartItemCount } = useCart();
   const tenantId = params?.tenantId;
+  const storeNameFromUrl = params?.storeName ? decodeURIComponent(params.storeName) : '';
 
   useEffect(() => {
-    if (tenantId) {
+    if (tenantId && storeNameFromUrl) {
       fetchStoreInfo();
       fetchStoreProducts();
     }
-  }, [tenantId]);
+  }, [tenantId, storeNameFromUrl]);
 
   const fetchStoreInfo = async () => {
     try {
       const response = await fetch('/api/retail-stores', { credentials: 'include' });
       if (response.ok) {
         const stores = await response.json();
-        const store = stores.find((s: any) => s.tenantId === tenantId);
+        const store = stores.find((s: any) => 
+          s.tenantId === tenantId && s.buyerName === storeNameFromUrl
+        );
         if (store) {
           setStoreName(store.buyerName);
           setStoreAddress(store.buyerAddress);
           setStorePhone(store.buyerPhone);
+        } else {
+          // Fallback: use the name from URL
+          setStoreName(storeNameFromUrl);
         }
+      } else {
+        // Fallback: use the name from URL
+        setStoreName(storeNameFromUrl);
       }
     } catch (error) {
       console.error('Error fetching store info:', error);
+      // Fallback: use the name from URL
+      setStoreName(storeNameFromUrl);
     }
   };
 
