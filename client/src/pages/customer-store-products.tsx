@@ -35,10 +35,9 @@ export default function CustomerStoreProductsPage() {
   const [storeAddress, setStoreAddress] = useState<string | null>(null);
   const [storePhone, setStorePhone] = useState<string | null>(null);
   const { toast } = useToast();
-  const { addToCart } = useCart();
+  const { addToCart, updateQuantity, removeFromCart, cartItems } = useCart();
   const tenantId = params?.tenantId;
   const storeNameFromUrl = params?.storeName ? decodeURIComponent(params.storeName) : '';
-  const [localQuantities, setLocalQuantities] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (tenantId && storeNameFromUrl) {
@@ -106,25 +105,62 @@ export default function CustomerStoreProductsPage() {
     }
   };
 
-  const handleAddToCart = (product: Product, quantity: number) => {
-    if (!tenantId || quantity <= 0) return;
-    
-    addToCart({
-      productId: product.id,
-      productName: product.name,
-      description: product.description,
-      price: product.price,
-      quantity: quantity,
-      storeName: storeName || 'Unknown Store',
-      storeId: tenantId,
-      storeAddress,
-      storePhone,
-    });
+  const getCartQuantity = (productId: string) => {
+    const item = cartItems.find(item => item.productId === productId && item.storeId === tenantId);
+    return item?.quantity || 0;
+  };
 
-    toast({
-      title: "Added to cart",
-      description: `${quantity} × ${product.name} added to your cart`,
-    });
+  const handleIncrement = (product: Product) => {
+    if (!tenantId) return;
+    
+    const currentQty = getCartQuantity(product.id);
+    const productStock = getProductStock(product.id);
+    const totalStock = productStock.reduce((sum, s) => sum + s.quantity, 0);
+    
+    if (currentQty >= totalStock) {
+      toast({
+        title: "Maximum quantity reached",
+        description: `Only ${totalStock} units available`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (currentQty === 0) {
+      addToCart({
+        productId: product.id,
+        productName: product.name,
+        description: product.description,
+        price: product.price,
+        quantity: 1,
+        storeName: storeName || 'Unknown Store',
+        storeId: tenantId,
+        storeAddress,
+        storePhone,
+      });
+      toast({
+        title: "Added to cart",
+        description: `${product.name} added to your cart`,
+      });
+    } else {
+      updateQuantity(product.id, tenantId, currentQty + 1);
+    }
+  };
+
+  const handleDecrement = (product: Product) => {
+    if (!tenantId) return;
+    
+    const currentQty = getCartQuantity(product.id);
+    
+    if (currentQty > 1) {
+      updateQuantity(product.id, tenantId, currentQty - 1);
+    } else if (currentQty === 1) {
+      removeFromCart(product.id, tenantId);
+      toast({
+        title: "Removed from cart",
+        description: `${product.name} removed from your cart`,
+      });
+    }
   };
 
   const filteredProducts = products.filter(product =>
@@ -237,50 +273,34 @@ export default function CustomerStoreProductsPage() {
                               </div>
                             )}
                           </div>
-                          <div className="ml-4 flex flex-col items-center space-y-2">
+                          <div className="ml-4 flex flex-col items-center">
                             {totalStock > 0 ? (
                               <>
-                                <span className="material-icons text-green-500 text-2xl">check_circle</span>
-                                <div className="flex items-center bg-blue-50 rounded-lg p-1">
+                                <span className="material-icons text-green-500 text-2xl mb-2">check_circle</span>
+                                <div className="flex items-center bg-blue-50 rounded-full p-1">
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const currentQty = localQuantities[product.id] || 1;
-                                      if (currentQty > 1) {
-                                        setLocalQuantities({ ...localQuantities, [product.id]: currentQty - 1 });
-                                      }
+                                      handleDecrement(product);
                                     }}
-                                    className="p-1 hover:bg-blue-100 rounded transition-colors"
+                                    disabled={getCartQuantity(product.id) === 0}
+                                    className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    <span className="material-icons text-sm text-blue-600">remove</span>
+                                    <span className="material-icons text-base text-blue-600">remove</span>
                                   </button>
-                                  <span className="w-8 text-center font-semibold text-blue-700">
-                                    {localQuantities[product.id] || 1}
+                                  <span className="w-10 text-center font-semibold text-blue-700">
+                                    {getCartQuantity(product.id) || 0}
                                   </span>
                                   <button
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const currentQty = localQuantities[product.id] || 1;
-                                      if (currentQty < totalStock) {
-                                        setLocalQuantities({ ...localQuantities, [product.id]: currentQty + 1 });
-                                      }
+                                      handleIncrement(product);
                                     }}
-                                    className="p-1 hover:bg-blue-100 rounded transition-colors"
+                                    className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform"
                                   >
-                                    <span className="material-icons text-sm text-blue-600">add</span>
+                                    <span className="material-icons text-base text-blue-600">add</span>
                                   </button>
                                 </div>
-                                <Button 
-                                  onClick={() => {
-                                    const qty = localQuantities[product.id] || 1;
-                                    handleAddToCart(product, qty);
-                                  }}
-                                  size="sm"
-                                  className="w-full"
-                                >
-                                  <span className="material-icons text-sm mr-1">add_shopping_cart</span>
-                                  Add
-                                </Button>
                               </>
                             ) : (
                               <span className="material-icons text-gray-300 text-3xl">cancel</span>

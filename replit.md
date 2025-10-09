@@ -17,6 +17,8 @@ Preferred communication style: Simple, everyday language.
 - **Mobile-First**: Responsive design with bottom navigation optimized for mobile/tablet.
 - **PWA Support**: Full Progressive Web App capabilities including installable app experience.
 - **Dual-Role UX**: Separate user experiences for customers (B2C) and businesses (B2B).
+- **Cart Experience**: Full-page cart (not modal), modern mobile ecommerce design with store grouping, sticky checkout, and instant add-to-cart via +/- buttons.
+- **Accessibility**: All interactive elements meet 44px minimum tap target requirement for mobile accessibility.
 
 ### Technical Implementations
 - **Backend**: Node.js with Express.js, TypeScript, and ES modules.
