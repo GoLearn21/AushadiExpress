@@ -13,6 +13,7 @@ export interface CartItem {
 }
 
 const CART_STORAGE_KEY = 'aushadiexpress_cart';
+const CART_UPDATE_EVENT = 'cart-updated';
 
 export function useCart() {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -32,7 +33,32 @@ export function useCart() {
   useEffect(() => {
     // Save cart to localStorage whenever it changes
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent(CART_UPDATE_EVENT));
   }, [cartItems]);
+
+  useEffect(() => {
+    // Listen for cart updates from other components
+    const handleCartUpdate = () => {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (savedCart) {
+        try {
+          const parsedCart = JSON.parse(savedCart);
+          // Only update if the cart has actually changed
+          setCartItems(prev => {
+            const prevStr = JSON.stringify(prev);
+            const newStr = JSON.stringify(parsedCart);
+            return prevStr !== newStr ? parsedCart : prev;
+          });
+        } catch (error) {
+          console.error('Failed to sync cart:', error);
+        }
+      }
+    };
+
+    window.addEventListener(CART_UPDATE_EVENT, handleCartUpdate);
+    return () => window.removeEventListener(CART_UPDATE_EVENT, handleCartUpdate);
+  }, []);
 
   const addToCart = (item: CartItem) => {
     setCartItems((prev) => {
