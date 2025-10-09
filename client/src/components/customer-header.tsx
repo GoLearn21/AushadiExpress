@@ -131,7 +131,7 @@ export function CustomerHeader() {
                     className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base"
                     onClick={() => {
                       setCartOpen(false);
-                      setLocation('/customer-cart');
+                      setLocation('/cart');
                     }}
                   >
                     View Cart & Checkout
