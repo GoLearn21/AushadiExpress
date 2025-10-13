@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { SegmentedControl } from "@/components/segmented-control";
+import { Button } from "@/components/ui/button";
 
 export default function Sales() {
   const [activeTab, setActiveTab] = useState('sales');
+  const [, setLocation] = useLocation();
   
   const { data: sales = [], isLoading } = useQuery({
     queryKey: ['/api/sales'],
@@ -33,11 +36,22 @@ export default function Sales() {
     <div className="flex flex-col h-full overflow-y-auto p-4 space-y-4 pb-28">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" data-testid="sales-title">Sales & Receiving</h1>
-        <div className="text-right">
-          <p className="text-sm text-muted-foreground">Today's Total</p>
-          <p className="text-xl font-bold text-primary" data-testid="todays-total">
-            ₹{todaysSales?.total?.toFixed(2) || '0.00'}
-          </p>
+        <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setLocation('/pharmacy-orders')}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <span className="material-icons text-sm">shopping_bag</span>
+            <span className="hidden sm:inline">Manage Orders</span>
+          </Button>
+          <div className="text-right">
+            <p className="text-sm text-muted-foreground">Today's Total</p>
+            <p className="text-xl font-bold text-primary" data-testid="todays-total">
+              ₹{todaysSales?.total?.toFixed(2) || '0.00'}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -71,6 +85,32 @@ export default function Sales() {
                         <p className="text-sm text-muted-foreground" data-testid={`sale-date-${sale.id}`}>
                           {new Date(sale.date).toLocaleDateString()} at {new Date(sale.date).toLocaleTimeString()}
                         </p>
+
+                        {/* Customer Info */}
+                        {(sale.customerName || sale.customerPhone) && (
+                          <div className="mt-1 flex items-center gap-1 text-xs text-gray-600">
+                            <span className="material-icons text-xs">person</span>
+                            <span>{sale.customerName || 'Customer'}</span>
+                            {sale.customerPhone && (
+                              <span className="text-muted-foreground">• {sale.customerPhone}</span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Sale Mode Badge */}
+                        <div className="mt-1">
+                          {sale.status && ['pending', 'confirmed', 'preparing', 'ready', 'completed'].includes(sale.status) ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                              <span className="material-icons text-xs">shopping_bag</span>
+                              Online Order
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
+                              <span className="material-icons text-xs">store</span>
+                              POS Sale
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
@@ -78,6 +118,43 @@ export default function Sales() {
                       <p className="text-2xl font-bold" data-testid={`sale-total-${sale.id}`}>
                         ₹{sale.total.toFixed(2)}
                       </p>
+
+                      {/* Order Status Badge */}
+                      {sale.status && (
+                        <div className="mt-1">
+                          {sale.status === 'pending' && (
+                            <span className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                              Pending
+                            </span>
+                          )}
+                          {sale.status === 'confirmed' && (
+                            <span className="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                              Confirmed
+                            </span>
+                          )}
+                          {sale.status === 'preparing' && (
+                            <span className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+                              Preparing
+                            </span>
+                          )}
+                          {sale.status === 'ready' && (
+                            <span className="inline-flex items-center px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded">
+                              Ready
+                            </span>
+                          )}
+                          {sale.status === 'completed' && (
+                            <span className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+                              ✓ Completed
+                            </span>
+                          )}
+                          {sale.status === 'rejected' && (
+                            <span className="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded">
+                              Rejected
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="flex items-center space-x-1 justify-end mt-1">
                         <div className={`w-2 h-2 rounded-full ${sale.synced ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                         <span className="text-xs text-muted-foreground" data-testid={`sale-sync-status-${sale.id}`}>

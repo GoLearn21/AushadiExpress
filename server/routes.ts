@@ -547,7 +547,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Customer orders endpoint - creates a sale record for the seller's tenant
   app.post("/api/orders", tenantContext, async (req: TenantRequest, res) => {
     try {
-      const { items, totalAmount, storeTenantId } = req.body;
+      const {
+        items,
+        totalAmount,
+        storeTenantId,
+        storeName,
+        storeAddress,
+        customerName,
+        customerPhone
+      } = req.body;
 
       // Validate customer role
       if ((req as any).session?.userRole !== 'customer') {
@@ -565,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Server-side total validation
-      const computedTotal = items.reduce((sum: number, item: any) => 
+      const computedTotal = items.reduce((sum: number, item: any) =>
         sum + (item.price * item.quantity), 0
       );
 
@@ -573,7 +581,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Total amount mismatch" });
       }
 
-      // Create sale record for seller's tenant with customer tracking
+      // Calculate expiration time (30 minutes from now)
+      const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
+
+      // Create sale record for seller's tenant with OMS fields
       const saleData = {
         total: totalAmount,
         items: JSON.stringify(items),
@@ -581,6 +592,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tenantId: storeTenantId, // Seller's tenant ID
         customerId: (req as any).session?.userId, // Customer user ID
         customerTenantId: req.tenantId, // Customer's tenant ID
+        // OMS fields
+        status: 'pending',
+        paymentStatus: 'unpaid',
+        storeName: storeName || null,
+        storeAddress: storeAddress || null,
+        customerName: customerName || null,
+        customerPhone: customerPhone || null,
+        expiresAt: expiresAt,
       };
 
       const sale = await storage.createSale(saleData, items);
@@ -593,12 +612,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         payload: JSON.stringify(sale)
       });
 
+      // Import omsAgent and notify pharmacy about new order
+      const { omsAgent } = await import('./services/oms-agent');
+      await omsAgent.notifyPharmacy(sale, 'ORDER_PLACED', {});
+
       geminiAgent.invalidateCache(storeTenantId);
 
-      res.status(201).json({ 
-        success: true, 
+      res.status(201).json({
+        success: true,
         orderId: sale.id,
-        message: "Order placed successfully" 
+        message: "Order placed successfully"
       });
     } catch (error) {
       console.error('[ORDERS] Failed to create order:', error);

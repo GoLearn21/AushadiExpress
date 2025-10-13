@@ -2,7 +2,7 @@ import { type User, type InsertUser, type Product, type InsertProduct, type Stoc
 import { randomUUID } from "crypto";
 import { generateTenantId } from "./utils/tenant-id-generator";
 import { db } from "./db";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { users, products, stock, sales, outbox, assistantBetaLeads, documents, pendingInvoices as pendingInvoicesTable, favoriteStores } from "@shared/schema";
 import { normalizeInvoiceExtraction } from "./utils/invoice-normalizer";
 
@@ -749,9 +749,9 @@ export class DatabaseStorage implements IStorage {
   async getSales(tenantId?: string): Promise<Sale[]> {
     try {
       if (tenantId) {
-        return await db.select().from(sales).where(eq(sales.tenantId, tenantId));
+        return await db.select().from(sales).where(eq(sales.tenantId, tenantId)).orderBy(desc(sales.date));
       }
-      return await db.select().from(sales);
+      return await db.select().from(sales).orderBy(desc(sales.date));
     } catch (error) {
       console.error('Database error in getSales:', error);
       return [];

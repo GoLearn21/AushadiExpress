@@ -1,38 +1,66 @@
 import { useState } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useCart } from '@/hooks/use-cart';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useAuth } from '@/hooks/use-auth';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { CustomerHeader } from '@/components/customer-header';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CustomerCartPage() {
   const [, setLocation] = useLocation();
-  const { 
-    cartItems, 
-    removeFromCart, 
-    updateQuantity, 
-    clearCart, 
-    getCartTotal, 
+  const {
+    cartItems,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getCartTotal,
     getItemsByStore,
     getCartItemCount
   } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
 
   const itemsByStore = getItemsByStore();
   const storeIds = Object.keys(itemsByStore);
   const cartItemCount = getCartItemCount();
 
+  const handlePlaceOrderClick = () => {
+    setShowCustomerForm(true);
+  };
+
   const handleCheckout = async () => {
+    if (!customerName.trim() || !customerPhone.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please provide your name and phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (customerPhone.length < 10) {
+      toast({
+        title: "Invalid phone number",
+        description: "Please enter a valid 10-digit phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     try {
       // Group items by store and create orders
       for (const storeId of storeIds) {
         const storeItems = itemsByStore[storeId];
-        
+
         const orderData = {
           items: storeItems.map(item => ({
             productId: item.productId,
@@ -42,6 +70,10 @@ export default function CustomerCartPage() {
           })),
           totalAmount: storeItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
           storeTenantId: storeId, // Seller's tenant ID
+          storeName: storeItems[0].storeName,
+          storeAddress: storeItems[0].storeAddress,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
           status: 'pending',
         };
 
@@ -62,7 +94,7 @@ export default function CustomerCartPage() {
         title: "Order placed successfully!",
         description: "Your order has been sent to the store for processing.",
       });
-      
+
       setLocation('/orders');
     } catch (error) {
       console.error('Checkout error:', error);
@@ -256,25 +288,65 @@ export default function CustomerCartPage() {
                 </div>
               </div>
 
-              {/* Place Order Button */}
-              <Button 
-                onClick={handleCheckout} 
-                disabled={isProcessing}
-                className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base font-bold rounded-xl shadow-lg disabled:opacity-50"
-              >
-                {isProcessing ? (
-                  <>
-                    <span className="material-icons animate-spin mr-2">refresh</span>
-                    Processing Order...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-icons mr-2">shopping_bag</span>
-                    Place Order • ₹{getCartTotal().toFixed(2)}
-                    <span className="material-icons ml-2">arrow_forward</span>
-                  </>
-                )}
-              </Button>
+              {/* Customer Details Form or Place Order Button */}
+              {showCustomerForm ? (
+                <div className="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-200">
+                  <h3 className="font-semibold text-gray-900 text-sm">Your Contact Details</h3>
+                  <Input
+                    type="text"
+                    placeholder="Your Name"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    className="h-12"
+                  />
+                  <Input
+                    type="tel"
+                    placeholder="Phone Number"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    maxLength={10}
+                    className="h-12"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => setShowCustomerForm(false)}
+                      variant="outline"
+                      className="flex-1 h-12"
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      onClick={handleCheckout}
+                      disabled={isProcessing}
+                      className="flex-1 h-12 bg-blue-600 hover:bg-blue-700"
+                    >
+                      {isProcessing ? (
+                        <>
+                          <span className="material-icons animate-spin mr-2">refresh</span>
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <span className="material-icons mr-2">check</span>
+                          Confirm Order
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={handlePlaceOrderClick}
+                  disabled={isProcessing}
+                  className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white text-base font-bold rounded-xl shadow-lg disabled:opacity-50 flex items-center justify-center"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="material-icons">shopping_bag</span>
+                    <span>Place Order • ₹{getCartTotal().toFixed(2)}</span>
+                    <span className="material-icons">arrow_forward</span>
+                  </div>
+                </Button>
+              )}
 
               {/* Secure Payment Info */}
               <div className="flex items-center justify-center gap-2 text-xs text-gray-500">

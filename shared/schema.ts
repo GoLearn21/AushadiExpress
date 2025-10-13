@@ -46,6 +46,20 @@ export const sales = pgTable("sales", {
   tenantId: varchar("tenant_id").notNull().default("default"), // Seller's tenant ID
   customerId: varchar("customer_id").references(() => users.id), // Customer who placed the order
   customerTenantId: varchar("customer_tenant_id"), // Customer's tenant ID for tracking
+
+  // OMS fields
+  status: text("status").default("pending"), // pending, confirmed, preparing, ready, completed, rejected, cancelled, expired
+  paymentStatus: text("payment_status").default("unpaid"), // unpaid, paid, refunded
+  paymentMethod: text("payment_method"), // cash, upi, card, online
+  storeName: text("store_name"),
+  storeAddress: text("store_address"),
+  customerName: text("customer_name"),
+  customerPhone: text("customer_phone"),
+  rejectionReason: text("rejection_reason"),
+  estimatedReadyTime: integer("estimated_ready_time"), // minutes
+  updatedAt: timestamp("updated_at").defaultNow(),
+  pickupTime: timestamp("pickup_time"),
+  expiresAt: timestamp("expires_at"),
 });
 
 export const pendingInvoices = pgTable("pending_invoices", {
@@ -153,6 +167,31 @@ export const receipts = pgTable("receipts", {
   poId: varchar("po_id").references(() => purchaseOrders.id),
   receivedAt: timestamp("received_at").defaultNow(),
   notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// OMS: Notifications table
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id").notNull(),
+  userId: varchar("user_id").references(() => users.id),
+  type: varchar("type").notNull(), // order_placed, order_accepted, order_rejected, etc.
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  orderId: varchar("order_id").references(() => sales.id),
+  read: boolean("read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
+// OMS: Order events log for audit trail
+export const orderEvents = pgTable("order_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderId: varchar("order_id").notNull().references(() => sales.id),
+  eventType: varchar("event_type").notNull(), // created, accepted, rejected, completed, etc.
+  actorId: varchar("actor_id").references(() => users.id),
+  actorRole: varchar("actor_role"), // customer, retailer
+  metadata: jsonb("metadata"), // Additional event data
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -383,6 +422,17 @@ export const insertFavoriteStoreSchema = createInsertSchema(favoriteStores).omit
   createdAt: true,
 });
 
+// OMS schemas
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertOrderEventSchema = createInsertSchema(orderEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Product = typeof products.$inferSelect;
@@ -429,3 +479,9 @@ export type UserLearningPattern = typeof userLearningPatterns.$inferSelect;
 export type InsertUserLearningPattern = z.infer<typeof insertUserLearningPatternSchema>;
 export type FavoriteStore = typeof favoriteStores.$inferSelect;
 export type InsertFavoriteStore = z.infer<typeof insertFavoriteStoreSchema>;
+
+// OMS types
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type OrderEvent = typeof orderEvents.$inferSelect;
+export type InsertOrderEvent = z.infer<typeof insertOrderEventSchema>;

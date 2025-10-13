@@ -54,33 +54,20 @@ export class PharmacyIntelligenceAgent {
   private readonly ENTERPRISE_LOAD_MESSAGE = "🔄 Bringing whole enterprise health data...may take few seconds. Post this, any questions will be answered instantly from your complete business snapshot.";
 
   constructor() {
-    // Try to load API key from environment or file
+    // Use environment variable for API key
     const apiKey = this.getApiKey();
     this.genai = new GoogleGenAI({ apiKey });
     this.initializeTools();
   }
-  
+
   private getApiKey(): string {
     // Check environment variable first
     if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'undefined') {
       return process.env.GEMINI_API_KEY.trim();
     }
-    
-    // Try to load from file as fallback
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const keyFile = path.join(process.cwd(), '.gemini-key');
-      if (fs.existsSync(keyFile)) {
-        const fileKey = fs.readFileSync(keyFile, 'utf8').trim();
-        if (fileKey && fileKey !== 'undefined') {
-          return fileKey;
-        }
-      }
-    } catch (error) {
-      console.log('[GEMINI-AGENT] Could not load API key from file:', error);
-    }
-    
+
+    // Return empty string if not found (will be warned in constructor)
+    console.log('[GEMINI-AGENT] GEMINI_API_KEY not found in environment. AI features will be limited.');
     return '';
   }
 

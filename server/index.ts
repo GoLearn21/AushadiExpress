@@ -8,6 +8,7 @@ import { registerAIRoutes } from "./ai-routes";
 import intelligentAgentRoutes from "./routes/intelligent-agent";
 import apiKeyRoutes from "./routes/api-key-management";
 import authRoutes from "./routes/auth";
+import pharmacyOrderRoutes from "./routes/pharmacy-orders";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -107,7 +108,10 @@ app.use((req, res, next) => {
     
     // Register API key management routes
     app.use('/api', apiKeyRoutes);
-    
+
+    // Register pharmacy order management routes
+    app.use('/api', pharmacyOrderRoutes);
+
     // Add a test route to verify API is working
     app.get('/api/status', (req, res) => {
       res.json({ status: 'API is running', timestamp: new Date().toISOString() });

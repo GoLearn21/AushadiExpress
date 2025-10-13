@@ -5,8 +5,13 @@ import aiRouter from './routes/ai';
 export function registerAIRoutes(app: Express) {
   // Mount AI router at /api/ai
   app.use('/api/ai', aiRouter);
-  
-  // Initialize OpenAI client for direct routes
+
+  // Initialize OpenAI client for direct routes only if API key is available
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('⚠️  WARNING: OPENAI_API_KEY not set. AI features will be limited.');
+    return; // Skip AI route registration if no API key
+  }
+
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
   });
