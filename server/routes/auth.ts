@@ -206,22 +206,17 @@ router.patch('/update-profile', async (req, res) => {
     
     // Determine the final role (current or updated)
     const finalRole = role || user.role;
-    
-    // If changing to or already customer, validate pincode requirement
-    if (finalRole === 'customer') {
-      const finalPincode = pincode !== undefined ? pincode : user.pincode;
-      if (!finalPincode || !/^\d{6}$/.test(finalPincode)) {
-        return res.status(400).json({ error: 'Valid 6-digit pincode is required for customer role' });
-      }
-      user.pincode = finalPincode;
-      
-      // Mark customer as onboarded once they provide pincode
-      if (pincode && !user.onboarded) {
-        user.onboarded = true;
-      }
-    } else {
-      // Business roles don't need pincode, clear it if provided
-      user.pincode = null;
+
+    // Validate pincode requirement for all roles
+    const finalPincode = pincode !== undefined ? pincode : user.pincode;
+    if (!finalPincode || !/^\d{6}$/.test(finalPincode)) {
+      return res.status(400).json({ error: 'Valid 6-digit pincode is required' });
+    }
+    user.pincode = finalPincode;
+
+    // Mark user as onboarded once they provide pincode
+    if (pincode && !user.onboarded) {
+      user.onboarded = true;
     }
     
     // Update user role if provided

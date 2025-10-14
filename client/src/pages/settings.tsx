@@ -145,34 +145,24 @@ export default function Settings() {
   };
 
   const completeOnboarding = async () => {
-    // Validate based on role
-    if (userRole === 'customer') {
-      if (!businessName.trim()) {
-        toast({
-          title: "Error",
-          description: "Please enter your name",
-          variant: "destructive",
-        });
-        return;
-      }
-      if (!pincode.trim() || pincode.trim().length !== 6) {
-        toast({
-          title: "Error",
-          description: "Please enter a valid 6-digit pincode",
-          variant: "destructive",
-        });
-        return;
-      }
-    } else {
-      // Business roles require business name
-      if (!businessName.trim()) {
-        toast({
-          title: "Error",
-          description: "Please enter your business name",
-          variant: "destructive",
-        });
-        return;
-      }
+    // Validate business name
+    if (!businessName.trim()) {
+      toast({
+        title: "Error",
+        description: userRole === 'customer' ? "Please enter your name" : "Please enter your business name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate pincode for all roles
+    if (!pincode.trim() || pincode.trim().length !== 6) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid 6-digit pincode",
+        variant: "destructive",
+      });
+      return;
     }
 
     setIsSubmitting(true);
@@ -195,7 +185,7 @@ export default function Settings() {
           body: JSON.stringify({
             role: userRole,
             businessName: businessName,
-            pincode: userRole === 'customer' ? pincode : undefined,
+            pincode: pincode,
           }),
         });
 
@@ -243,7 +233,7 @@ export default function Settings() {
           password: tempPassword,
           tenantName: businessName,
           role: userRole,
-          pincode: userRole === 'customer' ? pincode : undefined,
+          pincode: pincode,
         }),
       });
 
@@ -428,16 +418,29 @@ export default function Settings() {
                       </div>
                     </>
                   ) : userRole && (
-                    <div>
-                      <Label htmlFor="business-name">Business Name</Label>
-                      <Input
-                        id="business-name"
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                        placeholder="Enter your pharmacy name"
-                        data-testid="input-business-name"
-                      />
-                    </div>
+                    <>
+                      <div>
+                        <Label htmlFor="business-name">Business Name</Label>
+                        <Input
+                          id="business-name"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          placeholder="Enter your pharmacy name"
+                          data-testid="input-business-name"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="pincode">Store Pincode</Label>
+                        <Input
+                          id="pincode"
+                          value={pincode}
+                          onChange={(e) => setPincode(e.target.value)}
+                          placeholder="Enter your store pincode"
+                          maxLength={6}
+                          data-testid="input-pincode"
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
                 <div className="flex gap-2">

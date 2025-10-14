@@ -294,6 +294,10 @@ function BusinessDashboard() {
     queryKey: ['/api/pending-invoices'],
   });
 
+  const { data: ordersData } = useQuery({
+    queryKey: ['/api/pharmacy/orders'],
+  });
+
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
   // Close dropdown when clicking outside
@@ -312,6 +316,8 @@ function BusinessDashboard() {
   // Calculate stats
   const lowStockCount = Array.isArray(stock) ? stock.filter((s: any) => s.quantity < 10).length : 0;
   const recentSales = Array.isArray(sales) ? sales.slice(0, 3) : [];
+  const pendingOrdersCount = ordersData?.counts?.pending || 0;
+  const totalOrdersCount = ordersData?.orders?.length || 0;
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -533,7 +539,7 @@ function BusinessDashboard() {
         </section>
         
         {/* Dashboard Stats */}
-        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Card className="elevation-1">
             <CardContent className="p-4">
               <div className="flex items-center justify-between gap-3">
@@ -547,7 +553,7 @@ function BusinessDashboard() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="elevation-1">
             <CardContent className="p-4">
               <div className="flex flex-col gap-3">
@@ -572,6 +578,32 @@ function BusinessDashboard() {
               </div>
             </CardContent>
           </Card>
+
+          <Card
+            className="elevation-1 cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => setLocation('/pharmacy-orders')}
+          >
+            <CardContent className="p-4">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className={`${tw.body} text-muted-foreground`}>Customer Orders</p>
+                    <p className="text-4xl font-bold text-blue-600" data-testid="pending-orders-count">
+                      {pendingOrdersCount}
+                    </p>
+                  </div>
+                  <span className="material-icons text-blue-600 text-3xl">shopping_bag</span>
+                </div>
+                <button
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 text-white py-2 text-sm font-semibold shadow-sm active:scale-[.98]"
+                  data-testid="button-manage-orders"
+                >
+                  <span className="material-icons text-base">receipt_long</span>
+                  <span>{pendingOrdersCount > 0 ? `${pendingOrdersCount} Pending` : 'Manage Orders'}</span>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
         </section>
         
         {/* Recent Transactions */}
@@ -590,26 +622,73 @@ function BusinessDashboard() {
           <div className="divide-y divide-border">
             {recentSales.length > 0 ? (
               recentSales.map((sale: any) => (
-                <div key={sale.id} className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors" data-testid={`transaction-${sale.id}`}>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <span className="material-icons text-primary text-lg">receipt</span>
+                <div key={sale.id} className="p-4 hover:bg-muted/50 transition-colors" data-testid={`transaction-${sale.id}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                        <span className="material-icons text-primary text-lg">receipt</span>
+                      </div>
+                      <div>
+                        <p className="font-medium">{sale.id.slice(0, 8).toUpperCase()}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {new Date(sale.date).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{sale.id.toUpperCase()}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(sale.date).toLocaleDateString()}
-                      </p>
+                    <div className="text-right">
+                      <p className="font-semibold">₹{sale.total.toFixed(2)}</p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">₹{sale.total.toFixed(2)}</p>
-                    <div className="flex items-center space-x-1">
-                      <div className={`w-2 h-2 rounded-full ${sale.synced ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                      <span className="text-xs text-muted-foreground">
-                        {sale.synced ? 'Synced' : 'Pending'}
+
+                  <div className="flex items-center justify-between ml-[52px]">
+                    {/* Sale Type Badge */}
+                    {sale.status && ['pending', 'confirmed', 'preparing', 'ready', 'completed', 'rejected'].includes(sale.status) ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                        <span className="material-icons text-xs">shopping_bag</span>
+                        Online Order
                       </span>
-                    </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-xs rounded-full">
+                        <span className="material-icons text-xs">store</span>
+                        POS Sale
+                      </span>
+                    )}
+
+                    {/* Order Status Badge */}
+                    {sale.status && (
+                      <div>
+                        {sale.status === 'pending' && (
+                          <span className="inline-flex items-center px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded">
+                            Pending
+                          </span>
+                        )}
+                        {sale.status === 'confirmed' && (
+                          <span className="inline-flex items-center px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+                            Confirmed
+                          </span>
+                        )}
+                        {sale.status === 'preparing' && (
+                          <span className="inline-flex items-center px-2 py-0.5 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+                            Preparing
+                          </span>
+                        )}
+                        {sale.status === 'ready' && (
+                          <span className="inline-flex items-center px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded">
+                            Ready
+                          </span>
+                        )}
+                        {sale.status === 'completed' && (
+                          <span className="inline-flex items-center px-2 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded">
+                            ✓ Completed
+                          </span>
+                        )}
+                        {sale.status === 'rejected' && (
+                          <span className="inline-flex items-center px-2 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded">
+                            Rejected
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -6,16 +6,81 @@ import { Card, CardContent } from '@/components/ui/card';
 import { OfflineIndicator } from '@/components/offline-indicator';
 import { CustomerHeader } from '@/components/customer-header';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function CustomerSearchPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [pincode, setPincode] = useState('');
+  const [showRecentSearches, setShowRecentSearches] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<Array<{medicine: string, pincode: string}>>([]);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  // Pre-fill pincode from user profile if available
+  useEffect(() => {
+    if (user?.pincode) {
+      setPincode(user.pincode);
+    }
+  }, [user]);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentSearches');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setRecentSearches(parsed.slice(0, 5)); // Keep only last 5
+      } catch (e) {
+        console.error('Failed to load recent searches:', e);
+      }
+    }
+  }, []);
 
   const handleSearch = () => {
-    console.log('Searching for:', searchTerm, 'in pincode:', pincode);
-    // TODO: Implement search functionality
+    // Validate inputs
+    if (!searchTerm.trim() && !pincode.trim()) {
+      toast({
+        title: "Search criteria required",
+        description: "Please enter a medicine name or pincode to search",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (pincode && pincode.length !== 6) {
+      toast({
+        title: "Invalid pincode",
+        description: "Please enter a valid 6-digit pincode",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Save to recent searches
+    const newSearch = {
+      medicine: searchTerm.trim(),
+      pincode: pincode.trim()
+    };
+
+    const updated = [newSearch, ...recentSearches.filter(s =>
+      s.medicine !== newSearch.medicine || s.pincode !== newSearch.pincode
+    )].slice(0, 5);
+
+    setRecentSearches(updated);
+    localStorage.setItem('recentSearches', JSON.stringify(updated));
+
+    // Build search query parameters
+    const params = new URLSearchParams();
+    if (searchTerm.trim()) {
+      params.append('medicine', searchTerm.trim());
+    }
+    if (pincode.trim()) {
+      params.append('pincode', pincode.trim());
+    }
+
+    // Navigate to search results page
+    setLocation(`/search-results?${params.toString()}`);
   };
 
   const handleNearMe = () => {
@@ -23,13 +88,17 @@ export default function CustomerSearchPage() {
   };
 
   const handleRecent = () => {
-    toast({ title: "Recent Searches", description: "Your recent searches will appear here" });
-    // TODO: Implement recent searches
+    setShowRecentSearches(!showRecentSearches);
+  };
+
+  const handleRecentSearchClick = (search: {medicine: string, pincode: string}) => {
+    setSearchTerm(search.medicine);
+    setPincode(search.pincode);
+    setShowRecentSearches(false);
   };
 
   const handleSaved = () => {
-    toast({ title: "Saved Medicines", description: "Your saved medicines will appear here" });
-    // TODO: Implement saved medicines
+    setLocation('/saved-orders');
   };
 
   const handleUploadRx = () => {
@@ -125,6 +194,50 @@ export default function CustomerSearchPage() {
                 ))}
               </div>
             </div>
+
+            {/* Recent Searches */}
+            {showRecentSearches && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg font-semibold text-gray-800">Recent Searches</h2>
+                  <button
+                    onClick={() => setShowRecentSearches(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="material-icons text-sm">close</span>
+                  </button>
+                </div>
+                {recentSearches.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-6 text-center">
+                      <span className="material-icons text-4xl text-gray-300 mb-2">history</span>
+                      <p className="text-sm text-gray-500">Your recent searches will appear here</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-2">
+                    {recentSearches.map((search, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleRecentSearchClick(search)}
+                        className="w-full flex items-center p-4 rounded-xl bg-white shadow-sm hover:shadow-md transition-all"
+                      >
+                        <span className="material-icons text-purple-500 mr-3">history</span>
+                        <div className="flex-1 text-left">
+                          <div className="font-medium text-gray-900">
+                            {search.medicine || 'All medicines'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {search.pincode ? `Pincode: ${search.pincode}` : 'All areas'}
+                          </div>
+                        </div>
+                        <span className="material-icons text-gray-400">chevron_right</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Popular Medicines */}
             <div className="mb-6">

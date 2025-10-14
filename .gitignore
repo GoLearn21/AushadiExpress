@@ -21,3 +21,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Local state files
+.local/

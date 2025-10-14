@@ -273,37 +273,34 @@ export default function CustomerStoreProductsPage() {
                               </div>
                             )}
                           </div>
-                          <div className="ml-4 flex flex-col items-center">
+                          <div className="ml-4 flex items-center">
                             {totalStock > 0 ? (
-                              <>
-                                <span className="material-icons text-green-500 text-2xl mb-2">check_circle</span>
-                                <div className="flex items-center bg-blue-50 rounded-full p-1">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDecrement(product);
-                                    }}
-                                    disabled={getCartQuantity(product.id) === 0}
-                                    className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    <span className="material-icons text-base text-blue-600">remove</span>
-                                  </button>
-                                  <span className="w-10 text-center font-semibold text-blue-700">
-                                    {getCartQuantity(product.id) || 0}
-                                  </span>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleIncrement(product);
-                                    }}
-                                    className="w-11 h-11 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform"
-                                  >
-                                    <span className="material-icons text-base text-blue-600">add</span>
-                                  </button>
-                                </div>
-                              </>
+                              <div className="flex items-center bg-blue-50 rounded-full p-0.5">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDecrement(product);
+                                  }}
+                                  disabled={getCartQuantity(product.id) === 0}
+                                  className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <span className="material-icons text-sm text-blue-600">remove</span>
+                                </button>
+                                <span className="w-8 text-center text-sm font-semibold text-blue-700">
+                                  {getCartQuantity(product.id) || 0}
+                                </span>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleIncrement(product);
+                                  }}
+                                  className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center active:scale-95 transition-transform"
+                                >
+                                  <span className="material-icons text-sm text-blue-600">add</span>
+                                </button>
+                              </div>
                             ) : (
-                              <span className="material-icons text-gray-300 text-3xl">cancel</span>
+                              <span className="text-xs text-gray-400 font-medium">Out of stock</span>
                             )}
                           </div>
                         </div>

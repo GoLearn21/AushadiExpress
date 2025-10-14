@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
+import { users } from "@shared/schema";
 import { geminiAgent } from "./services/gemini-agent";
 import { insertProductSchema, insertStockSchema, insertSaleSchema, insertCaptureSchema, insertUserLearningPatternSchema, insertPendingInvoiceSchema } from "@shared/schema";
 import { z } from "zod";
@@ -743,6 +745,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[FAVORITES] Failed to check favorite:', error);
       res.status(500).json({ error: "Failed to check favorite" });
+    }
+  });
+
+  // Customer search endpoint - search for medicines and/or pharmacies by pincode
+  app.get("/api/search", tenantContext, async (req: TenantRequest, res) => {
+    try {
+      const medicine = (req.query.medicine as string) || '';
+      const pincode = (req.query.pincode as string) || '';
+
+      console.log('[SEARCH] Request:', { medicine, pincode });
+
+      // Validate that at least one search criteria is provided
+      if (!medicine && !pincode) {
+        return res.status(400).json({ error: "Please provide medicine name or pincode to search" });
+      }
+
+      // Get all products (if medicine search is provided, we'll filter)
+      let allProducts = await storage.getProducts();
+
+      // Filter by medicine name if provided (case-insensitive partial match)
+      if (medicine) {
+        const searchTerm = medicine.toLowerCase().trim();
+        allProducts = allProducts.filter(p =>
+          p.name.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      console.log('[SEARCH] Found', allProducts.length, 'matching products');
+
+      // Get all users (to access pharmacy details like name and pincode)
+      const allUsersResult = await db.select().from(users);
+
+      // Filter pharmacies by pincode if provided
+      let pharmacies = allUsersResult.filter(u =>
+        u.role !== 'customer' && // Only business accounts (retailers, wholesalers, etc.)
+        (!pincode || u.pincode === pincode) // Filter by pincode if provided
+      );
+
+      console.log('[SEARCH] Found', pharmacies.length, 'matching pharmacies');
+
+      // Group products by store (tenantId)
+      const storeProductsMap = new Map<string, any[]>();
+
+      for (const product of allProducts) {
+        if (!storeProductsMap.has(product.tenantId)) {
+          storeProductsMap.set(product.tenantId, []);
+        }
+
+        // Only include products with stock
+        if (product.totalQuantity && product.totalQuantity > 0) {
+          storeProductsMap.get(product.tenantId)?.push({
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price,
+            totalQuantity: product.totalQuantity,
+          });
+        }
+      }
+
+      // Build stores array with their products
+      const stores = [];
+
+      for (const pharmacy of pharmacies) {
+        const products = storeProductsMap.get(pharmacy.tenantId);
+
+        // Only include stores that have matching products
+        if (products && products.length > 0) {
+          stores.push({
+            tenantId: pharmacy.tenantId,
+            storeName: pharmacy.username, // Business name is stored in username field
+            storeAddress: null, // TODO: Add store address to users table if needed
+            pincode: pharmacy.pincode,
+            products: products,
+          });
+        }
+      }
+
+      const totalProducts = stores.reduce((sum, store) => sum + store.products.length, 0);
+
+      console.log('[SEARCH] Returning', stores.length, 'stores with', totalProducts, 'products');
+
+      res.json({
+        stores,
+        totalProducts,
+      });
+    } catch (error) {
+      console.error('[SEARCH] Failed to search:', error);
+      res.status(500).json({ error: "Search failed" });
     }
   });
 

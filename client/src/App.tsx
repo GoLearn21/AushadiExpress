@@ -21,11 +21,13 @@ import ReceiveStockScreen from "./pages/receive-stock";
 import ReportsScreen from "./pages/reports";
 import AIAssistantPage from "./pages/ai-assistant-fullscreen";
 import CustomerSearchPage from "./pages/customer-search";
+import CustomerSearchResultsPage from "./pages/customer-search-results";
 import CustomerOrdersPage from "./pages/customer-orders";
 import CustomerNearbyStoresPage from "./pages/customer-nearby-stores";
 import CustomerStoreProductsPage from "./pages/customer-store-products";
 import CustomerCartPage from "./pages/customer-cart";
 import CustomerSavedStoresPage from "./pages/customer-saved-stores";
+import CustomerSavedOrdersPage from "./pages/customer-saved-orders";
 import PharmacyOrdersPage from "./pages/pharmacy-orders";
 import NotFound from "./pages/not-found";
 import { SetupGate } from "./components/setup-gate";
@@ -69,11 +71,13 @@ function Router() {
             <Route path="/ai-assistant" component={AIAssistantPage} />
             <Route path="/search" component={CustomerSearchPage} />
             <Route path="/customer-search" component={CustomerSearchPage} />
+            <Route path="/search-results" component={CustomerSearchResultsPage} />
             <Route path="/orders" component={CustomerOrdersPage} />
             <Route path="/nearby-stores" component={CustomerNearbyStoresPage} />
             <Route path="/store/:tenantId/:storeName" component={CustomerStoreProductsPage} />
             <Route path="/cart" component={CustomerCartPage} />
             <Route path="/saved-stores" component={CustomerSavedStoresPage} />
+            <Route path="/saved-orders" component={CustomerSavedOrdersPage} />
             <Route path="/pharmacy-orders" component={PharmacyOrdersPage} />
             <Route path="/bill-fast" component={() => <div className="p-4 text-center text-muted-foreground">Bill Fast feature coming in Iteration 1</div>} />
             <Route path="/settings" component={Settings} />

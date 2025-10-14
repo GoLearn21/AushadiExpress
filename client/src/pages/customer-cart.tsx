@@ -270,7 +270,7 @@ export default function CustomerCartPage() {
           </div>
 
           {/* Sticky Bottom Checkout Section */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl pb-safe">
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-2xl pb-20">
             <div className="p-4 space-y-3">
               {/* Price Breakdown */}
               <div className="space-y-2">
