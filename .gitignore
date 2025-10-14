@@ -24,3 +24,6 @@ Thumbs.db
 
 # Local state files
 .local/
+
+# Google Cloud credentials
+inner-period.json
