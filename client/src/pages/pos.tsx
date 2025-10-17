@@ -351,9 +351,13 @@ export default function PosScreen() {
         paymentMethod: method,
         productName: item.product.name
       }))),
-      tenantId
+      tenantId,
+      // POS sales are instant - mark as completed immediately
+      status: 'completed',
+      paymentStatus: 'paid',
+      paymentMethod: method
     };
-    
+
     setShowPayment(false);
     completeSale.mutate(saleData);
   };

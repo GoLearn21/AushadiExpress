@@ -10,7 +10,7 @@
  */
 
 import { db } from "../db";
-import { sales, products, notifications, orderEvents, users } from "../../shared/schema";
+import { sales, products, stock, notifications, orderEvents, users } from "../../shared/schema";
 import { eq, and, lt, sql } from "drizzle-orm";
 
 export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'completed' | 'rejected' | 'cancelled' | 'expired';
@@ -359,6 +359,7 @@ export class OMSAgent {
    */
   private async deductInventory(tenantId: string, items: OrderItem[], orderId: string): Promise<void> {
     for (const item of items) {
+      // Update product totalQuantity
       await db.update(products)
         .set({
           totalQuantity: sql`total_quantity - ${item.quantity}`
@@ -370,6 +371,36 @@ export class OMSAgent {
           )
         );
 
+      // Deduct from stock batches (FEFO - First Expired, First Out)
+      let remainingQty = item.quantity;
+
+      // Get all stock items for this product, sorted by expiry date
+      const stockItems = await db.select()
+        .from(stock)
+        .where(
+          and(
+            eq(stock.productId, item.productId),
+            eq(stock.tenantId, tenantId),
+            sql`${stock.quantity} > 0`
+          )
+        )
+        .orderBy(stock.expiryDate);
+
+      for (const stockItem of stockItems) {
+        if (remainingQty <= 0) break;
+
+        const deductQty = Math.min(remainingQty, stockItem.quantity);
+
+        await db.update(stock)
+          .set({
+            quantity: stockItem.quantity - deductQty
+          })
+          .where(eq(stock.id, stockItem.id));
+
+        remainingQty -= deductQty;
+        console.log(`[OMS] Deducted ${deductQty} units from stock batch ${stockItem.batchNumber}`);
+      }
+
       console.log(`[OMS] Deducted ${item.quantity} units of ${item.productName} for order ${orderId}`);
     }
   }
@@ -379,6 +410,7 @@ export class OMSAgent {
    */
   private async restoreInventory(tenantId: string, items: OrderItem[], orderId: string): Promise<void> {
     for (const item of items) {
+      // Update product totalQuantity
       await db.update(products)
         .set({
           totalQuantity: sql`total_quantity + ${item.quantity}`
@@ -389,6 +421,31 @@ export class OMSAgent {
             eq(products.tenantId, tenantId)
           )
         );
+
+      // Restore to stock batches (add back to the first available batch)
+      // In a real-world scenario, you might want to track which batches were deducted
+      // For now, we'll add back to the earliest expiring batch with available space
+      const stockItems = await db.select()
+        .from(stock)
+        .where(
+          and(
+            eq(stock.productId, item.productId),
+            eq(stock.tenantId, tenantId)
+          )
+        )
+        .orderBy(stock.expiryDate);
+
+      if (stockItems.length > 0) {
+        // Add back to the first batch (earliest expiring)
+        const firstBatch = stockItems[0];
+        await db.update(stock)
+          .set({
+            quantity: firstBatch.quantity + item.quantity
+          })
+          .where(eq(stock.id, firstBatch.id));
+
+        console.log(`[OMS] Restored ${item.quantity} units to stock batch ${firstBatch.batchNumber}`);
+      }
 
       console.log(`[OMS] Restored ${item.quantity} units of ${item.productName} for order ${orderId}`);
     }

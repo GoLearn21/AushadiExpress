@@ -99,7 +99,7 @@ export default function Sales() {
 
                         {/* Sale Mode Badge */}
                         <div className="mt-1">
-                          {sale.status && ['pending', 'confirmed', 'preparing', 'ready', 'completed'].includes(sale.status) ? (
+                          {sale.customerId ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
                               <span className="material-icons text-xs">shopping_bag</span>
                               Online Order

@@ -8,7 +8,7 @@ import { Router, type Request, type Response } from 'express';
 import { omsAgent } from '../services/oms-agent';
 import { db } from '../db';
 import { sales } from '../../shared/schema';
-import { eq, and, desc, inArray } from 'drizzle-orm';
+import { eq, and, desc, inArray, isNotNull } from 'drizzle-orm';
 import { tenantContext, type TenantRequest } from '../middleware/tenant-context';
 
 const router = Router();
@@ -32,9 +32,16 @@ router.get('/pharmacy/orders', tenantContext, requireRetailer, async (req: Tenan
 
     console.log('[PHARMACY-ORDERS] Fetching orders for tenantId:', tenantId);
 
+    // Only fetch customer online orders (orders with customerId)
+    // Exclude POS walk-in sales (which have null customerId)
     let query = db.select()
       .from(sales)
-      .where(eq(sales.tenantId, tenantId))
+      .where(
+        and(
+          eq(sales.tenantId, tenantId),
+          isNotNull(sales.customerId) // Only show customer online orders
+        )
+      )
       .orderBy(desc(sales.date));
 
     // Filter by status if provided
@@ -54,7 +61,7 @@ router.get('/pharmacy/orders', tenantContext, requireRetailer, async (req: Tenan
 
     const orders = await query;
 
-    console.log('[PHARMACY-ORDERS] Found orders:', orders.length);
+    console.log('[PHARMACY-ORDERS] Found online orders:', orders.length);
     console.log('[PHARMACY-ORDERS] Orders:', orders.map(o => ({ id: o.id, status: o.status, customerName: o.customerName })));
 
     // Calculate counts by status
@@ -211,9 +218,15 @@ router.get('/pharmacy/dashboard/stats', tenantContext, requireRetailer, async (r
   try {
     const tenantId = req.tenantId;
 
+    // Only count customer online orders (exclude POS sales)
     const orders = await db.select()
       .from(sales)
-      .where(eq(sales.tenantId, tenantId));
+      .where(
+        and(
+          eq(sales.tenantId, tenantId),
+          isNotNull(sales.customerId) // Only customer online orders
+        )
+      );
 
     const stats = {
       totalOrders: orders.length,

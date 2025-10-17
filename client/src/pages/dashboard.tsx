@@ -642,7 +642,7 @@ function BusinessDashboard() {
 
                   <div className="flex items-center justify-between ml-[52px]">
                     {/* Sale Type Badge */}
-                    {sale.status && ['pending', 'confirmed', 'preparing', 'ready', 'completed', 'rejected'].includes(sale.status) ? (
+                    {sale.customerId ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
                         <span className="material-icons text-xs">shopping_bag</span>
                         Online Order
