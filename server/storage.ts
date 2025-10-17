@@ -728,6 +728,16 @@ export class DatabaseStorage implements IStorage {
         tenantId: tenantId ?? 'default',
         createdAt: new Date()
       }).returning();
+
+      // Update product's totalQuantity by adding the new stock quantity
+      await db.update(products)
+        .set({
+          totalQuantity: sql`${products.totalQuantity} + ${insertStock.quantity}`
+        })
+        .where(eq(products.id, insertStock.productId));
+
+      console.log(`[STORAGE] Updated product ${insertStock.productId} totalQuantity by adding ${insertStock.quantity}`);
+
       return stockItem;
     } catch (error) {
       console.error('Database error in createStock:', error);

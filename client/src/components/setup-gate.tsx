@@ -13,9 +13,9 @@ export function SetupGate({ children }: SetupGateProps) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center p-4 bg-primary">
         <div className="w-full max-w-md">
-          <div className="text-center mb-8 space-y-3">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm mb-2">
-              <svg className="w-12 h-12" viewBox="0 0 32 32" fill="none">
+          <div className="text-center mb-4 space-y-1">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 backdrop-blur-sm mb-1">
+              <svg className="w-7 h-7" viewBox="0 0 32 32" fill="none">
                 {/* Jar body */}
                 <rect x="7" y="9" width="18" height="20" rx="2" fill="white" />
                 {/* Jar lid/cap */}
@@ -26,10 +26,10 @@ export function SetupGate({ children }: SetupGateProps) {
                 <rect x="15" y="14" width="2" height="8" rx="0.5" fill="#3B82F6" />
               </svg>
             </div>
-            <h1 className="text-4xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-white">
               AushadiExpress
             </h1>
-            <p className="text-white/80 text-sm font-medium">Smart Pharmacy. Simplified.</p>
+            <p className="text-white/80 text-xs font-medium">Smart Pharmacy. Simplified.</p>
           </div>
           <SetupWizard onComplete={refetch} />
         </div>

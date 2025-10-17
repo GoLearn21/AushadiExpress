@@ -52,6 +52,7 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         body: JSON.stringify({
           username: username,
           password: password,
+          role: selectedRole,
         }),
       });
 
@@ -215,33 +216,61 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   if (mode === 'login') {
     return (
       <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
-        <CardHeader className="space-y-1 pb-4">
-          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+        <CardHeader className="space-y-0.5 pb-2">
+          <CardTitle className="text-base font-bold text-gray-900 dark:text-white">
             Welcome Back
           </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
+          <CardDescription className="text-xs text-gray-600 dark:text-gray-400">
             Log in to access your account
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
+        <CardContent className="space-y-3">
+          <form onSubmit={handleLogin} className="space-y-3">
+            {/* Role Selector */}
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">I am a</Label>
+              <div className="grid grid-cols-2 gap-2">
+                {roleOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setSelectedRole(option.value)}
+                    className={`p-2.5 rounded-lg border-2 transition-all ${
+                      selectedRole === option.value
+                        ? 'border-primary bg-primary/5'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                    }`}
+                  >
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="text-xl">{option.emoji}</span>
+                      <span className={`text-sm font-medium ${
+                        selectedRole === option.value ? 'text-primary' : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {option.label}
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
               <Label htmlFor="username" className="text-sm font-medium">
-                Username
+                {selectedRole === 'customer' ? 'Username' : 'Business Name'}
               </Label>
               <Input
                 id="username"
                 type="text"
-                placeholder="Enter your username"
+                placeholder={selectedRole === 'customer' ? 'Enter your username' : 'Enter your business name'}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-11"
+                className="h-10"
               />
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="password" className="text-sm font-medium">
                 Password
               </Label>
@@ -253,19 +282,19 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-11"
+                className="h-10"
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full h-11 font-medium"
+              className="w-full h-10 font-medium"
               disabled={isLoading}
             >
               {isLoading ? 'Logging in...' : 'Log In'}
             </Button>
 
-            <div className="text-center">
+            <div className="text-center pt-0.5">
               <button
                 type="button"
                 onClick={switchToRegister}
@@ -284,38 +313,38 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   if (step === 'role') {
     return (
       <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
-        <CardHeader className="space-y-1 pb-4">
-          <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+        <CardHeader className="space-y-0.5 pb-2">
+          <CardTitle className="text-base font-bold text-gray-900 dark:text-white">
             Choose Account Type
           </CardTitle>
-          <CardDescription className="text-gray-600 dark:text-gray-400">
+          <CardDescription className="text-xs text-gray-600 dark:text-gray-400">
             Select how you'll use AushadiExpress
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-3">
+        <CardContent className="space-y-3">
+          <div className="grid gap-2.5">
             {roleOptions.map((option) => (
               <button
                 key={option.value}
                 onClick={() => setSelectedRole(option.value)}
-                className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                className={`w-full p-3 rounded-lg border-2 transition-all text-left ${
                   selectedRole === option.value
                     ? 'border-primary bg-primary/5'
                     : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
                 }`}
               >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">{option.emoji}</span>
+                <div className="flex items-start gap-2.5">
+                  <span className="text-xl">{option.emoji}</span>
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-900 dark:text-white">
+                    <div className="font-semibold text-sm text-gray-900 dark:text-white">
                       {option.label}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
                       {option.description}
                     </div>
                   </div>
                   {selectedRole === option.value && (
-                    <div className="text-primary">✓</div>
+                    <div className="text-primary text-sm">✓</div>
                   )}
                 </div>
               </button>
@@ -324,12 +353,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
           <Button
             onClick={() => setStep('details')}
-            className="w-full h-11 font-medium"
+            className="w-full h-10 font-medium"
           >
             Continue
           </Button>
 
-          <div className="text-center">
+          <div className="text-center pt-0.5">
             <button
               type="button"
               onClick={switchToLogin}
@@ -345,31 +374,31 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
 
   return (
     <Card className="w-full border-0 bg-white dark:bg-gray-900 shadow-2xl">
-      <CardHeader className="space-y-1 pb-4">
+      <CardHeader className="space-y-0.5 pb-2">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setStep('role')}
-            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white text-lg"
           >
             ←
           </button>
           <div>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+            <CardTitle className="text-base font-bold text-gray-900 dark:text-white">
               Create {roleOptions.find(r => r.value === selectedRole)?.label} Account
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">
-              {selectedRole === 'customer' 
-                ? 'Enter your details to start ordering medicines'
-                : 'Set up your business account to get started'
+            <CardDescription className="text-xs text-gray-600 dark:text-gray-400">
+              {selectedRole === 'customer'
+                ? 'Enter your details to start ordering'
+                : 'Set up your business account'
               }
             </CardDescription>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <form onSubmit={handleRegister} className="space-y-4">
+      <CardContent className="space-y-3">
+        <form onSubmit={handleRegister} className="space-y-3">
           {selectedRole === 'customer' ? (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="username" className="text-sm font-medium">
                 Your Name
               </Label>
@@ -381,11 +410,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-11"
+                className="h-10"
               />
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <Label htmlFor="businessName" className="text-sm font-medium">
                 Business Name
               </Label>
@@ -397,12 +426,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
                 onChange={(e) => setBusinessName(e.target.value)}
                 disabled={isLoading}
                 required
-                className="h-11"
+                className="h-10"
               />
             </div>
           )}
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="password" className="text-sm font-medium">
               Password
             </Label>
@@ -414,11 +443,11 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               onChange={(e) => setPassword(e.target.value)}
               disabled={isLoading}
               required
-              className="h-11"
+              className="h-10"
             />
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label htmlFor="confirmPassword" className="text-sm font-medium">
               Confirm Password
             </Label>
@@ -430,19 +459,19 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               onChange={(e) => setConfirmPassword(e.target.value)}
               disabled={isLoading}
               required
-              className="h-11"
+              className="h-10"
             />
           </div>
 
           <Button
             type="submit"
-            className="w-full h-11 font-medium"
+            className="w-full h-10 font-medium"
             disabled={isLoading}
           >
             {isLoading ? 'Setting up...' : 'Complete Setup'}
           </Button>
 
-          <div className="text-center">
+          <div className="text-center pt-0.5">
             <button
               type="button"
               onClick={switchToLogin}
