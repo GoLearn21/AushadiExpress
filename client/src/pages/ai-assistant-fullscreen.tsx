@@ -5,7 +5,7 @@ import { Badge } from "../components/ui/badge";
 import { useToast } from "../hooks/use-toast";
 import { useAuth } from "../hooks/use-auth";
 import { Textarea } from "../components/ui/textarea";
-import { Send, Upload, Mic, MicOff, Sparkles, Camera, FileText, X, Zap, User, Plus, Trash2 } from 'lucide-react';
+import { Send, Upload, Mic, MicOff, Sparkles, Camera, FileText, X, Zap, User, Plus, Trash2, FileSpreadsheet } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { cameraCapture } from "../services/camera-capture";
 import { IntelligentPharmacyAgent } from "../services/intelligent-pharmacy-agent";
@@ -2175,24 +2175,29 @@ export default function AIAssistantFullscreenPage() {
   };
 
   const quickActions = [
-    { 
-      label: 'Analyze Medicine Interactions', 
+    {
+      label: 'Upload Excel Inventory',
+      icon: '📊',
+      action: () => setLocation('/excel-upload')
+    },
+    {
+      label: 'Analyze Medicine Interactions',
       icon: '💊',
       action: () => handleSendMessage('Help me check for drug interactions and safety information')
     },
-    { 
-      label: 'Recent Documents Summary', 
+    {
+      label: 'Recent Documents Summary',
       icon: '📄',
       action: () => handleSendMessage('Show me a summary of recently uploaded documents')
     },
-    { 
-      label: 'Inventory Status', 
+    {
+      label: 'Inventory Status',
       icon: '📦',
       action: () => handleSendMessage('What\'s my current inventory status and any low stock alerts?')
     },
-    { 
-      label: 'Sales Analytics', 
-      icon: '📊',
+    {
+      label: 'Sales Analytics',
+      icon: '📈',
       action: () => handleSendMessage('Give me today\'s sales analytics and key insights')
     }
   ];
@@ -2290,6 +2295,17 @@ export default function AIAssistantFullscreenPage() {
         }}>
           {/* Action Buttons */}
           <div className="flex justify-center space-x-3 mb-4">
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={() => setLocation('/excel-upload')}
+              disabled={isUploading || isLoading}
+              data-testid="excel-upload-button"
+              className="h-12 w-12 p-0 rounded-full hover:bg-muted/50 bg-muted/20 border border-border/50"
+              title="Upload Excel Inventory"
+            >
+              <FileSpreadsheet className="w-6 h-6 text-foreground" />
+            </Button>
             <Button
               variant="ghost"
               size="lg"

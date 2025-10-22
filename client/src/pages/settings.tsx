@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { useToast } from "../hooks/use-toast";
 import { Switch } from "../components/ui/switch";
+import { AppQRCode } from "../components/app-qr-code";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -693,6 +694,16 @@ export default function Settings() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* QR Code for App Installation */}
+      <div className="pt-6">
+        <AppQRCode
+          url={window.location.origin}
+          title="Install AushadiExpress"
+          description="Scan this QR code with your phone to install the app"
+          size={200}
+        />
       </div>
 
       <div className="pt-8 border-t border-border">

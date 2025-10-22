@@ -29,6 +29,7 @@ import CustomerCartPage from "./pages/customer-cart";
 import CustomerSavedStoresPage from "./pages/customer-saved-stores";
 import CustomerSavedOrdersPage from "./pages/customer-saved-orders";
 import PharmacyOrdersPage from "./pages/pharmacy-orders";
+import ExcelUpload from "./pages/excel-upload";
 import NotFound from "./pages/not-found";
 import { SetupGate } from "./components/setup-gate";
 import { BottomNavigation } from "./components/bottom-navigation";
@@ -68,6 +69,7 @@ function Router() {
             <Route path="/pos" component={PosScreen} />
             <Route path="/receive-stock" component={ReceiveStockScreen} />
             <Route path="/reports" component={ReportsScreen} />
+            <Route path="/excel-upload" component={ExcelUpload} />
             <Route path="/ai-assistant" component={AIAssistantPage} />
             <Route path="/search" component={CustomerSearchPage} />
             <Route path="/customer-search" component={CustomerSearchPage} />

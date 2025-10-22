@@ -10,6 +10,7 @@ import aiRoutes from "./routes/ai";
 import multer from 'multer';
 import { normalizeInvoiceExtraction, NormalizedInvoice } from "./utils/invoice-normalizer";
 import { tenantContext, type TenantRequest } from "./middleware/tenant-context";
+import { parseExcelWithAI, isValidExcelFile } from "./services/excel-parser";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Enhanced comprehensive logging middleware for debug visibility in Replit console
@@ -919,7 +920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('[STOCK-BULK] Processing bulk stock insert');
       console.log('[STOCK-BULK] Request body:', JSON.stringify(req.body, null, 2));
-      
+
       const items = req.body.items as Array<{
         name: string;
         batch: string;
@@ -927,26 +928,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         exp: string;
         mrp: number;
       }>;
-      
+
       const { billNumber, date } = req.body;
       const tenantId = req.tenantId;
-      
+
       if (!items || !Array.isArray(items)) {
         throw new Error('Items array is required');
       }
-      
+
       // Log duplicate check info (actual duplicate prevention done on frontend with document storage)
       if (billNumber && date) {
         console.log(`[STOCK-BULK] Processing invoice: ${billNumber} dated ${date}`);
       }
-      
+
       console.log('[STOCK-BULK] Items to process:', items.length);
-      
+
       for (const item of items) {
         // Find or create product
         const products = await storage.getProducts();
         let product = products.find(p => p.name === item.name);
-        
+
         if (!product) {
           const productData = {
             name: item.name,
@@ -954,7 +955,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             price: item.mrp,
             tenantId
           };
-          
+
           product = await storage.createProduct(productData);
           console.log('[STOCK-BULK] Created new product:', product.name);
         }
@@ -972,17 +973,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createStock(stockData);
         console.log('[STOCK-BULK] Added stock:', item.name, 'qty:', item.qty);
       }
-      
+
       console.log('[STOCK-BULK] Completed successfully - items processed:', items.length);
-      res.status(201).json({ 
-        success: true, 
+      res.status(201).json({
+        success: true,
         itemsProcessed: items.length,
         message: `${items.length} items added to stock from OCR scan`
       });
-      
+
     } catch (error) {
       console.error('[STOCK-BULK] Error:', error);
       res.status(500).json({ error: 'Failed to process bulk stock insert' });
+    }
+  });
+
+  // Excel inventory upload endpoint with AI-powered schema detection
+  app.post('/api/stock/excel', tenantContext, documentUpload.single('file'), async (req: TenantRequest, res) => {
+    const processingStartTime = Date.now();
+
+    try {
+      console.log('[EXCEL-UPLOAD] Processing Excel inventory upload');
+
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({
+          error: 'No file uploaded',
+          details: 'Please select an Excel file to upload'
+        });
+      }
+
+      // Validate file type
+      if (!isValidExcelFile(file.originalname)) {
+        return res.status(400).json({
+          error: 'Invalid file type',
+          details: 'Only .xlsx, .xls, .xlsm, and .xlsb files are supported'
+        });
+      }
+
+      console.log('[EXCEL-UPLOAD] File received:', file.originalname, 'Size:', file.size);
+
+      // Parse Excel with AI-powered schema detection
+      const parseResult = await parseExcelWithAI(file.buffer);
+
+      if (!parseResult.success) {
+        console.error('[EXCEL-UPLOAD] Parse failed:', parseResult.error);
+        return res.status(400).json({
+          error: 'Failed to parse Excel file',
+          details: parseResult.error,
+          rawDataSample: parseResult.rawDataSample,
+          aiMapping: parseResult.aiMapping
+        });
+      }
+
+      console.log('[EXCEL-UPLOAD] Successfully parsed', parseResult.items.length, 'items');
+      console.log('[EXCEL-UPLOAD] AI detected column mapping:', parseResult.aiMapping);
+
+      // Use existing bulk stock creation logic
+      const tenantId = req.tenantId;
+      const items = parseResult.items;
+
+      for (const item of items) {
+        // Find or create product
+        const products = await storage.getProducts();
+        let product = products.find(p => p.name === item.name);
+
+        if (!product) {
+          const productData = {
+            name: item.name,
+            description: `Added from Excel upload`,
+            price: item.mrp,
+            tenantId
+          };
+
+          product = await storage.createProduct(productData);
+          console.log('[EXCEL-UPLOAD] Created new product:', product.name);
+        }
+
+        // Create stock entry
+        const stockData = {
+          productId: product.id,
+          productName: product.name,
+          batchNumber: item.batch,
+          quantity: item.qty,
+          expiryDate: new Date(item.exp),
+          tenantId: product.tenantId ?? tenantId
+        };
+
+        await storage.createStock(stockData);
+        console.log('[EXCEL-UPLOAD] Added stock:', item.name, 'qty:', item.qty);
+      }
+
+      const processingTime = Date.now() - processingStartTime;
+
+      console.log('[EXCEL-UPLOAD] Completed successfully - items processed:', items.length);
+
+      // Invalidate Gemini cache so inventory reflects new stock
+      geminiAgent.invalidateCache(tenantId);
+
+      res.status(201).json({
+        success: true,
+        itemsProcessed: items.length,
+        message: `${items.length} items added to inventory from Excel file`,
+        fileName: file.originalname,
+        processingTime,
+        aiMapping: parseResult.aiMapping,
+        preview: items.slice(0, 5) // Show first 5 items as preview
+      });
+
+    } catch (error) {
+      console.error('[EXCEL-UPLOAD] Error:', error);
+      res.status(500).json({
+        error: 'Failed to process Excel upload',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

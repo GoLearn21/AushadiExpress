@@ -340,6 +340,13 @@ export default function Inventory() {
         title="Add to Inventory"
         actions={[
           {
+            label: "Upload Excel Inventory",
+            icon: "upload_file",
+            onClick: () => {
+              window.location.href = '/excel-upload';
+            }
+          },
+          {
             label: "Receive Stock",
             icon: "inbox",
             onClick: () => {
