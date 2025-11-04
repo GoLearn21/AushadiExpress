@@ -27,3 +27,7 @@ Thumbs.db
 
 # Google Cloud credentials
 inner-period.json
+google-credentials-base64.txt
+
+# Railway deployment
+.railway/

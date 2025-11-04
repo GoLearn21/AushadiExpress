@@ -16,28 +16,40 @@ export function PWAInstallPrompt() {
 
   useEffect(() => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
                                (window.navigator as any).standalone === true;
-    
+
+    console.log('[PWA] Device check - iOS:', isIOSDevice, 'Standalone:', isInStandaloneMode);
+    console.log('[PWA] User Agent:', navigator.userAgent);
+
     setIsIOS(isIOSDevice);
     setIsStandalone(isInStandaloneMode);
 
     const hasBeenDismissed = localStorage.getItem('pwa-install-dismissed');
-    
+
     if (isInStandaloneMode || hasBeenDismissed) {
+      console.log('[PWA] Not showing prompt - Standalone or dismissed');
       return;
     }
 
     const handler = (e: Event) => {
+      console.log('[PWA] beforeinstallprompt event fired!');
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowPrompt(true);
     };
 
     window.addEventListener('beforeinstallprompt', handler);
+    console.log('[PWA] Event listener added for beforeinstallprompt');
 
-    if (isIOSDevice && !isInStandaloneMode && !hasBeenDismissed) {
-      setTimeout(() => setShowPrompt(true), 3000);
+    // Only show manual instructions for actual iOS devices (not emulated)
+    // Check for actual iOS by testing if it's a mobile device AND matches iOS pattern
+    const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+    if (isIOSDevice && isMobile && !isInStandaloneMode && !hasBeenDismissed) {
+      setTimeout(() => {
+        console.log('[PWA] Real iOS device detected - showing installation instructions');
+        setShowPrompt(true);
+      }, 2000);
     }
 
     return () => {
@@ -46,7 +58,9 @@ export function PWAInstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      return;
+    }
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
@@ -79,17 +93,18 @@ export function PWAInstallPrompt() {
               Install AushadiExpress
             </h3>
             <p className="text-xs text-muted-foreground mb-3">
-              {isIOS 
-                ? 'Tap the Share button and select "Add to Home Screen"' 
+              {isIOS
+                ? 'Tap the Share button and select "Add to Home Screen"'
                 : 'Install this app for offline access and a better experience'}
             </p>
-            
+
             <div className="flex gap-2">
-              {!isIOS && deferredPrompt && (
-                <Button 
+              {!isIOS && (
+                <Button
                   onClick={handleInstallClick}
                   size="sm"
                   className="flex-1"
+                  disabled={!deferredPrompt}
                 >
                   <Download className="w-4 h-4 mr-1" />
                   Install
@@ -99,9 +114,8 @@ export function PWAInstallPrompt() {
                 onClick={handleDismiss}
                 variant="outline"
                 size="sm"
-                className={!isIOS && deferredPrompt ? '' : 'flex-1'}
               >
-                {isIOS ? 'Got it' : 'Later'}
+                Later
               </Button>
             </div>
           </div>
