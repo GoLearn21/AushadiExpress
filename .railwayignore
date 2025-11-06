@@ -1,0 +1,42 @@
+# Development files
+node_modules
+.git
+.vscode
+.idea
+
+# Environment files
+.env
+.env.local
+.env.development
+
+# Build artifacts are created during Railway build process
+# NOTE: Do NOT ignore dist/ - it's needed after build completes
+
+# Documentation and examples
+docs
+attached_assets
+*.md
+!README.md
+
+# Test files
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+
+# Local development
+.replit
+replit.md
+.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Credentials (should be in env vars)
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!components.json
+!vercel.json
