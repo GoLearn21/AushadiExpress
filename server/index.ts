@@ -130,25 +130,34 @@ app.use((req, res, next) => {
 
     const PORT = parseInt(process.env.PORT || '5000');
 
-    // Initialize the HTTP server
-    const httpServer = app.listen(PORT, '0.0.0.0', () => {
-      console.log(`Server is running on port ${PORT}`);
-      console.log(`📡 API endpoints are available at http://localhost:${PORT}/api`);
-      console.log(`🔌 Connected to database: ${process.env.PGHOST}`);
-      console.log('\n🔍 Try these endpoints:');
-      console.log(`   • GET    http://localhost:${PORT}/api/status`);
-      console.log(`   • POST   http://localhost:${PORT}/api/ai/chat`);
-      console.log('\n⚡ Press Ctrl+C to stop the server\n');
-      
-      // Setup Vite in development mode, serve static files in production
-      if (process.env.NODE_ENV === 'development') {
+    // Setup Vite in development mode, serve static files in production
+    // IMPORTANT: This must be done BEFORE starting the HTTP server
+    if (process.env.NODE_ENV === 'development') {
+      // Vite setup happens after server starts
+      const httpServer = app.listen(PORT, '0.0.0.0', () => {
+        console.log(`Server is running on port ${PORT}`);
+        console.log(`📡 API endpoints are available at http://localhost:${PORT}/api`);
+        console.log(`🔌 Connected to database: ${process.env.PGHOST}`);
+        console.log('\n🔍 Try these endpoints:');
+        console.log(`   • GET    http://localhost:${PORT}/api/status`);
+        console.log(`   • POST   http://localhost:${PORT}/api/ai/chat`);
+        console.log('\n⚡ Press Ctrl+C to stop the server\n');
+
         setupVite(app, httpServer).catch(err => {
           console.error('Failed to setup Vite:', err);
         });
-      } else {
-        serveStatic(app);
-      }
-    });
+      });
+    } else {
+      // In production, serve static files BEFORE starting server
+      serveStatic(app);
+
+      app.listen(PORT, '0.0.0.0', () => {
+        console.log(`✅ Server is running on port ${PORT}`);
+        console.log(`📡 API endpoints are available at /api`);
+        console.log(`🔌 Connected to database: ${process.env.PGHOST}`);
+        console.log(`📦 Serving static files from dist/client`);
+      });
+    }
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
