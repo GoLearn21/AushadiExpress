@@ -112,12 +112,11 @@ export function PWAInstallPrompt() {
             </p>
 
             <div className="flex gap-2">
-              {!isIOS && (
+              {!isIOS && deferredPrompt && (
                 <Button
                   onClick={handleInstallClick}
                   size="sm"
                   className="flex-1"
-                  disabled={!deferredPrompt}
                 >
                   <Download className="w-4 h-4 mr-1" />
                   Install
@@ -128,7 +127,7 @@ export function PWAInstallPrompt() {
                 variant="outline"
                 size="sm"
               >
-                Later
+                {!isIOS && !deferredPrompt ? 'Got it' : 'Later'}
               </Button>
             </div>
           </div>
