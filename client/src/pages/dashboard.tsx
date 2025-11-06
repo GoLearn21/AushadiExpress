@@ -438,7 +438,16 @@ function BusinessDashboard() {
               )}
             </div>
             
-            <button className="text-primary-foreground/80 hover:text-primary-foreground transition-colors">
+            <button
+              className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+              onClick={() => {
+                queryClient.invalidateQueries();
+                toast({
+                  title: "Refreshing",
+                  description: "Updating dashboard data...",
+                });
+              }}
+            >
               <span className="material-icons text-lg">refresh</span>
             </button>
           </div>

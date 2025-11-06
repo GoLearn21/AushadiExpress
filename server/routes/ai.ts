@@ -18,23 +18,37 @@ const upload = multer({
   },
 });
 
-// Load service account key from file (optional - for Google Cloud Vision)
-// Use process.cwd() for production compatibility (works with bundled code)
-const serviceAccountPath = path.join(process.cwd(), 'inner-period.json');
+// Load service account key from environment variable or file
+// Priority: 1. Environment variable (for Railway/production), 2. File (for local dev)
 let visionClient: ImageAnnotatorClient | null = null;
 
-if (fs.existsSync(serviceAccountPath)) {
-  try {
+try {
+  // Try loading from environment variable first (Railway deployment)
+  if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+    const credentials = JSON.parse(
+      Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8')
+    );
     visionClient = new ImageAnnotatorClient({
-      keyFilename: serviceAccountPath,
-      projectId: 'inner-period-472511-s9'
+      credentials,
+      projectId: credentials.project_id
     });
-    console.log('✓ Google Cloud Vision API initialized with service account');
-  } catch (error) {
-    console.warn('Warning: Failed to initialize Google Cloud Vision:', error);
+    console.log('✓ Google Cloud Vision API initialized from environment variable');
   }
-} else {
-  console.warn('Warning: Google Cloud Vision service account not found. OCR features will be limited.');
+  // Fall back to file-based credentials (local development)
+  else {
+    const serviceAccountPath = path.join(process.cwd(), 'inner-period.json');
+    if (fs.existsSync(serviceAccountPath)) {
+      visionClient = new ImageAnnotatorClient({
+        keyFilename: serviceAccountPath,
+        projectId: 'inner-period-472511-s9'
+      });
+      console.log('✓ Google Cloud Vision API initialized with service account file');
+    } else {
+      console.warn('Warning: Google Cloud Vision service account not found. OCR features will be limited.');
+    }
+  }
+} catch (error) {
+  console.warn('Warning: Failed to initialize Google Cloud Vision:', error);
 }
 
 // Initialize OpenAI client
