@@ -42,15 +42,26 @@ export function PWAInstallPrompt() {
     window.addEventListener('beforeinstallprompt', handler);
     console.log('[PWA] Event listener added for beforeinstallprompt');
 
-    // Only show manual instructions for actual iOS devices (not emulated)
     // Check for actual iOS by testing if it's a mobile device AND matches iOS pattern
     const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-    if (isIOSDevice && isMobile && !isInStandaloneMode && !hasBeenDismissed) {
-      setTimeout(() => {
+
+    // Show prompt after delay for iOS or if service worker is registered
+    setTimeout(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => {
+          if (registration && registration.active) {
+            console.log('[PWA] Service worker active - showing install prompt');
+            setShowPrompt(true);
+          }
+        });
+      }
+
+      // Also show for iOS devices
+      if (isIOSDevice && isMobile && !isInStandaloneMode && !hasBeenDismissed) {
         console.log('[PWA] Real iOS device detected - showing installation instructions');
         setShowPrompt(true);
-      }, 2000);
-    }
+      }
+    }, 3000); // Show after 3 seconds if service worker is ready
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
@@ -95,7 +106,9 @@ export function PWAInstallPrompt() {
             <p className="text-xs text-muted-foreground mb-3">
               {isIOS
                 ? 'Tap the Share button and select "Add to Home Screen"'
-                : 'Install this app for offline access and a better experience'}
+                : deferredPrompt
+                ? 'Install this app for offline access and a better experience'
+                : 'Install via Chrome menu (⋮) → "Install AushadiExpress" for offline access'}
             </p>
 
             <div className="flex gap-2">
