@@ -1,6 +1,6 @@
 # Railway deployment configuration
 [deploy]
-startCommand = "npm start"
+startCommand = "node dist/index.js"
 healthcheckPath = "/api/status"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"

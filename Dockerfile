@@ -22,5 +22,5 @@ ENV NODE_ENV=production
 # Expose port (Railway sets PORT env var)
 EXPOSE 5000
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application directly with node (better signal handling)
+CMD ["node", "dist/index.js"]
