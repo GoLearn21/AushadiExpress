@@ -115,14 +115,17 @@ export function PWAInstallPrompt() {
             </p>
 
             <div className="flex gap-2">
-              {!isIOS && deferredPrompt && (
+              {!isIOS && canPrompt && (
                 <Button
-                  onClick={handleInstallClick}
+                  onClick={deferredPrompt ? handleInstallClick : () => {
+                    // Show instructions - the browser's install option should be in the menu
+                    alert('To install:\n\n1. Click the menu (⋮) in Chrome\n2. Select "Install AushadiExpress"\n3. Follow the prompts\n\nOr look for an install icon in the address bar!');
+                  }}
                   size="sm"
                   className="flex-1"
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  Install
+                  {deferredPrompt ? 'Install Now' : 'Install'}
                 </Button>
               )}
               <Button
@@ -130,7 +133,7 @@ export function PWAInstallPrompt() {
                 variant="outline"
                 size="sm"
               >
-                {!isIOS && !deferredPrompt ? 'Got it' : 'Later'}
+                {canPrompt ? 'Later' : 'Got it'}
               </Button>
             </div>
           </div>
