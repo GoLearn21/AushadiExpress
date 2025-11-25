@@ -13,6 +13,7 @@ export function PWAInstallPrompt() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [canPrompt, setCanPrompt] = useState(false);
 
   useEffect(() => {
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
@@ -49,8 +50,10 @@ export function PWAInstallPrompt() {
     setTimeout(() => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistration().then(registration => {
-          if (registration && registration.active) {
-            console.log('[PWA] Service worker active - showing install prompt');
+          console.log('[PWA] Service worker registration:', registration);
+          if (registration) {
+            console.log('[PWA] Service worker found - showing install prompt');
+            setCanPrompt(true);
             setShowPrompt(true);
           }
         });
@@ -61,7 +64,7 @@ export function PWAInstallPrompt() {
         console.log('[PWA] Real iOS device detected - showing installation instructions');
         setShowPrompt(true);
       }
-    }, 3000); // Show after 3 seconds if service worker is ready
+    }, 1000); // Show after 1 second if service worker is ready
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);

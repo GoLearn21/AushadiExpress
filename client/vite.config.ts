@@ -20,6 +20,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+        type: 'module'
+      },
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
         name: 'AushadiExpress',
