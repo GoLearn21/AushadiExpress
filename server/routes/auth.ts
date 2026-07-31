@@ -9,8 +9,13 @@ const registerSchema = z.object({
   username: z.string().min(3).max(50).optional(),
   password: z.string().min(6),
   tenantName: z.string().optional(),
-  role: z.string().optional(),
+  role: z.enum(['customer', 'retailer', 'wholesaler', 'doctor']).optional(),
   pincode: z.string().regex(/^\d{6}$/, 'Pincode must be exactly 6 digits').optional(),
+  // Wholesaler-specific fields
+  gstNumber: z.string().regex(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/, 'Invalid GST number format').optional(),
+  businessAddress: z.string().max(500).optional(),
+  contactPhone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid phone number').optional(),
+  specialization: z.string().max(100).optional(),
 });
 
 const loginSchema = z.object({
@@ -20,14 +25,14 @@ const loginSchema = z.object({
 
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, tenantName, role, pincode } = registerSchema.parse(req.body);
-    
+    const { username, password, tenantName, role, pincode, gstNumber, businessAddress, contactPhone, specialization } = registerSchema.parse(req.body);
+
     // Validate role-specific requirements
     const userRole = role || 'retailer';
-    
+
     // Determine the final username based on role
     let finalUsername: string;
-    
+
     if (userRole === 'customer') {
       // Customers: use username (their name)
       if (!username) {
@@ -35,31 +40,55 @@ router.post('/register', async (req, res) => {
       }
       finalUsername = username;
     } else {
-      // Business roles: use tenantName (business name)
+      // Business roles (retailer, wholesaler, doctor): use tenantName (business name)
       if (!tenantName) {
         return res.status(400).json({ error: 'Business name is required for business registration' });
       }
       finalUsername = tenantName;
     }
-    
+
+    // Additional validation for doctor
+    if (userRole === 'doctor') {
+      if (!contactPhone) {
+        return res.status(400).json({ error: 'Contact phone is required for doctor registration' });
+      }
+    }
+
+    // Additional validation for wholesaler
+    if (userRole === 'wholesaler') {
+      if (!gstNumber) {
+        return res.status(400).json({ error: 'GST number is required for wholesaler registration' });
+      }
+      if (!businessAddress) {
+        return res.status(400).json({ error: 'Business address is required for wholesaler registration' });
+      }
+      if (!contactPhone) {
+        return res.status(400).json({ error: 'Contact phone is required for wholesaler registration' });
+      }
+    }
+
     // Check if username already exists
     const existingUser = await storage.getUserByUsername(finalUsername);
     if (existingUser) {
-      return res.status(400).json({ 
-        error: userRole === 'customer' 
-          ? 'This name is already registered' 
-          : 'This business name is already registered' 
+      return res.status(400).json({
+        error: userRole === 'customer'
+          ? 'This name is already registered'
+          : 'This business name is already registered'
       });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const user = await storage.createUser({
       username: finalUsername,
       password: hashedPassword,
       role: userRole,
       pincode: pincode || null,
       onboarded: userRole === 'customer' ? false : true,
+      // Wholesaler-specific fields
+      gstNumber: userRole === 'wholesaler' ? gstNumber : null,
+      businessAddress: userRole === 'wholesaler' ? businessAddress : null,
+      contactPhone: (userRole === 'wholesaler' || userRole === 'doctor') ? contactPhone : null,
     });
     
     (req.session as any).userId = user.id;

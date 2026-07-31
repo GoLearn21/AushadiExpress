@@ -10,6 +10,8 @@ npm-debug.log*
 # Build outputs
 dist/
 build/
+*dev-dist/
+
 
 # IDE files
 .vscode/
@@ -31,3 +33,10 @@ google-credentials-base64.txt
 
 # Railway deployment
 .railway/
+
+# Agent/IDE & Tooling Cache
+.claude/
+.playwright-mcp/
+.gemini/
+.antigravity/
+

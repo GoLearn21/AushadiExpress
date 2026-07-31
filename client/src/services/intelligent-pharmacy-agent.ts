@@ -42,17 +42,17 @@ export class IntelligentPharmacyAgent {
       // Get tenant ID from context (passed from authenticated session)
       const tenantId = context.tenantId || 'default';
       const role = this.detectUserRole(context) || 'retailer';
-      
+
       // Build a comprehensive system prompt with database context
       const systemPrompt = this.buildSystemPrompt(query, role, tenantId, context);
-      
+
       console.log('[INTELLIGENT-PHARMACY-AGENT] Calling AI with context:', {
         tenantId,
         role,
         currentScreen: context.currentScreen,
         hasImage: context.hasImage
       });
-      
+
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
@@ -64,6 +64,7 @@ export class IntelligentPharmacyAgent {
           systemPrompt,
           context: {
             tenantId,
+            userRole: role, // Pass role as userRole for backend compatibility
             role,
             currentScreen: context.currentScreen || 'AI Assistant'
           }
@@ -131,9 +132,24 @@ export class IntelligentPharmacyAgent {
     return systemPrompt;
   }
   
-  private detectUserRole(context: PharmacyContext): 'customer' | 'retailer' {
-    // Simple role detection based on context
-    // In a real app, this would be stored in user profile
+  private detectUserRole(context: PharmacyContext): 'customer' | 'retailer' | 'wholesaler' {
+    // Check if role is explicitly passed in context
+    if (context.role) {
+      return context.role as 'customer' | 'retailer' | 'wholesaler';
+    }
+
+    // Check localStorage for user role
+    if (typeof window !== 'undefined') {
+      const storedRole = localStorage.getItem('userRole');
+      if (storedRole === 'wholesaler') return 'wholesaler';
+      if (storedRole === 'customer') return 'customer';
+      if (storedRole === 'retailer') return 'retailer';
+    }
+
+    // Fallback: detect from current screen
+    if (context.currentScreen?.includes('wholesaler')) {
+      return 'wholesaler';
+    }
     if (context.currentScreen?.includes('customer') || context.currentScreen?.includes('search')) {
       return 'customer';
     }

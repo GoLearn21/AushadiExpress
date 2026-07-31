@@ -9,6 +9,11 @@ import intelligentAgentRoutes from "./routes/intelligent-agent";
 import apiKeyRoutes from "./routes/api-key-management";
 import authRoutes from "./routes/auth";
 import pharmacyOrderRoutes from "./routes/pharmacy-orders";
+import wholesalerRoutes from "./routes/wholesaler";
+import wholesalerFeaturesRoutes from "./routes/wholesaler-features";
+import retailerWholesalerRoutes from "./routes/retailer-wholesaler";
+import doctorRoutes from "./routes/doctor";
+import { startAppointmentScheduler } from "./services/appointment-scheduler";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
@@ -111,6 +116,19 @@ app.use((req, res, next) => {
 
     // Register pharmacy order management routes
     app.use('/api', pharmacyOrderRoutes);
+
+    // Register wholesaler routes
+    app.use('/api/wholesaler', wholesalerRoutes);
+    app.use('/api/wholesaler', wholesalerFeaturesRoutes);
+
+    // Register retailer-wholesaler routes (for retailers to browse wholesalers)
+    app.use('/api/retailer', retailerWholesalerRoutes);
+
+    // Register doctor routes
+    app.use('/api/doctor', doctorRoutes);
+
+    // Start appointment reminder scheduler
+    startAppointmentScheduler();
 
     // Add a test route to verify API is working
     app.get('/api/status', (req, res) => {

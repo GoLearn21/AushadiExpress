@@ -19,8 +19,8 @@ export function BottomNavigation() {
     { path: '/settings', icon: 'person', label: 'Profile' },
   ];
 
-  // Business navigation (retailer, wholesaler, distributor)
-  const businessNavItems = [
+  // Retailer navigation
+  const retailerNavItems = [
     { path: '/', icon: 'home', label: 'Home' },
     { path: '/inventory', icon: 'inventory_2', label: 'Products' },
     { path: '/ops', icon: 'business_center', label: 'Ops' },
@@ -28,7 +28,38 @@ export function BottomNavigation() {
     { path: '/settings', icon: 'settings', label: 'Settings' },
   ];
 
-  const navItems = userRole === 'customer' ? customerNavItems : businessNavItems;
+  // Wholesaler navigation
+  const wholesalerNavItems = [
+    { path: '/wholesaler', icon: 'home', label: 'Home' },
+    { path: '/wholesaler/products', icon: 'inventory_2', label: 'Catalog' },
+    { path: '/wholesaler/quotes', icon: 'request_quote', label: 'Quotes' },
+    { path: '/wholesaler/ai-assistant', icon: 'smart_toy', label: 'AI' },
+    { path: '/settings', icon: 'settings', label: 'Settings' },
+  ];
+
+  // Doctor navigation
+  const doctorNavItems = [
+    { path: '/doctor', icon: 'home', label: 'Home' },
+    { path: '/doctor/patients', icon: 'people', label: 'Patients' },
+    { path: '/doctor/appointments', icon: 'event', label: 'Appointments' },
+    { path: '/doctor/prescriptions', icon: 'description', label: 'Rx' },
+    { path: '/settings', icon: 'settings', label: 'Settings' },
+  ];
+
+  const getNavItems = () => {
+    switch (userRole) {
+      case 'customer':
+        return customerNavItems;
+      case 'wholesaler':
+        return wholesalerNavItems;
+      case 'doctor':
+        return doctorNavItems;
+      default:
+        return retailerNavItems;
+    }
+  };
+
+  const navItems = getNavItems();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 elevation-2 z-50" data-testid="bottom-navigation">

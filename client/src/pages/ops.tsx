@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Package, 
-  AlertTriangle, 
-  TrendingUp, 
-  Users, 
+import {
+  Package,
+  AlertTriangle,
+  TrendingUp,
+  Users,
   Calendar,
   Search,
   Filter,
@@ -19,7 +19,9 @@ import {
   Settings,
   BarChart3,
   FileText,
-  Truck
+  Truck,
+  Building2,
+  ShoppingCart
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
@@ -266,6 +268,31 @@ export default function OpsScreen() {
       icon: <Package className="w-6 h-6" />,
       description: 'Process customer transactions',
       action: () => setLocation('/pos')
+    }
+  ];
+
+  // B2B Wholesaler actions (only for retailers)
+  const b2bActions = [
+    {
+      id: 'browse-wholesalers',
+      title: 'Browse Wholesalers',
+      icon: <Building2 className="w-6 h-6" />,
+      description: 'Find wholesalers & request quotes',
+      action: () => setLocation('/retailer/wholesalers')
+    },
+    {
+      id: 'my-quotes',
+      title: 'My Quotes',
+      icon: <FileText className="w-6 h-6" />,
+      description: 'View quote requests',
+      action: () => setLocation('/retailer/my-quotes')
+    },
+    {
+      id: 'b2b-orders',
+      title: 'B2B Orders',
+      icon: <ShoppingCart className="w-6 h-6" />,
+      description: 'Orders from wholesalers',
+      action: () => setLocation('/retailer/my-b2b-orders')
     }
   ];
 
@@ -564,6 +591,43 @@ export default function OpsScreen() {
           </div>
         </CardContent>
       </Card>
+
+      {/* B2B Wholesaler Section - Only for retailers */}
+      {userRole === 'retailer' && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              B2B Wholesale Ordering
+            </CardTitle>
+            <CardDescription>
+              Connect with wholesalers, request quotes, and manage bulk orders
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-3 gap-4">
+              {b2bActions.map((action) => (
+                <div
+                  key={action.id}
+                  className="p-4 border rounded-lg cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={action.action}
+                  data-testid={`widget-${action.id}`}
+                >
+                  <div className="flex flex-col items-center text-center space-y-2">
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-blue-600">
+                      {action.icon}
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-sm">{action.title}</h3>
+                      <p className="text-xs text-muted-foreground">{action.description}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Content Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">

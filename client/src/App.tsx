@@ -30,6 +30,29 @@ import CustomerSavedStoresPage from "./pages/customer-saved-stores";
 import CustomerSavedOrdersPage from "./pages/customer-saved-orders";
 import PharmacyOrdersPage from "./pages/pharmacy-orders";
 import ExcelUpload from "./pages/excel-upload";
+import WholesalerDashboard from "./pages/wholesaler/dashboard";
+import WholesalerProductsPage from "./pages/wholesaler/products";
+import WholesalerProductNewPage from "./pages/wholesaler/product-new";
+import WholesalerQuotesPage from "./pages/wholesaler/quotes";
+import WholesalerOrdersPage from "./pages/wholesaler/orders";
+import WholesalerAnalyticsPage from "./pages/wholesaler/analytics";
+import WholesalerScanInvoicePage from "./pages/wholesaler/scan-invoice";
+import BulkImportPage from "./pages/wholesaler/bulk-import";
+import PriceTiersPage from "./pages/wholesaler/price-tiers";
+import CreditManagementPage from "./pages/wholesaler/credit-management";
+import DeliveryRoutesPage from "./pages/wholesaler/delivery-routes";
+import BrowseWholesalersPage from "./pages/retailer/browse-wholesalers";
+import WholesalerCatalogPage from "./pages/retailer/wholesaler-catalog";
+import MyQuotesPage from "./pages/retailer/my-quotes";
+import RetailerQuoteDetailPage from "./pages/retailer/quote-detail";
+import MyB2BOrdersPage from "./pages/retailer/my-b2b-orders";
+import DoctorDashboard from "./pages/doctor/dashboard";
+import DoctorPatientsPage from "./pages/doctor/patients";
+import PatientDetailPage from "./pages/doctor/patient-detail";
+import AppointmentsPage from "./pages/doctor/appointments";
+import PrescriptionsPage from "./pages/doctor/prescriptions";
+import PrescriptionNewPage from "./pages/doctor/prescription-new";
+import DoctorLabRequestsPage from "./pages/doctor/lab-requests";
 import NotFound from "./pages/not-found";
 import { SetupGate } from "./components/setup-gate";
 import { BottomNavigation } from "./components/bottom-navigation";
@@ -82,6 +105,33 @@ function Router() {
             <Route path="/saved-orders" component={CustomerSavedOrdersPage} />
             <Route path="/pharmacy-orders" component={PharmacyOrdersPage} />
             <Route path="/bill-fast" component={() => <div className="p-4 text-center text-muted-foreground">Bill Fast feature coming in Iteration 1</div>} />
+            {/* Wholesaler Routes */}
+            <Route path="/wholesaler" component={WholesalerDashboard} />
+            <Route path="/wholesaler/products" component={WholesalerProductsPage} />
+            <Route path="/wholesaler/products/new" component={WholesalerProductNewPage} />
+            <Route path="/wholesaler/quotes" component={WholesalerQuotesPage} />
+            <Route path="/wholesaler/orders" component={WholesalerOrdersPage} />
+            <Route path="/wholesaler/analytics" component={WholesalerAnalyticsPage} />
+            <Route path="/wholesaler/scan-invoice" component={WholesalerScanInvoicePage} />
+            <Route path="/wholesaler/ai-assistant" component={AIAssistantPage} />
+            <Route path="/wholesaler/bulk-import" component={BulkImportPage} />
+            <Route path="/wholesaler/price-tiers" component={PriceTiersPage} />
+            <Route path="/wholesaler/credit-management" component={CreditManagementPage} />
+            <Route path="/wholesaler/delivery-routes" component={DeliveryRoutesPage} />
+            {/* Retailer B2B Routes */}
+            <Route path="/retailer/wholesalers" component={BrowseWholesalersPage} />
+            <Route path="/retailer/wholesaler/:tenantId" component={WholesalerCatalogPage} />
+            <Route path="/retailer/my-quotes" component={MyQuotesPage} />
+            <Route path="/retailer/quote/:id" component={RetailerQuoteDetailPage} />
+            <Route path="/retailer/my-b2b-orders" component={MyB2BOrdersPage} />
+            {/* Doctor Routes */}
+            <Route path="/doctor" component={DoctorDashboard} />
+            <Route path="/doctor/patients" component={DoctorPatientsPage} />
+            <Route path="/doctor/patients/:id" component={PatientDetailPage} />
+            <Route path="/doctor/appointments" component={AppointmentsPage} />
+            <Route path="/doctor/prescriptions" component={PrescriptionsPage} />
+            <Route path="/doctor/prescriptions/new" component={PrescriptionNewPage} />
+            <Route path="/doctor/lab-requests" component={DoctorLabRequestsPage} />
             <Route path="/settings" component={Settings} />
             <Route component={NotFound} />
           </Switch>

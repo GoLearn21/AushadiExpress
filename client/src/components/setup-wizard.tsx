@@ -9,17 +9,23 @@ interface SetupWizardProps {
   onComplete: () => void;
 }
 
-type UserRole = 'customer' | 'retailer';
+type UserRole = 'customer' | 'retailer' | 'wholesaler' | 'doctor';
 
 export function SetupWizard({ onComplete }: SetupWizardProps) {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [step, setStep] = useState<'role' | 'details'>('role');
   const [selectedRole, setSelectedRole] = useState<UserRole>('customer');
-  
+
   const [username, setUsername] = useState('');
   const [businessName, setBusinessName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  // Wholesaler-specific fields
+  const [gstNumber, setGstNumber] = useState('');
+  const [businessAddress, setBusinessAddress] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  // Doctor-specific fields
+  const [specialization, setSpecialization] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -104,6 +110,74 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
       }
     }
 
+    // Wholesaler-specific validations
+    if (selectedRole === 'wholesaler') {
+      if (!gstNumber.trim()) {
+        toast({
+          title: 'Error',
+          description: 'GST number is required for wholesaler registration',
+          variant: 'destructive',
+        });
+        return;
+      }
+      // Basic GST format validation
+      const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+      if (!gstRegex.test(gstNumber.toUpperCase())) {
+        toast({
+          title: 'Error',
+          description: 'Please enter a valid GST number',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (!businessAddress.trim()) {
+        toast({
+          title: 'Error',
+          description: 'Business address is required',
+          variant: 'destructive',
+        });
+        return;
+      }
+      if (!contactPhone.trim()) {
+        toast({
+          title: 'Error',
+          description: 'Contact phone is required',
+          variant: 'destructive',
+        });
+        return;
+      }
+      // Basic phone validation (Indian mobile)
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (!phoneRegex.test(contactPhone)) {
+        toast({
+          title: 'Error',
+          description: 'Please enter a valid 10-digit mobile number',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
+    if (selectedRole === 'doctor') {
+      if (!contactPhone.trim()) {
+        toast({
+          title: 'Error',
+          description: 'Contact phone is required',
+          variant: 'destructive',
+        });
+        return;
+      }
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (!phoneRegex.test(contactPhone)) {
+        toast({
+          title: 'Error',
+          description: 'Please enter a valid 10-digit mobile number',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     if (password.length < 6) {
       toast({
         title: 'Error',
@@ -136,6 +210,18 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         payload.tenantName = businessName;
       }
 
+      // Add wholesaler-specific fields
+      if (selectedRole === 'wholesaler') {
+        payload.gstNumber = gstNumber.toUpperCase();
+        payload.businessAddress = businessAddress;
+        payload.contactPhone = contactPhone;
+      }
+
+      if (selectedRole === 'doctor') {
+        payload.contactPhone = contactPhone;
+        payload.specialization = specialization;
+      }
+
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,17 +241,18 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           title: 'Registration Successful!',
           description: 'Please log in to continue',
         });
-        
+
         setMode('login');
         setUsername(username);
         setPassword('');
         setConfirmPassword('');
         setIsLoading(false);
       } else {
-        // For businesses: auto-login as before
+        // For businesses (retailer & wholesaler): auto-login
         localStorage.setItem('user', JSON.stringify(data));
         localStorage.setItem('lastBusinessName', businessName);
-        
+        localStorage.setItem('userRole', selectedRole);
+
         toast({
           title: 'Welcome!',
           description: `${businessName} is ready to go!`,
@@ -184,17 +271,29 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
   };
 
   const roleOptions = [
-    { 
-      value: 'customer' as UserRole, 
-      label: 'Customer', 
+    {
+      value: 'customer' as UserRole,
+      label: 'Customer',
       emoji: '🛒',
       description: 'Search and order medicines'
     },
-    { 
-      value: 'retailer' as UserRole, 
-      label: 'Retailer', 
+    {
+      value: 'retailer' as UserRole,
+      label: 'Retailer',
       emoji: '🏪',
       description: 'Manage pharmacy inventory'
+    },
+    {
+      value: 'wholesaler' as UserRole,
+      label: 'Wholesaler',
+      emoji: '🏭',
+      description: 'Sell medicines to retailers'
+    },
+    {
+      value: 'doctor' as UserRole,
+      label: 'Doctor',
+      emoji: '⚕️',
+      description: 'Manage patients & write prescriptions'
     },
   ];
 
@@ -205,6 +304,12 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     setConfirmPassword('');
     setUsername('');
     setBusinessName('');
+    // Reset wholesaler fields
+    setGstNumber('');
+    setBusinessAddress('');
+    setContactPhone('');
+    // Reset doctor fields
+    setSpecialization('');
   };
 
   const switchToLogin = () => {
@@ -226,29 +331,26 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <form onSubmit={handleLogin} className="space-y-3">
-            {/* Role Selector */}
+            {/* Role Selector - Compact horizontal pills */}
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">I am a</Label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="flex gap-2">
                 {roleOptions.map((option) => (
                   <button
                     key={option.value}
                     type="button"
                     onClick={() => setSelectedRole(option.value)}
-                    className={`p-2.5 rounded-lg border-2 transition-all ${
+                    className={`flex-1 py-2 px-3 rounded-full border-2 transition-all ${
                       selectedRole === option.value
-                        ? 'border-primary bg-primary/5'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50'
+                        ? 'border-primary bg-primary text-white'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-primary/50 bg-gray-50 dark:bg-gray-800'
                     }`}
                   >
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="text-xl">{option.emoji}</span>
-                      <span className={`text-sm font-medium ${
-                        selectedRole === option.value ? 'text-primary' : 'text-gray-700 dark:text-gray-300'
-                      }`}>
-                        {option.label}
-                      </span>
-                    </div>
+                    <span className={`text-sm font-medium ${
+                      selectedRole === option.value ? 'text-white' : 'text-gray-700 dark:text-gray-300'
+                    }`}>
+                      {option.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -414,21 +516,112 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
               />
             </div>
           ) : (
-            <div className="space-y-1.5">
-              <Label htmlFor="businessName" className="text-sm font-medium">
-                Business Name
-              </Label>
-              <Input
-                id="businessName"
-                type="text"
-                placeholder="Enter your business name"
-                value={businessName}
-                onChange={(e) => setBusinessName(e.target.value)}
-                disabled={isLoading}
-                required
-                className="h-10"
-              />
-            </div>
+            <>
+              <div className="space-y-1.5">
+                <Label htmlFor="businessName" className="text-sm font-medium">
+                  Business Name
+                </Label>
+                <Input
+                  id="businessName"
+                  type="text"
+                  placeholder="Enter your business name"
+                  value={businessName}
+                  onChange={(e) => setBusinessName(e.target.value)}
+                  disabled={isLoading}
+                  required
+                  className="h-10"
+                />
+              </div>
+
+              {/* Wholesaler-specific fields */}
+              {selectedRole === 'wholesaler' && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="gstNumber" className="text-sm font-medium">
+                      GST Number
+                    </Label>
+                    <Input
+                      id="gstNumber"
+                      type="text"
+                      placeholder="e.g., 22AAAAA0000A1Z5"
+                      value={gstNumber}
+                      onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                      disabled={isLoading}
+                      required
+                      className="h-10 uppercase"
+                      maxLength={15}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="businessAddress" className="text-sm font-medium">
+                      Business Address
+                    </Label>
+                    <Input
+                      id="businessAddress"
+                      type="text"
+                      placeholder="Full business address"
+                      value={businessAddress}
+                      onChange={(e) => setBusinessAddress(e.target.value)}
+                      disabled={isLoading}
+                      required
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="contactPhone" className="text-sm font-medium">
+                      Contact Phone
+                    </Label>
+                    <Input
+                      id="contactPhone"
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      disabled={isLoading}
+                      required
+                      className="h-10"
+                      maxLength={10}
+                    />
+                  </div>
+                </>
+              )}
+
+              {selectedRole === 'doctor' && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="specialization" className="text-sm font-medium">
+                      Specialization
+                    </Label>
+                    <Input
+                      id="specialization"
+                      type="text"
+                      placeholder="e.g., General Physician, Cardiologist"
+                      value={specialization}
+                      onChange={(e) => setSpecialization(e.target.value)}
+                      disabled={isLoading}
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="contactPhone" className="text-sm font-medium">
+                      Contact Phone
+                    </Label>
+                    <Input
+                      id="contactPhone"
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      value={contactPhone}
+                      onChange={(e) => setContactPhone(e.target.value)}
+                      disabled={isLoading}
+                      required
+                      className="h-10"
+                    />
+                  </div>
+                </>
+              )}
+            </>
           )}
 
           <div className="space-y-1.5">

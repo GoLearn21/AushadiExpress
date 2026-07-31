@@ -605,7 +605,12 @@ export class DatabaseStorage implements IStorage {
           username: user.username,
           role: user.role,
           password: user.password,
-          pincode: user.pincode
+          pincode: user.pincode,
+          onboarded: user.onboarded,
+          // Wholesaler-specific fields
+          gstNumber: user.gstNumber,
+          businessAddress: user.businessAddress,
+          contactPhone: user.contactPhone,
         })
         .where(eq(users.id, user.id))
         .returning();
