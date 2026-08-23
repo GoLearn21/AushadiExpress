@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenRally — Deuce Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ================================================================
+   DEUCE LAB · design tokens
+   ================================================================ */
+:root{
+  /* background layers */
+  --bg-page:#0B0D10;
+  --bg-screen:#101216;
+  --surface-1:#171A21;
+  --surface-2:#1D2129;
+  --surface-3:#242935;
+  --bezel:#04050A;
+
+  /* ink */
+  --ink:#E8EEF2;
+  --ink-2:#A3AFBA;
+  --ink-3:#69747F;
+
+  /* accents */
+  --teal:#00D4B8;
+  --teal-dim:rgba(0,212,184,.14);
+  --teal-line:rgba(0,212,184,.35);
+  --coral:#FF5C5C;
+  --coral-dim:rgba(255,92,92,.13);
+  --amber:#FFB020;
+  --amber-dim:rgba(255,176,32,.13);
+
+  /* structure */
+  --grid:rgba(255,255,255,.07);
+  --grid-soft:rgba(255,255,255,.045);
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-phone:48px;
+
+  /* type */
+  --sans:'IBM Plex Sans',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  --mono:'IBM Plex Mono','JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+  --fs-micro:10px; --fs-label:11px; --fs-body:13px; --fs-md:15px;
+  --fs-lg:19px; --fs-xl:26px; --fs-hero:40px;
+
+  /* depth */
+  --shadow-card:0 1px 0 rgba(255,255,255,.04) inset, 0 8px 24px rgba(0,0,0,.35);
+  --shadow-phone:0 30px 80px rgba(0,0,0,.6), 0 4px 18px rgba(0,0,0,.5);
+  --glow-teal:0 0 22px rgba(0,212,184,.22);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg-page);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--fs-body);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    linear-gradient(var(--grid-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-soft) 1px, transparent 1px);
+  background-size:56px 56px;
+}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px}
+
+/* ================================================================
+   Page chrome
+   ================================================================ */
+.page-header{
+  max-width:1480px;margin:0 auto;padding:64px 40px 24px;
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:28px;justify-content:space-between;
+}
+.brand-block .eyebrow{
+  font-family:var(--mono);font-size:var(--fs-label);letter-spacing:.28em;
+  color:var(--teal);text-transform:uppercase;display:flex;align-items:center;gap:10px;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--teal)}
+.brand-block h1{
+  font-size:clamp(34px,5vw,56px);font-weight:700;letter-spacing:-.03em;line-height:1.02;
+  margin-top:14px;
+}
+.brand-block h1 .lab{color:var(--teal)}
+.thesis{
+  margin-top:14px;max-width:560px;color:var(--ink-2);font-size:var(--fs-md);line-height:1.6;
+}
+.thesis strong{color:var(--ink);font-weight:600}
+.header-meta{
+  font-family:var(--mono);font-size:var(--fs-label);color:var(--ink-3);
+  display:grid;gap:8px;text-align:right;padding-bottom:8px;
+}
+.header-meta b{color:var(--ink-2);font-weight:500}
+.header-meta .dot{color:var(--teal)}
+
+.token-strip{
+  max-width:1480px;margin:12px auto 0;padding:0 40px 8px;
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  font-family:var(--mono);font-size:var(--fs-micro);color:var(--ink-3);letter-spacing:.06em;
+}
+.token-strip .swatch{
+  display:inline-flex;align-items:center;gap:7px;
+  border:1px solid var(--grid);border-radius:999px;padding:5px 12px 5px 7px;background:var(--surface-1);
+}
+.swatch i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* ================================================================
+   Phone grid
+   ================================================================ */
+.lab-grid{
+  max-width:1480px;margin:0 auto;padding:36px 40px 110px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));
+  gap:56px 36px;justify-items:center;
+}
+.phone-unit{
+  display:flex;flex-direction:column;gap:18px;
+  opacity:0;transform:translateY(22px);
+  animation:rise .7s cubic-bezier(.2,.7,.2,1) forwards;
+}
+.phone-unit:nth-child(1){animation-delay:.05s}
+.phone-unit:nth-child(2){animation-delay:.15s}
+.phone-unit:nth-child(3){animation-delay:.25s}
+.phone-unit:nth-child(4){animation-delay:.35s}
+.phone-unit:nth-child(5){animation-delay:.45s}
+.phone-unit:nth-child(6){animation-delay:.55s}
+@keyframes rise{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .phone-unit{animation:none;opacity:1;transform:none}
+  *{transition:none!important}
+}
+
+.unit-label{
+  display:flex;align-items:baseline;gap:12px;width:390px;max-width:100%;
+}
+.unit-label .idx{
+  font-family:var(--mono);font-size:var(--fs-body);color:var(--teal);font-weight:600;
+}
+.unit-label h2{font-size:var(--fs-md);font-weight:600;letter-spacing:-.01em}
+.unit-label .sub{font-family:var(--mono);font-size:var(--fs-micro);color:var(--ink-3);margin-left:auto;letter-spacing:.08em;text-transform:uppercase}
+
+.phone{
+  width:390px;height:844px;max-width:100%;
+  background:var(--bezel);
+  border-radius:var(--r-phone);
+  padding:11px;
+  box-shadow:var(--shadow-phone), 0 0 0 1px rgba(255,255,255,.06);
+  transition:transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s;
+  position:relative;
+}
+.phone:hover{transform:translateY(-6px);box-shadow:var(--shadow-phone),0 0 0 1px rgba(0,212,184,.28),var(--glow-teal)}
+.screen{
+  position:relative;width:100%;height:100%;
+  background:var(--bg-screen);
+  border-radius:38px;overflow:hidden;
+  display:flex;flex-direction:column;
+  background-image:
+    linear-gradient(var(--grid-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-soft) 1px, transparent 1px);
+  background-size:46px 46px;
+}
+.notch{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:118px;height:30px;background:var(--bezel);border-radius:20px;z-index:40;
+}
+.statusbar{
+  height:52px;flex:0 0 auto;display:flex;align-items:flex-end;justify-content:space-between;
+  padding:0 26px 6px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);
+  position:relative;z-index:41;
+}
+.statusbar .icons{display:flex;align-items:center;gap:6px}
+.statusbar svg{display:block}
+.home-indicator{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:130px;height:5px;border-radius:3px;background:rgba(255,255,255,.28);z-index:40;
+}
+.screen-body{
+  flex:1;padding:8px 18px 30px;display:flex;flex-direction:column;gap:12px;overflow:hidden;
+}
+
+/* ================================================================
+   Shared components
+   ================================================================ */
+.appbar{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 0}
+.appbar .title{font-size:var(--fs-lg);font-weight:700;letter-spacing:-.02em}
+.appbar .context{font-family:var(--mono);font-size:var(--fs-micro);color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
+.avatar{
+  width:34px;height:34px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;font-weight:600;flex:0 0 auto;
+  background:var(--surface-3);color:var(--ink);
+  border:1px solid var(--grid);
+}
+.avatar.teal{background:var(--teal-dim);color:var(--teal);border-color:var(--teal-line)}
+.avatar.amber{background:var(--amber-dim);color:var(--amber);border-color:rgba(255,176,32,.35)}
+.avatar.coral{background:var(--coral-dim);color:var(--coral);border-color:rgba(255,92,92,.35)}
+.avatar.sm{width:26px;height:26px;font-size:10px}
+
+.card{
+  background:var(--surface-1);
+  border:1px solid var(--grid);
+  border-radius:var(--r-md);
+  box-shadow:var(--shadow-card);
+  padding:14px;
+  transition:border-color .25s, box-shadow .25s;
+}
+.card:hover{border-color:var(--teal-line)}
+.card .card-kicker{
+  font-family:var(--mono);font-size:var(--fs-micro);letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:var(--fs-micro);font-weight:600;letter-spacing:.05em;
+  padding:3px 9px;border-radius:999px;border:1px solid var(--grid);color:var(--ink-2);
+  background:var(--surface-2);white-space:nowrap;
+}
+.chip.teal{color:var(--teal);border-color:var(--teal-line);background:var(--teal-dim)}
+.chip.amber{color:var(--amber);border-color:rgba(255,176,32,.35);background:var(--amber-dim)}
+.chip.coral{color:var(--coral);border-color:rgba(255,92,92,.35);background:var(--coral-dim)}
+.chip .pulse{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:13px 16px;border-radius:var(--r-sm);
+  font-family:var(--sans);font-size:var(--fs-md);font-weight:600;letter-spacing:-.01em;
+  border:none;cursor:pointer;transition:filter .2s, transform .15s;
+}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:scale(.985)}
+.btn-primary{background:var(--teal);color:#04241F;box-shadow:0 6px 20px rgba(0,212,184,.3)}
+.btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--grid)}
+.btn .mono-tag{font-family:var(--mono);font-size:var(--fs-label);font-weight:600;opacity:.75}
+
+.divider{height:1px;background:var(--grid);border:none}
+
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--grid);border:1px solid var(--grid);border-radius:var(--r-sm);overflow:hidden}
+.stat-cell{background:var(--surface-1);padding:10px 12px}
+.stat-cell .v{font-family:var(--mono);font-size:var(--fs-lg);font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.stat-cell .k{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.up{color:var(--teal)} .down{color:var(--coral)} .warn{color:var(--amber)}
+
+.tabbar{
+  flex:0 0 auto;margin:0 -18px -30px;padding:10px 24px 26px;
+  border-top:1px solid var(--grid);background:rgba(11,13,16,.75);backdrop-filter:blur(8px);
+  display:flex;justify-content:space-between;
+}
+.tab{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);
+}
+.tab svg{stroke:var(--ink-3)}
+.tab.active{color:var(--teal)}
+.tab.active svg{stroke:var(--teal)}
+
+/* win probability bar */
+.prob-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;background:var(--bg-screen)}
+.prob-bar .p1{background:var(--teal);border-radius:4px 0 0 4px}
+.prob-bar .p2{background:var(--surface-3);border-radius:0 4px 4px 0}
+.prob-legend{display:flex;justify-content:space-between;font-family:var(--mono);font-size:var(--fs-micro);color:var(--ink-3);margin-top:6px}
+.prob-legend b{color:var(--ink);font-weight:600}
+.prob-legend .me b{color:var(--teal)}
+
+/* gauge ring */
+.gauge{
+  --val:75; --ring:var(--teal); --track:var(--surface-3);
+  width:76px;height:76px;border-radius:50%;position:relative;flex:0 0 auto;
+  background:conic-gradient(var(--ring) calc(var(--val)*1%), var(--track) 0);
+}
+.gauge::before{
+  content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface-1);
+}
+.gauge .g-val{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:600;font-size:15px;letter-spacing:-.02em;
+}
+.gauge .g-k{font-size:8px;color:var(--ink-3);letter-spacing:.12em;font-weight:500}
+
+/* heatmap */
+.heatmap{display:grid;grid-template-columns:repeat(8,1fr);gap:4px}
+.hm-cell{aspect-ratio:1;border-radius:3px;background:var(--surface-2)}
+.hm-1{background:rgba(0,212,184,.18)} .hm-2{background:rgba(0,212,184,.38)}
+.hm-3{background:rgba(0,212,184,.62)} .hm-4{background:var(--teal)}
+.hm-lbl{font-family:var(--mono);font-size:8px;color:var(--ink-3);display:flex;align-items:center}
+
+/* standings table */
+.standings{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+.standings th{
+  font-size:9px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);
+  text-align:left;padding:6px 8px;border-bottom:1px solid var(--grid);
+}
+.standings td{padding:9px 8px;border-bottom:1px solid var(--grid-soft);color:var(--ink-2);white-space:nowrap}
+.standings tr:last-child td{border-bottom:none}
+.standings .num{text-align:right}
+.standings .pname{color:var(--ink);font-weight:500;display:flex;align-items:center;gap:8px}
+.standings tr.me td{background:var(--teal-dim)}
+.standings tr.me .pname{color:var(--teal)}
+.standings tr.cutline td{
+  border-bottom:1px dashed rgba(255,176,32,.55);padding:0;height:0;
+}
+.cut-tag{
+  position:relative;top:8px;float:right;
+  font-size:8px;letter-spacing:.14em;color:var(--amber);background:var(--bg-screen);
+  padding:0 6px;text-transform:uppercase;
+}
+.mv{font-weight:600}
+.formbars{display:inline-flex;gap:2px;align-items:flex-end;height:12px}
+.formbars i{width:3px;border-radius:1px;background:var(--teal)}
+.formbars i.l{background:var(--coral)}
+
+/* chat */
+.msg{max-width:82%;padding:10px 13px;border-radius:var(--r-md);font-size:var(--fs-body);line-height:1.45}
+.msg.user{align-self:flex-end;background:var(--teal);color:#04241F;border-bottom-right-radius:4px;font-weight:500}
+.msg.agent{align-self:flex-start;background:var(--surface-2);border:1px solid var(--grid);border-bottom-left-radius:4px;color:var(--ink)}
+.agent-row{display:flex;gap:8px;align-items:flex-end;align-self:flex-start;max-width:100%}
+.agent-mark{
+  width:26px;height:26px;border-radius:8px;flex:0 0 auto;
+  background:var(--teal-dim);border:1px solid var(--teal-line);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;color:var(--teal);
+}
+.chat-input{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface-2);border:1px solid var(--grid);border-radius:14px;padding:11px 14px;
+  color:var(--ink-3);font-size:var(--fs-body);
+}
+.chat-input .mic{margin-left:auto;color:var(--teal)}
+
+/* slot rows */
+.slot{
+  display:flex;align-items:center;gap:12px;padding:11px 12px;
+  border:1px solid var(--grid);border-radius:var(--r-sm);background:var(--surface-2);
+  transition:border-color .2s;
+}
+.slot:hover{border-color:var(--teal-line)}
+.slot.selected{border-color:var(--teal);background:var(--teal-dim);box-shadow:0 0 0 1px var(--teal) inset}
+.slot .when{font-family:var(--mono);font-size:12px;font-weight:600;line-height:1.35}
+.slot .when small{display:block;font-weight:400;color:var(--ink-3);font-size:10px;letter-spacing:.04em}
+.slot .fit{margin-left:auto;text-align:right;font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.slot .fit b{display:block;font-size:13px;color:var(--teal);font-weight:600}
+.slot.selected .radio{background:var(--teal);border-color:var(--teal)}
+.radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink-3);flex:0 0 auto;position:relative}
+.slot.selected .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:#04241F}
+
+/* quiz bands */
+.band{
+  display:flex;gap:12px;align-items:center;padding:12px;border-radius:var(--r-sm);
+  border:1px solid var(--grid);background:var(--surface-1);transition:border-color .2s;
+}
+.band:hover{border-color:var(--teal-line)}
+.band .bnum{
+  font-family:var(--mono);font-size:16px;font-weight:700;width:44px;flex:0 0 auto;
+  color:var(--ink-2);letter-spacing:-.02em;
+}
+.band .bdesc{font-size:12px;line-height:1.4}
+.band .bdesc b{display:block;font-size:12px;font-weight:600;color:var(--ink)}
+.band .bdesc span{color:var(--ink-3);font-size:11px}
+.band .pct{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--ink-3);text-align:right;flex:0 0 auto}
+.band.selected{border-color:var(--teal);background:var(--teal-dim);box-shadow:0 0 0 1px var(--teal) inset}
+.band.selected .bnum{color:var(--teal)}
+.dist{height:4px;border-radius:2px;background:var(--surface-3);margin-top:5px;width:64px;overflow:hidden}
+.dist i{display:block;height:100%;background:var(--ink-3);border-radius:2px}
+.band.selected .dist i{background:var(--teal)}
+
+/* map */
+.mapbox{
+  position:relative;height:118px;border-radius:var(--r-sm);overflow:hidden;
+  background:var(--surface-2);border:1px solid var(--grid);
+}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.map-pin{
+  position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--ink-2);
+}
+.map-pin i{width:10px;height:10px;border-radius:50%;background:var(--ink-3);border:2px solid var(--bg-screen)}
+.map-pin.mid i{background:var(--teal);box-shadow:0 0 10px rgba(0,212,184,.7)}
+.map-pin.mid{color:var(--teal)}
+
+/* badges */
+.badge-tile{
+  display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;
+  background:var(--surface-2);border:1px solid var(--grid);border-radius:var(--r-sm);
+  font-family:var(--mono);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  text-align:center;
+}
+.badge-tile .ico{font-size:16px;line-height:1;filter:grayscale(.15)}
+.badge-tile.earned{border-color:var(--teal-line);color:var(--ink-2)}
+
+/* score stepper */
+.score-entry{display:flex;gap:8px}
+.set-box{
+  flex:1;text-align:center;background:var(--surface-2);border:1px solid var(--grid);
+  border-radius:var(--r-sm);padding:9px 4px 7px;
+}
+.set-box .s{font-family:var(--mono);font-size:17px;font-weight:600;letter-spacing:.02em}
+.set-box .t{font-family:var(--mono);font-size:8px;color:var(--ink-3);letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+.set-box.win{border-color:var(--teal-line);background:var(--teal-dim)}
+.set-box.win .s{color:var(--teal)}
+.set-box.loss .s{color:var(--coral)}
+
+.pro-banner{
+  border:1px solid rgba(255,176,32,.4);border-radius:var(--r-md);
+  background:linear-gradient(135deg, rgba(255,176,32,.12), rgba(255,176,32,.03));
+  padding:13px 14px;display:flex;align-items:center;gap:12px;
+}
+.pro-banner .pro-tag{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;
+  background:var(--amber);color:#241703;padding:3px 8px;border-radius:5px;flex:0 0 auto;
+}
+.pro-banner p{font-size:11px;color:var(--ink-2);line-height:1.4}
+.pro-banner p b{color:var(--ink);display:block;font-size:12px}
+.pro-banner .go{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--amber);white-space:nowrap}
+
+.lock{color:var(--ink-3);font-size:9px;font-family:var(--mono);letter-spacing:.08em;display:inline-flex;gap:4px;align-items:center}
+
+.page-footer{
+  max-width:1480px;margin:0 auto;padding:0 40px 80px;
+  font-family:var(--mono);font-size:var(--fs-label);color:var(--ink-3);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;letter-spacing:.06em;
+}
+@media (max-width:460px){
+  .page-header,.lab-grid,.token-strip,.page-footer{padding-left:16px;padding-right:16px}
+  .phone{transform:scale(.92);transform-origin:top center}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE HEADER ================= -->
+<header class="page-header">
+  <div class="brand-block">
+    <div class="eyebrow">OpenRally · Variation 10 of 10</div>
+    <h1>Deuce <span class="lab">Lab</span></h1>
+    <p class="thesis"><strong>Your competitive self, quantified.</strong> A Whoop/Strava-grade performance instrument for the player who tracks everything — every rally becomes data, and the data is the aesthetic.</p>
+  </div>
+  <div class="header-meta mono" aria-label="Build metadata">
+    <span>BUILD <b>OR-10.PERF</b> <span class="dot">●</span> STABLE</span>
+    <span>MARKET <b>AUSTIN, TX</b> · SEASON <b>FALL S4</b></span>
+    <span>SAMPLE <b>N = 212 PLAYERS</b> · <b>1,847 MATCHES LOGGED</b></span>
+  </div>
+</header>
+
+<div class="token-strip" aria-label="Design tokens">
+  <span class="swatch"><i style="background:#101216;border:1px solid rgba(255,255,255,.15)"></i>GRAPHITE #101216</span>
+  <span class="swatch"><i style="background:#171A21;border:1px solid rgba(255,255,255,.15)"></i>SURFACE #171A21</span>
+  <span class="swatch"><i style="background:#00D4B8"></i>PRECISION TEAL #00D4B8</span>
+  <span class="swatch"><i style="background:#FF5C5C"></i>SIGNAL CORAL #FF5C5C</span>
+  <span class="swatch"><i style="background:#FFB020"></i>AMBER #FFB020</span>
+  <span class="swatch"><i style="background:#E8EEF2"></i>ICE #E8EEF2</span>
+  <span style="margin-left:auto">IBM PLEX SANS / IBM PLEX MONO · TABULAR NUMS</span>
+</div>
+
+<main class="lab-grid">
+
+<!-- ============================================================
+     SCREEN 01 · ONBOARDING / LEVEL CALIBRATION
+     ============================================================ -->
+<section class="phone-unit" aria-label="Screen 1: Onboarding level quiz">
+  <div class="unit-label">
+    <span class="idx mono">01</span><h2>Onboarding — Level Calibration</h2>
+    <span class="sub">baseline_input</span>
+  </div>
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span>
+      <span class="icons">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="#E8EEF2"><rect x="0" y="6" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="6" rx="1"/><rect x="9" y="2" width="3" height="8" rx="1"/><rect x="13" y="0" width="3" height="10" rx="1" opacity=".35"/></svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#E8EEF2" stroke-width="1.4"><path d="M1.5 4a9 9 0 0 1 12 0M3.7 6.4a6 6 0 0 1 7.6 0M5.9 8.7a3 3 0 0 1 3.2 0"/><circle cx="7.5" cy="10" r="1" fill="#E8EEF2" stroke="none"/></svg>
+        <svg width="23" height="11" viewBox="0 0 23 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#E8EEF2" opacity=".5"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#00D4B8"/><rect x="21" y="3.5" width="2" height="4" rx="1" fill="#E8EEF2" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div class="screen-body">
+      <div class="appbar">
+        <div>
+          <div class="context mono">CALIBRATION · STEP 2 / 3</div>
+          <div class="title">Set your baseline</div>
+        </div>
+        <span class="chip mono">60 SEC</span>
+      </div>
+      <p style="font-size:12px;color:var(--ink-2);line-height:1.5">Pick the band that matches your game. No shame, no guessing — your <b style="color:var(--teal)">Rally Score</b> auto-corrects it from real results within 3 matches.</p>
+
+      <!-- video comparison stub -->
+      <div class="card" style="padding:12px">
+        <div class="card-kicker">REFERENCE RALLY · WHICH LOOKS LIKE YOURS?<span class="mono up">▶ 0:07</span></div>
+        <svg viewBox="0 0 330 62" style="width:100%;margin-top:8px" role="img" aria-label="Rally intensity waveform comparison">
+          <g stroke="rgba(255,255,255,0.07)"><line x1="0" y1="31" x2="330" y2="31"/></g>
+          <polyline fill="none" stroke="#69747F" stroke-width="1.5" points="0,40 20,36 40,44 60,30 80,42 100,34 120,45 140,33 160,41 180,36 200,44 220,31 240,43 260,35 280,45 300,33 330,40"/>
+          <polyline fill="none" stroke="#00D4B8" stroke-width="2" points="0,30 22,18 44,34 66,14 88,32 110,16 132,36 154,12 176,30 198,17 220,34 242,13 264,31 286,16 308,33 330,15"/>
+          <text x="4" y="12" font-family="IBM Plex Mono, monospace" font-size="8" fill="#00D4B8" letter-spacing="1">3.5 PACE</text>
+          <text x="272" y="58" font-family="IBM Plex Mono, monospace" font-size="8" fill="#69747F" letter-spacing="1">3.0 PACE</text>
+        </svg>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="band">
+          <span class="bnum mono">2.5</span>
+          <div class="bdesc"><b>Rally starter</b><span>Learning to sustain 4+ shot rallies</span></div>
+          <div class="pct">11% of ATX<div class="dist"><i style="width:11%"></i></div></div>
+        </div>
+        <div class="band">
+          <span class="bnum mono">3.0</span>
+          <div class="bdesc"><b>Consistent competitor</b><span>Steady pace, developing spin &amp; depth</span></div>
+          <div class="pct">27% of ATX<div class="dist"><i style="width:27%"></i></div></div>
+        </div>
+        <div class="band selected" aria-current="true">
+          <span class="bnum mono">3.5</span>
+          <div class="bdesc"><b>Directional control</b><span>You aim, mix pace, and hold serve — mostly</span></div>
+          <div class="pct">34% of ATX<div class="dist"><i style="width:34%"></i></div></div>
+        </div>
+        <div class="band">
+          <span class="bnum mono">4.0</span>
+          <div class="bdesc"><b>Weaponized game</b><span>Reliable weapons, point construction</span></div>
+          <div class="pct">21% of ATX<div class="dist"><i style="width:21%"></i></div></div>
+        </div>
+        <div class="band">
+          <span class="bnum mono">4.5+</span>
+          <div class="bdesc"><b>Tournament tested</b><span>Forcing shots, few unforced errors</span></div>
+          <div class="pct">7% of ATX<div class="dist"><i style="width:7%"></i></div></div>
+        </div>
+      </div>
+
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+        <div class="chip teal" style="align-self:center"><span class="pulse"></span>212 players calibrated in Austin this season</div>
+        <button class="btn btn-primary">Lock in 3.5 <span class="mono-tag">→ FIND MY BOX</span></button>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div></div>
+</section>
+
+<!-- ============================================================
+     SCREEN 02 · HOME "SEASON"
+     ============================================================ -->
+<section class="phone-unit" aria-label="Screen 2: Home season dashboard">
+  <div class="unit-label">
+    <span class="idx mono">02</span><h2>Home — Season Console</h2>
+    <span class="sub">live_telemetry</span>
+  </div>
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span>
+      <span class="icons">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="#E8EEF2"><rect x="0" y="6" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="6" rx="1"/><rect x="9" y="2" width="3" height="8" rx="1"/><rect x="13" y="0" width="3" height="10" rx="1" opacity=".35"/></svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#E8EEF2" stroke-width="1.4"><path d="M1.5 4a9 9 0 0 1 12 0M3.7 6.4a6 6 0 0 1 7.6 0M5.9 8.7a3 3 0 0 1 3.2 0"/><circle cx="7.5" cy="10" r="1" fill="#E8EEF2" stroke="none"/></svg>
+        <svg width="23" height="11" viewBox="0 0 23 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#E8EEF2" opacity=".5"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#00D4B8"/><rect x="21" y="3.5" width="2" height="4" rx="1" fill="#E8EEF2" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div class="screen-body">
+      <div class="appbar">
+        <div>
+          <div class="context mono">FALL SEASON 4 · OCT 6 – NOV 23 · WEEK 5/7</div>
+          <div class="title">Evening, Maya</div>
+        </div>
+        <span class="avatar teal">MC</span>
+      </div>
+
+      <!-- week progress -->
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden">
+          <div style="width:68%;height:100%;background:linear-gradient(90deg,var(--teal),rgba(0,212,184,.55));border-radius:3px"></div>
+        </div>
+        <span class="mono" style="font-size:10px;color:var(--ink-3)">18 DAYS LEFT</span>
+      </div>
+
+      <!-- next match hero -->
+      <div class="card" style="border-color:var(--teal-line);box-shadow:var(--shadow-card),0 0 24px rgba(0,212,184,.08)">
+        <div class="card-kicker">NEXT MATCH · BOX 12<span class="chip teal"><span class="pulse"></span>CONFIRMED</span></div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
+          <span class="avatar amber" style="width:44px;height:44px;font-size:14px">JP</span>
+          <div>
+            <div style="font-size:16px;font-weight:600">Jordan Patel <span class="mono" style="font-size:10px;color:var(--teal)">✓ VERIFIED</span></div>
+            <div class="mono" style="font-size:11px;color:var(--ink-2)">RS 3.61 · 8W–1L · 96% reliable</div>
+          </div>
+          <div style="margin-left:auto;text-align:right">
+            <div class="mono" style="font-size:15px;font-weight:600">THU 7:00P</div>
+            <div class="mono" style="font-size:10px;color:var(--ink-3)">PHARR TENNIS CTR · CT 4</div>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="prob-bar" role="img" aria-label="Win probability: Maya 46 percent, Jordan 54 percent">
+            <span class="p1" style="width:46%"></span><span class="p2" style="width:54%"></span>
+          </div>
+          <div class="prob-legend mono">
+            <span class="me"><b>46%</b> YOU</span>
+            <span style="color:var(--ink-3)">MODEL v3 · H2H 1–1</span>
+            <span><b>54%</b> PATEL</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:14px;padding:11px">View match plan <span class="mono-tag">SCOUT →</span></button>
+      </div>
+
+      <!-- rally score sparkline -->
+      <div class="card">
+        <div class="card-kicker">RALLY SCORE · LAST 9 MATCHES<span class="mono up">3.52 ▲ +0.14</span></div>
+        <svg viewBox="0 0 330 74" style="width:100%;margin-top:8px" role="img" aria-label="Rally Score trend from 3.38 to 3.52 over nine matches">
+          <defs><linearGradient id="rsFillHome" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#00D4B8" stop-opacity=".28"/><stop offset="1" stop-color="#00D4B8" stop-opacity="0"/>
+          </linearGradient></defs>
+          <g stroke="rgba(255,255,255,0.07)">
+            <line x1="0" y1="18" x2="330" y2="18"/><line x1="0" y1="38" x2="330" y2="38"/><line x1="0" y1="58" x2="330" y2="58"/>
+          </g>
+          <path d="M8,56 L48,49 L88,53 L128,42 L168,35 L208,39 L248,26 L288,29 L322,18 L322,74 L8,74 Z" fill="url(#rsFillHome)"/>
+          <polyline fill="none" stroke="#00D4B8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"
+            points="8,56 48,49 88,53 128,42 168,35 208,39 248,26 288,29 322,18"/>
+          <circle cx="322" cy="18" r="4" fill="#00D4B8" stroke="#101216" stroke-width="2"/>
+          <text x="300" y="10" font-family="IBM Plex Mono, monospace" font-size="9" fill="#00D4B8" text-anchor="end">3.52</text>
+          <text x="8" y="70" font-family="IBM Plex Mono, monospace" font-size="8" fill="#69747F">3.38 · OCT 6</text>
+        </svg>
+      </div>
+
+      <!-- box snapshot -->
+      <div class="card" style="padding:12px 14px">
+        <div class="card-kicker">BOX 12 · TOP 4 MAKE PLAYOFFS<span class="mono" style="color:var(--ink-3)">RANK 3/7</span></div>
+        <table class="standings" style="margin-top:4px">
+          <tbody>
+            <tr><td>1</td><td class="pname">J. Patel</td><td class="num">8–1</td><td class="num">3.61</td><td class="num mv up">▲1</td></tr>
+            <tr class="me"><td>3</td><td class="pname">M. Chen · YOU</td><td class="num">7–2</td><td class="num">3.52</td><td class="num mv up">▲2</td></tr>
+            <tr><td>4</td><td class="pname">S. Rivera</td><td class="num">6–3</td><td class="num">3.48</td><td class="num mv down">▼1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="stat-grid" style="margin-top:auto">
+        <div class="stat-cell"><div class="v up">W3</div><div class="k">Streak</div></div>
+        <div class="stat-cell"><div class="v">98<span style="font-size:12px;color:var(--ink-3)">%</span></div><div class="k">Reliability</div></div>
+        <div class="stat-cell"><div class="v warn">87<span style="font-size:12px;color:var(--ink-3)">%</span></div><div class="k">Playoff odds</div></div>
+      </div>
+
+      <nav class="tabbar" aria-label="App navigation">
+        <span class="tab active"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M2 8.5 9 2l7 6.5V16H2z"/></svg>Season</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M3 15V9M9 15V3M15 15v-4"/></svg>Ladder</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><rect x="2" y="3" width="14" height="12" rx="2"/><path d="M2 7h14M6 1.5V4M12 1.5V4"/></svg>Matches</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M15 11a6 6 0 1 0-3 4.5L16 16z"/></svg>Rally</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><circle cx="9" cy="6" r="3.5"/><path d="M2.5 16a6.5 6.5 0 0 1 13 0"/></svg>You</span>
+      </nav>
+    </div>
+    <div class="home-indicator"></div>
+  </div></div>
+</section>
+
+<!-- ============================================================
+     SCREEN 03 · BOX STANDINGS
+     ============================================================ -->
+<section class="phone-unit" aria-label="Screen 3: Box standings and ladder">
+  <div class="unit-label">
+    <span class="idx mono">03</span><h2>Box 12 — Standings</h2>
+    <span class="sub">rank_matrix</span>
+  </div>
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span>
+      <span class="icons">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="#E8EEF2"><rect x="0" y="6" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="6" rx="1"/><rect x="9" y="2" width="3" height="8" rx="1"/><rect x="13" y="0" width="3" height="10" rx="1" opacity=".35"/></svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#E8EEF2" stroke-width="1.4"><path d="M1.5 4a9 9 0 0 1 12 0M3.7 6.4a6 6 0 0 1 7.6 0M5.9 8.7a3 3 0 0 1 3.2 0"/><circle cx="7.5" cy="10" r="1" fill="#E8EEF2" stroke="none"/></svg>
+        <svg width="23" height="11" viewBox="0 0 23 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#E8EEF2" opacity=".5"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#00D4B8"/><rect x="21" y="3.5" width="2" height="4" rx="1" fill="#E8EEF2" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div class="screen-body">
+      <div class="appbar">
+        <div>
+          <div class="context mono">SINGLES 3.5 · AUSTIN · WEEK 5/7</div>
+          <div class="title">Box 12 standings</div>
+        </div>
+        <span class="chip amber">▲▼ PROMO / RELEG</span>
+      </div>
+
+      <div class="card" style="padding:10px 6px 6px">
+        <table class="standings" aria-label="Box 12 standings table">
+          <thead><tr>
+            <th>#</th><th>Player</th><th class="num">W–L</th><th class="num">Sets</th><th class="num">RS</th><th>Form</th><th class="num">Δ</th>
+          </tr></thead>
+          <tbody>
+            <tr>
+              <td>1</td><td class="pname"><span class="avatar sm amber">JP</span>Jordan Patel</td>
+              <td class="num">8–1</td><td class="num">17–5</td><td class="num">3.61</td>
+              <td><span class="formbars"><i style="height:10px"></i><i style="height:12px"></i><i class="l" style="height:6px"></i><i style="height:11px"></i><i style="height:12px"></i></span></td>
+              <td class="num mv up">▲1</td>
+            </tr>
+            <tr>
+              <td>2</td><td class="pname"><span class="avatar sm teal">PN</span>Priya Nair</td>
+              <td class="num">7–2</td><td class="num">15–7</td><td class="num">3.55</td>
+              <td><span class="formbars"><i style="height:11px"></i><i class="l" style="height:5px"></i><i style="height:10px"></i><i style="height:12px"></i><i class="l" style="height:6px"></i></span></td>
+              <td class="num mv" style="color:var(--ink-3)">—</td>
+            </tr>
+            <tr class="me">
+              <td>3</td><td class="pname"><span class="avatar sm teal">MC</span>Maya Chen</td>
+              <td class="num">7–2</td><td class="num">15–8</td><td class="num">3.52</td>
+              <td><span class="formbars"><i class="l" style="height:5px"></i><i style="height:9px"></i><i style="height:11px"></i><i style="height:12px"></i><i style="height:12px"></i></span></td>
+              <td class="num mv up">▲2</td>
+            </tr>
+            <tr>
+              <td>4</td><td class="pname"><span class="avatar sm">SR</span>Sam Rivera</td>
+              <td class="num">6–3</td><td class="num">13–8</td><td class="num">3.48</td>
+              <td><span class="formbars"><i style="height:12px"></i><i style="height:10px"></i><i class="l" style="height:6px"></i><i class="l" style="height:5px"></i><i style="height:9px"></i></span></td>
+              <td class="num mv down">▼1</td>
+            </tr>
+            <tr class="cutline"><td colspan="7"><span class="cut-tag">PLAYOFF CUT · TOP 4</span></td></tr>
+            <tr>
+              <td>5</td><td class="pname"><span class="avatar sm">AK</span>Alex Kim</td>
+              <td class="num">4–5</td><td class="num">10–12</td><td class="num">3.41</td>
+              <td><span class="formbars"><i class="l" style="height:6px"></i><i style="height:10px"></i><i class="l" style="height:5px"></i><i style="height:11px"></i><i class="l" style="height:6px"></i></span></td>
+              <td class="num mv down">▼1</td>
+            </tr>
+            <tr>
+              <td>6</td><td class="pname"><span class="avatar sm">DB</span>Dana Brooks</td>
+              <td class="num">3–6</td><td class="num">8–13</td><td class="num">3.37</td>
+              <td><span class="formbars"><i class="l" style="height:5px"></i><i class="l" style="height:6px"></i><i style="height:10px"></i><i class="l" style="height:5px"></i><i style="height:9px"></i></span></td>
+              <td class="num mv" style="color:var(--ink-3)">—</td>
+            </tr>
+            <tr>
+              <td>7</td><td class="pname"><span class="avatar sm">CO</span>Chris Okafor</td>
+              <td class="num">2–7</td><td class="num">6–15</td><td class="num">3.29</td>
+              <td><span class="formbars"><i class="l" style="height:6px"></i><i class="l" style="height:5px"></i><i class="l" style="height:6px"></i><i style="height:9px"></i><i class="l" style="height:5px"></i></span></td>
+              <td class="num mv down">▼2</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- rivalry hint -->
+      <div class="card" style="display:flex;align-items:center;gap:12px;padding:12px 14px">
+        <div style="display:flex">
+          <span class="avatar sm teal" style="border:2px solid var(--bg-screen)">MC</span>
+          <span class="avatar sm amber" style="margin-left:-8px;border:2px solid var(--bg-screen)">JP</span>
+        </div>
+        <div style="font-size:11.5px;line-height:1.45;color:var(--ink-2)">
+          <b style="color:var(--ink)">Rivalry detected.</b> You &amp; Patel are 1–1 with a 3-point set differential. Thursday decides seed #1.
+        </div>
+        <span class="mono" style="margin-left:auto;font-size:10px;color:var(--amber);white-space:nowrap">H2H →</span>
+      </div>
+
+      <!-- movement scenario -->
+      <div class="card">
+        <div class="card-kicker">PROMOTION SCENARIO · IF SEASON ENDED TODAY</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <div style="flex:1;border:1px solid var(--teal-line);background:var(--teal-dim);border-radius:var(--r-sm);padding:9px 11px">
+            <div class="mono" style="font-size:10px;color:var(--teal);letter-spacing:.1em">▲ TO BOX 11</div>
+            <div class="mono" style="font-size:12px;margin-top:3px">Patel · Nair</div>
+          </div>
+          <div style="flex:1;border:1px solid rgba(255,92,92,.35);background:var(--coral-dim);border-radius:var(--r-sm);padding:9px 11px">
+            <div class="mono" style="font-size:10px;color:var(--coral);letter-spacing:.1em">▼ TO BOX 13</div>
+            <div class="mono" style="font-size:12px;margin-top:3px">Brooks · Okafor</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:auto">
+        <button class="btn btn-primary">Schedule my Rivera match <span class="mono-tag">1 LEFT</span></button>
+      </div>
+
+      <nav class="tabbar" aria-label="App navigation">
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M2 8.5 9 2l7 6.5V16H2z"/></svg>Season</span>
+        <span class="tab active"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M3 15V9M9 15V3M15 15v-4"/></svg>Ladder</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><rect x="2" y="3" width="14" height="12" rx="2"/><path d="M2 7h14M6 1.5V4M12 1.5V4"/></svg>Matches</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M15 11a6 6 0 1 0-3 4.5L16 16z"/></svg>Rally</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><circle cx="9" cy="6" r="3.5"/><path d="M2.5 16a6.5 6.5 0 0 1 13 0"/></svg>You</span>
+      </nav>
+    </div>
+    <div class="home-indicator"></div>
+  </div></div>
+</section>
+
+<!-- ============================================================
+     SCREEN 04 · MATCH SCHEDULING
+     ============================================================ -->
+<section class="phone-unit" aria-label="Screen 4: Match scheduling and score entry">
+  <div class="unit-label">
+    <span class="idx mono">04</span><h2>Scheduling — Slot Optimizer</h2>
+    <span class="sub">logistics_engine</span>
+  </div>
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span>
+      <span class="icons">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="#E8EEF2"><rect x="0" y="6" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="6" rx="1"/><rect x="9" y="2" width="3" height="8" rx="1"/><rect x="13" y="0" width="3" height="10" rx="1" opacity=".35"/></svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#E8EEF2" stroke-width="1.4"><path d="M1.5 4a9 9 0 0 1 12 0M3.7 6.4a6 6 0 0 1 7.6 0M5.9 8.7a3 3 0 0 1 3.2 0"/><circle cx="7.5" cy="10" r="1" fill="#E8EEF2" stroke="none"/></svg>
+        <svg width="23" height="11" viewBox="0 0 23 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#E8EEF2" opacity=".5"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#00D4B8"/><rect x="21" y="3.5" width="2" height="4" rx="1" fill="#E8EEF2" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div class="screen-body">
+      <div class="appbar">
+        <div>
+          <div class="context mono">MATCH 10 · VS SAM RIVERA (RS 3.48)</div>
+          <div class="title">Pick a slot</div>
+        </div>
+        <span class="avatar">SR</span>
+      </div>
+      <p style="font-size:11.5px;color:var(--ink-2)">Rally cross-matched both availability grids — <b style="color:var(--teal)">3 slots fit</b>. Fit = overlap score × court odds × travel parity.</p>
+
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="slot selected" aria-current="true">
+          <span class="radio"></span>
+          <div class="when mono">SAT OCT 25 · 9:00 AM<small>Pharr Tennis Center · both &lt; 12 min</small></div>
+          <div class="fit"><b>94%</b>FIT</div>
+        </div>
+        <div class="slot">
+          <span class="radio"></span>
+          <div class="when mono">SUN OCT 26 · 5:30 PM<small>South Austin Rec · daylight ends 6:48</small></div>
+          <div class="fit"><b style="color:var(--ink-2)">81%</b>FIT</div>
+        </div>
+        <div class="slot">
+          <span class="radio"></span>
+          <div class="when mono">TUE OCT 28 · 7:30 PM<small>Austin High Courts · lit until 10p</small></div>
+          <div class="fit"><b style="color:var(--ink-2)">72%</b>FIT</div>
+        </div>
+      </div>
+
+      <!-- midpoint map -->
+      <div class="mapbox" role="img" aria-label="Map showing Pharr Tennis Center at the travel midpoint between both players">
+        <svg viewBox="0 0 354 118" preserveAspectRatio="none" aria-hidden="true">
+          <g stroke="rgba(255,255,255,0.06)" stroke-width="1">
+            <line x1="0" y1="30" x2="354" y2="30"/><line x1="0" y1="62" x2="354" y2="62"/><line x1="0" y1="94" x2="354" y2="94"/>
+            <line x1="50" y1="0" x2="50" y2="118"/><line x1="120" y1="0" x2="120" y2="118"/><line x1="190" y1="0" x2="190" y2="118"/><line x1="260" y1="0" x2="260" y2="118"/><line x1="330" y1="0" x2="330" y2="118"/>
+          </g>
+          <path d="M30,96 C90,80 130,66 177,58" fill="none" stroke="rgba(0,212,184,.5)" stroke-width="1.6" stroke-dasharray="4 4"/>
+          <path d="M324,24 C270,36 220,48 177,58" fill="none" stroke="rgba(0,212,184,.5)" stroke-width="1.6" stroke-dasharray="4 4"/>
+        </svg>
+        <span class="map-pin" style="left:16px;bottom:6px"><i></i>YOU · 11 MIN</span>
+        <span class="map-pin" style="right:12px;top:6px"><i></i>SAM · 12 MIN</span>
+        <span class="map-pin mid" style="left:150px;top:38px"><i></i>PHARR TENNIS CTR</span>
+      </div>
+
+      <button class="btn btn-primary">Confirm Sat 9:00 AM <span class="mono-tag">1-TAP</span></button>
+      <div class="mono" style="font-size:9px;color:var(--ink-3);text-align:center;letter-spacing:.08em">SAM ACCEPTS OR COUNTERS IN-APP · NO NUMBERS SHARED</div>
+
+      <hr class="divider" style="margin:2px 0">
+
+      <!-- score entry -->
+      <div class="card">
+        <div class="card-kicker">REPORT LAST RESULT · VS PRIYA NAIR<span class="chip amber"><span class="pulse"></span>AWAITING HER ✓</span></div>
+        <div class="score-entry" style="margin-top:10px">
+          <div class="set-box win"><div class="s">6–4</div><div class="t">Set 1</div></div>
+          <div class="set-box loss"><div class="s">3–6</div><div class="t">Set 2</div></div>
+          <div class="set-box win"><div class="s">[10–7]</div><div class="t">Match TB</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+          <span class="mono" style="font-size:10px;color:var(--ink-2)">RESULT: <b class="up">WIN</b> · RS PROJ <b class="up">+0.03</b></span>
+          <span class="mono" style="font-size:10px;color:var(--ink-3)">DUAL-VERIFY LOCKS SCORE</span>
+        </div>
+      </div>
+
+      <nav class="tabbar" aria-label="App navigation">
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M2 8.5 9 2l7 6.5V16H2z"/></svg>Season</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M3 15V9M9 15V3M15 15v-4"/></svg>Ladder</span>
+        <span class="tab active"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><rect x="2" y="3" width="14" height="12" rx="2"/><path d="M2 7h14M6 1.5V4M12 1.5V4"/></svg>Matches</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M15 11a6 6 0 1 0-3 4.5L16 16z"/></svg>Rally</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><circle cx="9" cy="6" r="3.5"/><path d="M2.5 16a6.5 6.5 0 0 1 13 0"/></svg>You</span>
+      </nav>
+    </div>
+    <div class="home-indicator"></div>
+  </div></div>
+</section>
+
+<!-- ============================================================
+     SCREEN 05 · RALLY AGENT CHAT
+     ============================================================ -->
+<section class="phone-unit" aria-label="Screen 5: Rally agent chat">
+  <div class="unit-label">
+    <span class="idx mono">05</span><h2>Rally — Agent Console</h2>
+    <span class="sub">concierge_llm</span>
+  </div>
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span>
+      <span class="icons">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="#E8EEF2"><rect x="0" y="6" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="6" rx="1"/><rect x="9" y="2" width="3" height="8" rx="1"/><rect x="13" y="0" width="3" height="10" rx="1" opacity=".35"/></svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#E8EEF2" stroke-width="1.4"><path d="M1.5 4a9 9 0 0 1 12 0M3.7 6.4a6 6 0 0 1 7.6 0M5.9 8.7a3 3 0 0 1 3.2 0"/><circle cx="7.5" cy="10" r="1" fill="#E8EEF2" stroke="none"/></svg>
+        <svg width="23" height="11" viewBox="0 0 23 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#E8EEF2" opacity=".5"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#00D4B8"/><rect x="21" y="3.5" width="2" height="4" rx="1" fill="#E8EEF2" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div class="screen-body">
+      <div class="appbar">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="agent-mark" style="width:34px;height:34px;border-radius:10px;font-size:13px">R</span>
+          <div>
+            <div class="title" style="font-size:16px">Rally</div>
+            <div class="context mono" style="margin-top:0"><span class="up">●</span> ONLINE · KNOWS YOUR SEASON</div>
+          </div>
+        </div>
+        <span class="chip">HISTORY</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;flex:1">
+        <div class="msg user">What do I need to make playoffs?</div>
+
+        <div class="agent-row">
+          <span class="agent-mark">R</span>
+          <div class="msg agent">You're #3 with two matches left. Ran 5,000 season sims — here's the math:</div>
+        </div>
+
+        <!-- rich card: playoff math -->
+        <div class="card" style="margin-left:34px;padding:12px">
+          <div class="card-kicker">PLAYOFF PROBABILITY · MONTE CARLO 5K RUNS</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;font-family:var(--mono);font-size:11px">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--ink-2)">Win both</span><b class="up">99.2%</b></div>
+              <div style="height:6px;border-radius:3px;background:var(--surface-3)"><div style="width:99.2%;height:100%;border-radius:3px;background:var(--teal)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--ink-2)">Win 1 of 2</span><b class="up">87.4%</b></div>
+              <div style="height:6px;border-radius:3px;background:var(--surface-3)"><div style="width:87.4%;height:100%;border-radius:3px;background:rgba(0,212,184,.62)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="color:var(--ink-2)">Lose both</span><b class="warn">31.6%</b></div>
+              <div style="height:6px;border-radius:3px;background:var(--surface-3)"><div style="width:31.6%;height:100%;border-radius:3px;background:var(--amber)"></div></div>
+            </div>
+          </div>
+          <div class="mono" style="font-size:9.5px;color:var(--ink-3);margin-top:9px;letter-spacing:.04em">KEY: beat Rivera and you clinch regardless of Patel result.</div>
+        </div>
+
+        <div class="msg user">Then find me a match with Rivera Thursday after 6</div>
+
+        <div class="agent-row">
+          <span class="agent-mark">R</span>
+          <div class="msg agent">Sam's grid shows Thu 6:30p open. Midpoint court has one slot left:</div>
+        </div>
+
+        <!-- rich card: slot proposal -->
+        <div class="card" style="margin-left:34px;padding:12px;border-color:var(--teal-line)">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="avatar sm">SR</span>
+            <div class="when mono" style="font-size:12px;font-weight:600">THU OCT 30 · 6:30 PM<small style="display:block;font-weight:400;color:var(--ink-3);font-size:10px">South Austin Rec · Ct 2 · $4.50 each, split in-app</small></div>
+            <div class="fit mono" style="margin-left:auto;text-align:right;font-size:10px;color:var(--ink-3)"><b style="display:block;font-size:13px;color:var(--teal)">91%</b>FIT</div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:11px;padding:10px">Send proposal to Sam <span class="mono-tag">→</span></button>
+        </div>
+
+        <div class="agent-row">
+          <span class="agent-mark">R</span>
+          <div class="msg agent">Also: Priya asked to move Sunday to 4pm. Reply "shift it" and I'll rebook the court.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="chip">shift it</span><span class="chip">scout Rivera</span><span class="chip">book a wall session</span>
+      </div>
+      <div class="chat-input">
+        Ask Rally anything…
+        <svg class="mic" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5.5" y="1.5" width="5" height="8" rx="2.5"/><path d="M3 8a5 5 0 0 0 10 0M8 13v2"/></svg>
+      </div>
+    </div>
+    <div class="home-indicator"></div>
+  </div></div>
+</section>
+
+<!-- ============================================================
+     SCREEN 06 · PLAYER PROFILE
+     ============================================================ -->
+<section class="phone-unit" aria-label="Screen 6: Player performance profile">
+  <div class="unit-label">
+    <span class="idx mono">06</span><h2>Profile — Performance File</h2>
+    <span class="sub">athlete_record</span>
+  </div>
+  <div class="phone"><div class="screen">
+    <div class="notch"></div>
+    <div class="statusbar"><span>9:41</span>
+      <span class="icons">
+        <svg width="16" height="10" viewBox="0 0 16 10" fill="#E8EEF2"><rect x="0" y="6" width="3" height="4" rx="1"/><rect x="4.5" y="4" width="3" height="6" rx="1"/><rect x="9" y="2" width="3" height="8" rx="1"/><rect x="13" y="0" width="3" height="10" rx="1" opacity=".35"/></svg>
+        <svg width="15" height="11" viewBox="0 0 15 11" fill="none" stroke="#E8EEF2" stroke-width="1.4"><path d="M1.5 4a9 9 0 0 1 12 0M3.7 6.4a6 6 0 0 1 7.6 0M5.9 8.7a3 3 0 0 1 3.2 0"/><circle cx="7.5" cy="10" r="1" fill="#E8EEF2" stroke="none"/></svg>
+        <svg width="23" height="11" viewBox="0 0 23 11"><rect x=".5" y=".5" width="19" height="10" rx="3" fill="none" stroke="#E8EEF2" opacity=".5"/><rect x="2" y="2" width="14" height="7" rx="1.5" fill="#00D4B8"/><rect x="21" y="3.5" width="2" height="4" rx="1" fill="#E8EEF2" opacity=".5"/></svg>
+      </span>
+    </div>
+    <div class="screen-body">
+      <div style="display:flex;align-items:center;gap:14px">
+        <span class="avatar teal" style="width:54px;height:54px;font-size:18px;border-width:2px">MC</span>
+        <div>
+          <div style="font-size:19px;font-weight:700;letter-spacing:-.02em">Maya Chen <span class="mono" style="font-size:10px;color:var(--teal);font-weight:600">✓ ID + PHOTO VERIFIED</span></div>
+          <div class="mono" style="font-size:11px;color:var(--ink-2)">3.5 SINGLES · BOX 12 · AUSTIN · S2–S4 VETERAN</div>
+        </div>
+        <span class="chip" style="margin-left:auto">SHARE</span>
+      </div>
+
+      <!-- hero number + trend -->
+      <div class="card" style="border-color:var(--teal-line)">
+        <div class="card-kicker">RALLY SCORE<span class="chip teal">TOP 18% OF 3.5s</span></div>
+        <div style="display:flex;align-items:flex-end;gap:14px;margin-top:6px">
+          <div class="mono" style="font-size:var(--fs-hero);font-weight:700;letter-spacing:-.04em;line-height:1">3.52</div>
+          <div class="mono up" style="font-size:12px;font-weight:600;padding-bottom:5px">▲ +0.14 THIS SEASON</div>
+        </div>
+        <svg viewBox="0 0 330 56" style="width:100%;margin-top:6px" role="img" aria-label="Rally Score season trend rising from 3.38 to 3.52">
+          <defs><linearGradient id="rsFillProf" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#00D4B8" stop-opacity=".3"/><stop offset="1" stop-color="#00D4B8" stop-opacity="0"/>
+          </linearGradient></defs>
+          <g stroke="rgba(255,255,255,0.07)"><line x1="0" y1="14" x2="330" y2="14"/><line x1="0" y1="30" x2="330" y2="30"/><line x1="0" y1="46" x2="330" y2="46"/></g>
+          <path d="M6,44 L46,38 L86,41 L126,32 L166,26 L206,29 L246,18 L286,21 L324,12 L324,56 L6,56 Z" fill="url(#rsFillProf)"/>
+          <polyline fill="none" stroke="#00D4B8" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="6,44 46,38 86,41 126,32 166,26 206,29 246,18 286,21 324,12"/>
+          <circle cx="324" cy="12" r="3.5" fill="#00D4B8" stroke="#171A21" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <!-- gauges -->
+      <div style="display:flex;gap:10px;justify-content:space-between">
+        <div class="gauge" style="--val:98" role="img" aria-label="Reliability 98 percent">
+          <span class="g-val">98%<span class="g-k">RELIABLE</span></span>
+        </div>
+        <div class="gauge" style="--val:78;--ring:var(--amber)" role="img" aria-label="Form index 78">
+          <span class="g-val">78<span class="g-k">FORM IDX</span></span>
+        </div>
+        <div class="gauge" style="--val:96" role="img" aria-label="Sportsmanship 4.8 out of 5">
+          <span class="g-val">4.8<span class="g-k">SPORTS.</span></span>
+        </div>
+        <div class="gauge" style="--val:72;--ring:#8A94A6" role="img" aria-label="Season record 7 wins 2 losses">
+          <span class="g-val">7–2<span class="g-k">RECORD</span></span>
+        </div>
+      </div>
+
+      <!-- heatmap calendar -->
+      <div class="card" style="padding:12px 14px">
+        <div class="card-kicker">COURT TIME · OCT 6 → NOV 23<span class="mono" style="color:var(--ink-3)">14 SESSIONS</span></div>
+        <div class="heatmap" style="margin-top:10px" role="img" aria-label="Weekly play-frequency heatmap, most active on weekends">
+          <span class="hm-lbl">MON</span><span class="hm-cell hm-1"></span><span class="hm-cell"></span><span class="hm-cell hm-2"></span><span class="hm-cell"></span><span class="hm-cell hm-1"></span><span class="hm-cell" style="opacity:.4"></span><span class="hm-cell" style="opacity:.4"></span>
+          <span class="hm-lbl">WED</span><span class="hm-cell hm-2"></span><span class="hm-cell hm-1"></span><span class="hm-cell"></span><span class="hm-cell hm-3"></span><span class="hm-cell hm-2"></span><span class="hm-cell" style="opacity:.4"></span><span class="hm-cell" style="opacity:.4"></span>
+          <span class="hm-lbl">THU</span><span class="hm-cell"></span><span class="hm-cell hm-3"></span><span class="hm-cell hm-2"></span><span class="hm-cell hm-4"></span><span class="hm-cell hm-3"></span><span class="hm-cell" style="opacity:.4"></span><span class="hm-cell" style="opacity:.4"></span>
+          <span class="hm-lbl">SAT</span><span class="hm-cell hm-3"></span><span class="hm-cell hm-4"></span><span class="hm-cell hm-3"></span><span class="hm-cell hm-4"></span><span class="hm-cell hm-4"></span><span class="hm-cell" style="opacity:.4"></span><span class="hm-cell" style="opacity:.4"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px" class="mono">
+          <span style="font-size:8px;color:var(--ink-3);letter-spacing:.1em">W1 → W7 (2 REMAIN)</span>
+          <span style="font-size:8px;color:var(--ink-3);display:flex;align-items:center;gap:4px">LESS <i class="hm-cell" style="width:8px;height:8px;display:inline-block;border-radius:2px"></i><i class="hm-cell hm-1" style="width:8px;height:8px;display:inline-block;border-radius:2px"></i><i class="hm-cell hm-2" style="width:8px;height:8px;display:inline-block;border-radius:2px"></i><i class="hm-cell hm-4" style="width:8px;height:8px;display:inline-block;border-radius:2px"></i> MORE</span>
+        </div>
+      </div>
+
+      <!-- badges -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <span class="badge-tile earned"><span class="ico">🔥</span>3-Win Streak</span>
+        <span class="badge-tile earned"><span class="ico">🎯</span>TB Closer ×4</span>
+        <span class="badge-tile earned"><span class="ico">🌅</span>Dawn Patrol</span>
+        <span class="badge-tile"><span class="ico" style="opacity:.35">🏆</span><span class="lock">🔒 Playoffs</span></span>
+      </div>
+
+      <!-- season history + pro -->
+      <div class="card" style="padding:10px 14px;font-family:var(--mono);font-size:11px">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--ink-2)"><span>S4 · FALL 25</span><span>BOX 12 · <b class="up">7–2</b> · LIVE</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--grid-soft);color:var(--ink-3)"><span>S3 · SUMMER 25</span><span>BOX 14 · 6–4 · ▲ PROMOTED</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid var(--grid-soft);color:var(--ink-3)"><span>S2 · SPRING 25</span><span>BOX 15 · 4–5 · HELD</span></div>
+      </div>
+
+      <div class="pro-banner" style="margin-top:auto">
+        <span class="pro-tag">PRO</span>
+        <p><b>Unlock shot-level analytics</b>Serve %, rally-length splits, video review + advanced Rally agent. $6.99/mo</p>
+        <span class="go">TRY FREE →</span>
+      </div>
+
+      <nav class="tabbar" aria-label="App navigation">
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M2 8.5 9 2l7 6.5V16H2z"/></svg>Season</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M3 15V9M9 15V3M15 15v-4"/></svg>Ladder</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><rect x="2" y="3" width="14" height="12" rx="2"/><path d="M2 7h14M6 1.5V4M12 1.5V4"/></svg>Matches</span>
+        <span class="tab"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><path d="M15 11a6 6 0 1 0-3 4.5L16 16z"/></svg>Rally</span>
+        <span class="tab active"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke-width="1.6"><circle cx="9" cy="6" r="3.5"/><path d="M2.5 16a6.5 6.5 0 0 1 13 0"/></svg>You</span>
+      </nav>
+    </div>
+    <div class="home-indicator"></div>
+  </div></div>
+</section>
+
+<!-- join CTA card as a 7th grid item styled as page furniture -->
+<section class="phone-unit" aria-label="Season join conversion module" style="justify-content:center;display:flex">
+  <div class="unit-label" style="opacity:0;pointer-events:none" aria-hidden="true"><span class="idx mono">—</span><h2>&nbsp;</h2></div>
+  <div class="card" style="width:390px;max-width:100%;padding:28px;border-color:var(--teal-line);box-shadow:var(--shadow-card),var(--glow-teal)">
+    <div class="chip coral" style="margin-bottom:14px"><span class="pulse"></span>SEASON 4 CLOSES IN 5 DAYS</div>
+    <div style="font-size:24px;font-weight:700;letter-spacing:-.03em;line-height:1.15">Your baseline starts<br>the day you join.</div>
+    <p style="color:var(--ink-2);font-size:13px;margin-top:10px">212 Austin players are already generating data. Every week you wait is a week of unmeasured tennis.</p>
+    <div style="display:flex;align-items:baseline;gap:10px;margin:18px 0 4px" class="mono">
+      <span style="font-size:15px;color:var(--ink-3);text-decoration:line-through">$39</span>
+      <span style="font-size:30px;font-weight:700;color:var(--teal)">$29</span>
+      <span style="font-size:10px;color:var(--ink-3);letter-spacing:.1em">FOUNDING PLAYER · 7-WEEK SEASON</span>
+    </div>
+    <button class="btn btn-primary" style="margin-top:12px">Join Fall Season 4 <span class="mono-tag">→ 60-SEC SETUP</span></button>
+    <div class="mono" style="font-size:9px;color:var(--ink-3);text-align:center;margin-top:10px;letter-spacing:.08em">APPLE / GOOGLE SIGN-IN · PAY ONLY WHEN YOU JOIN A SEASON</div>
+  </div>
+</section>
+
+</main>
+
+<footer class="page-footer">
+  <span>OPENRALLY / DEUCE LAB · VARIATION 10 — PERFORMANCE DATA</span>
+  <span>PALETTE VALIDATED · CVD ΔE ≥ 12.4 · CONTRAST ≥ 3:1 ON #171A21</span>
+</footer>
+
+</body>
+</html>

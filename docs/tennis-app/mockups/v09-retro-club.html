@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenRally — Racquet Club '78</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RACQUET CLUB '78 — DESIGN TOKENS
+   ============================================================ */
+:root{
+  /* palette */
+  --cream:        #F3ECDC;
+  --cream-2:      #EDE4CF;   /* deeper paper */
+  --cream-3:      #E6DBC0;   /* aged edge */
+  --paper-hi:     #FAF6EA;   /* card highlight */
+  --green:        #1F4433;   /* racing green */
+  --green-2:      #163628;   /* green shade */
+  --green-3:      #2A5A44;   /* green tint */
+  --red:          #D96C3D;   /* retro red-orange */
+  --red-deep:     #C25529;
+  --mustard:      #D9A441;
+  --mustard-soft: #E8C57C;
+  --navy:         #22334C;
+  --ink:          #221F1A;
+  --ink-soft:     #4A443A;
+  --ink-faint:    #7A7263;
+
+  /* semantic */
+  --bg-page:      var(--cream);
+  --surface-1:    var(--paper-hi);
+  --surface-2:    var(--cream-2);
+  --accent:       var(--red);
+  --positive:     #3D7A4E;
+  --caution:      var(--mustard);
+
+  /* type */
+  --font-display: 'DM Serif Display', 'Iowan Old Style', Georgia, serif;
+  --font-mono:    'Space Mono', 'Courier New', monospace;
+  --font-body:    'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --fs-hero:      clamp(2.6rem, 6vw, 4.4rem);
+  --fs-h1:        1.75rem;
+  --fs-h2:        1.25rem;
+  --fs-body:      0.9375rem;
+  --fs-small:     0.8125rem;
+  --fs-micro:     0.6875rem;
+
+  /* geometry */
+  --r-card:       14px;
+  --r-chip:       999px;
+  --r-phone:      48px;
+  --r-screen:     38px;
+
+  /* elevation */
+  --shadow-card:  0 1px 0 rgba(34,31,26,.06), 0 6px 18px -8px rgba(34,31,26,.25);
+  --shadow-phone: 0 2px 0 rgba(34,31,26,.08), 0 30px 60px -22px rgba(34,31,26,.45), 0 60px 110px -40px rgba(31,68,51,.35);
+  --shadow-press: inset 0 2px 3px rgba(34,31,26,.28), inset 0 -1px 0 rgba(250,246,234,.5);
+
+  /* stripes */
+  --grosgrain: linear-gradient(to bottom,
+      var(--green)   0 18%,
+      var(--cream)   18% 32%,
+      var(--red)     32% 68%,
+      var(--cream)   68% 82%,
+      var(--green)   82% 100%);
+
+  /* paper grain */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   RESET + PAGE
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  font-size:var(--fs-body);
+  line-height:1.5;
+  color:var(--ink);
+  background:
+    var(--grain),
+    radial-gradient(120% 60% at 50% 0%, var(--paper-hi) 0%, var(--bg-page) 55%, var(--cream-2) 100%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+:focus-visible{outline:3px solid var(--red);outline-offset:3px;border-radius:4px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
+.page-header{
+  max-width:1720px;margin:0 auto;
+  padding:64px 48px 40px;
+  display:grid;grid-template-columns:auto 1fr;gap:36px;align-items:center;
+}
+@media (max-width:720px){.page-header{grid-template-columns:1fr;justify-items:center;text-align:center;padding:48px 24px 32px}}
+
+/* club crest */
+.crest{
+  width:132px;height:132px;border-radius:50%;
+  background:
+    var(--grain),
+    radial-gradient(circle at 32% 28%, var(--green-3), var(--green) 62%, var(--green-2));
+  border:3px solid var(--mustard);
+  box-shadow:0 0 0 6px var(--green), 0 0 0 8px var(--mustard), 0 14px 30px -12px rgba(31,68,51,.55);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  color:var(--cream);position:relative;flex-shrink:0;
+}
+.crest .monogram{font-family:var(--font-display);font-size:2.6rem;line-height:1;letter-spacing:.02em;color:var(--mustard-soft)}
+.crest .est{font-family:var(--font-mono);font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;color:var(--cream);opacity:.85}
+.crest svg{width:38px;height:16px;opacity:.9}
+
+.masthead .kicker{
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.34em;text-transform:uppercase;
+  color:var(--red-deep);margin-bottom:10px;
+}
+.masthead h1{
+  font-family:var(--font-display);font-size:var(--fs-hero);line-height:1.02;color:var(--green);
+  letter-spacing:-.01em;
+}
+.masthead h1 em{font-style:italic;color:var(--red)}
+.masthead .thesis{
+  margin-top:14px;max-width:62ch;color:var(--ink-soft);font-size:1.0625rem;
+}
+.masthead .meta-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+@media (max-width:720px){.masthead .meta-row{justify-content:center}}
+.meta-chip{
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.14em;text-transform:uppercase;
+  padding:6px 14px;border-radius:var(--r-chip);
+  border:1.5px solid var(--green);color:var(--green);background:var(--paper-hi);
+}
+.meta-chip.solid{background:var(--green);color:var(--cream);border-color:var(--green)}
+.meta-chip.hot{border-color:var(--red);color:var(--red-deep)}
+
+/* grosgrain ribbon divider */
+.ribbon{
+  height:14px;background:var(--grosgrain);
+  box-shadow:0 1px 0 rgba(34,31,26,.25), inset 0 1px 0 rgba(250,246,234,.35);
+  position:relative;
+}
+.ribbon::after{content:"";position:absolute;inset:0;background:var(--grain);opacity:.6}
+
+/* ============================================================
+   GALLERY
+   ============================================================ */
+.gallery{
+  max-width:1720px;margin:0 auto;
+  padding:56px 48px 40px;
+  display:grid;grid-template-columns:repeat(auto-fit, minmax(400px, 1fr));
+  gap:56px 40px;justify-items:center;
+}
+@media (max-width:480px){.gallery{padding:40px 12px;grid-template-columns:1fr}}
+
+.exhibit{display:flex;flex-direction:column;align-items:center;gap:20px;
+  opacity:0;transform:translateY(28px);
+  animation:rise .7s cubic-bezier(.22,.9,.32,1) forwards;
+}
+.exhibit:nth-child(1){animation-delay:.05s}
+.exhibit:nth-child(2){animation-delay:.15s}
+.exhibit:nth-child(3){animation-delay:.25s}
+.exhibit:nth-child(4){animation-delay:.35s}
+.exhibit:nth-child(5){animation-delay:.45s}
+.exhibit:nth-child(6){animation-delay:.55s}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+@media (prefers-reduced-motion:reduce){
+  .exhibit{animation:none;opacity:1;transform:none}
+  *{transition:none!important}
+}
+
+.plate{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.26em;text-transform:uppercase;
+  color:var(--green);
+}
+.plate .no{
+  width:30px;height:30px;border-radius:50%;border:1.5px solid var(--green);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-weight:700;letter-spacing:0;background:var(--paper-hi);
+}
+
+/* ============================================================
+   PHONE FRAME
+   ============================================================ */
+.phone{
+  width:390px;height:844px;flex-shrink:0;
+  background:linear-gradient(160deg,#3a352c,#221F1A 55%,#141210);
+  border-radius:var(--r-phone);
+  padding:11px;
+  box-shadow:var(--shadow-phone);
+  transition:transform .45s cubic-bezier(.22,.9,.32,1), box-shadow .45s;
+}
+.exhibit:hover .phone{transform:translateY(-8px) rotate(-.4deg)}
+@media (max-width:430px){.phone{transform:scale(.88);transform-origin:top center}}
+
+.screen{
+  width:100%;height:100%;border-radius:var(--r-screen);
+  background:var(--grain), linear-gradient(180deg,var(--paper-hi), var(--cream) 30%);
+  overflow:hidden;position:relative;
+  display:flex;flex-direction:column;
+}
+
+/* status bar */
+.statusbar{
+  height:46px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 26px 0;
+  font-family:var(--font-mono);font-size:.8rem;font-weight:700;color:var(--ink);
+  position:relative;z-index:5;
+}
+.statusbar .glyphs{display:flex;align-items:center;gap:6px}
+.statusbar svg{display:block}
+.notch{
+  position:absolute;top:11px;left:50%;transform:translateX(-50%);
+  width:118px;height:30px;border-radius:20px;background:#141210;z-index:6;
+}
+.homebar{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.4;z-index:6;
+}
+
+/* dark screens variant */
+.screen.dark{background:var(--grain), linear-gradient(180deg,var(--green-3) -30%,var(--green) 26%,var(--green-2))}
+.screen.dark .statusbar{color:var(--cream)}
+.screen.dark .homebar{background:var(--cream);opacity:.5}
+
+.body{flex:1;padding:10px 22px 24px;display:flex;flex-direction:column;min-height:0}
+
+/* ============================================================
+   SHARED IN-SCREEN PARTS
+   ============================================================ */
+.app-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.wordmark{display:flex;align-items:center;gap:9px}
+.mini-crest{
+  width:32px;height:32px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%, var(--green-3), var(--green) 70%);
+  border:1.5px solid var(--mustard);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:.85rem;color:var(--mustard-soft);
+  box-shadow:0 0 0 2px var(--green);
+}
+.wordmark span{font-family:var(--font-display);font-size:1.15rem;color:var(--green)}
+.screen.dark .wordmark span{color:var(--cream)}
+.avatar{
+  width:34px;height:34px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:.72rem;letter-spacing:.02em;
+  color:var(--cream);background:var(--navy);
+  border:2px solid var(--paper-hi);box-shadow:var(--shadow-card);flex-shrink:0;
+}
+.avatar.red{background:var(--red-deep)}
+.avatar.green{background:var(--green)}
+.avatar.mustard{background:#B07F1F}
+.avatar.sm{width:28px;height:28px;font-size:.62rem}
+
+.eyebrow{
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.26em;text-transform:uppercase;
+  color:var(--red-deep);
+}
+.screen.dark .eyebrow{color:var(--mustard-soft)}
+h2.display{font-family:var(--font-display);font-size:var(--fs-h1);line-height:1.08;color:var(--ink);margin-top:4px}
+.screen.dark h2.display{color:var(--cream)}
+
+.card{
+  background:var(--surface-1);border:1.5px solid rgba(34,31,26,.14);
+  border-radius:var(--r-card);box-shadow:var(--shadow-card);
+  position:relative;
+}
+.rib-top{border-top:none;overflow:hidden}
+.rib-top::before{content:"";display:block;height:8px;background:var(--grosgrain)}
+
+.cta{
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  padding:15px 18px;border-radius:12px;
+  background:linear-gradient(180deg,var(--green-3), var(--green) 55%);
+  color:var(--cream);
+  font-family:var(--font-mono);font-weight:700;font-size:.82rem;letter-spacing:.14em;text-transform:uppercase;
+  box-shadow:0 3px 0 var(--green-2), 0 10px 20px -10px rgba(31,68,51,.6);
+  transition:transform .15s, box-shadow .15s, filter .15s;
+}
+.cta:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.cta:active{transform:translateY(2px);box-shadow:0 1px 0 var(--green-2)}
+.cta.red{background:linear-gradient(180deg,#E07B4D,var(--red) 55%);box-shadow:0 3px 0 var(--red-deep), 0 10px 20px -10px rgba(217,108,61,.6)}
+.cta.red:active{box-shadow:0 1px 0 var(--red-deep)}
+.cta .strike{text-decoration:line-through;opacity:.65;font-weight:400}
+
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--font-mono);font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:4px 10px;border-radius:var(--r-chip);
+  border:1.5px solid currentColor;
+}
+.chip.green{color:var(--green)}
+.chip.red{color:var(--red-deep)}
+.chip.mustard{color:#8F6A15}
+.chip.navy{color:var(--navy)}
+.chip.fill-green{background:var(--green);border-color:var(--green);color:var(--cream)}
+.chip.fill-red{background:var(--red);border-color:var(--red);color:#fff}
+
+.mono{font-family:var(--font-mono)}
+.small{font-size:var(--fs-small);color:var(--ink-soft)}
+.micro{font-size:var(--fs-micro);color:var(--ink-faint)}
+
+/* letterpress numerals */
+.letterpress{
+  font-family:var(--font-mono);font-weight:700;color:var(--green);
+  text-shadow:0 1px 0 rgba(250,246,234,.9), 0 -1px 1px rgba(34,31,26,.35);
+}
+.letterpress.red{color:var(--red-deep)}
+
+/* stamped CONFIRMED mark */
+.stamp{
+  position:absolute;top:14px;right:12px;
+  font-family:var(--font-mono);font-weight:700;font-size:.66rem;letter-spacing:.24em;
+  color:var(--red-deep);border:2.5px double var(--red-deep);
+  padding:5px 10px 4px;border-radius:4px;
+  transform:rotate(-8deg);
+  opacity:.85;
+  mask-image:var(--grain), linear-gradient(#000,#000);
+  z-index:2;
+}
+.stamp.green{color:var(--positive);border-color:var(--positive)}
+
+/* dashed ledger row */
+.ledger-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ledger-row .dots{flex:1;border-bottom:2px dotted rgba(34,31,26,.28);transform:translateY(-4px)}
+
+/* sparkline */
+.spark{display:block}
+
+/* ============================================================
+   SCREEN 1 — ONBOARDING
+   ============================================================ */
+.form-tag{display:flex;justify-content:space-between;align-items:center;margin:2px 0 12px;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+.progress-pips{display:flex;gap:6px}
+.pip{width:22px;height:5px;border-radius:3px;background:rgba(34,31,26,.16)}
+.pip.on{background:var(--red)}
+
+.level-list{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+.level{
+  display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:12px;
+  background:var(--surface-1);border:1.5px solid rgba(34,31,26,.16);
+  box-shadow:var(--shadow-card);
+  transition:transform .15s, border-color .15s;
+  cursor:pointer;text-align:left;width:100%;
+}
+.level:hover{transform:translateX(3px);border-color:var(--green)}
+.level .band{
+  font-family:var(--font-mono);font-weight:700;font-size:1.05rem;color:var(--green);
+  border-right:2px dotted rgba(34,31,26,.25);padding-right:10px;
+}
+.level .name{font-weight:600;font-size:.9rem;color:var(--ink)}
+.level .desc{font-size:.72rem;color:var(--ink-faint);line-height:1.35}
+.level .tick{
+  width:24px;height:24px;border-radius:50%;border:2px solid rgba(34,31,26,.3);
+}
+.level.selected{
+  background:linear-gradient(180deg,var(--paper-hi), #F6EFDD);
+  border:2px solid var(--green);
+  box-shadow:0 0 0 3px rgba(31,68,51,.14), var(--shadow-card);
+}
+.level.selected .tick{
+  border-color:var(--red);background:var(--red);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:.8rem;font-weight:700;
+}
+.join-note{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
+
+/* ============================================================
+   SCREEN 2 — HOME / SEASON
+   ============================================================ */
+.season-strip{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.hero-match{padding:0 0 16px;overflow:hidden}
+.hero-match .inner{padding:16px 16px 0}
+.vs-row{display:flex;align-items:center;gap:12px;margin-top:10px}
+.vs-row .v{font-family:var(--font-display);font-style:italic;font-size:1.2rem;color:var(--red)}
+.player-line{display:flex;align-items:center;gap:9px}
+.player-line b{font-size:.95rem}
+.hero-when{
+  margin:14px 16px 0;padding:10px 12px;border-radius:10px;
+  background:var(--surface-2);border:1.5px dashed rgba(34,31,26,.3);
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--font-mono);font-size:.74rem;font-weight:700;letter-spacing:.04em;color:var(--ink);
+}
+.hero-cta-row{padding:14px 16px 0}
+.week-band{margin-top:14px}
+.week-track{display:flex;gap:5px;margin-top:8px}
+.week-cell{
+  flex:1;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:.62rem;font-weight:700;
+  background:var(--surface-1);border:1.5px solid rgba(34,31,26,.16);color:var(--ink-faint);
+}
+.week-cell.done{background:var(--green);border-color:var(--green);color:var(--cream)}
+.week-cell.now{background:var(--red);border-color:var(--red-deep);color:#fff;box-shadow:0 0 0 3px rgba(217,108,61,.25)}
+.mini-standings{margin-top:14px;padding:12px 14px}
+.mini-standings .row{display:grid;grid-template-columns:20px 1fr auto auto;gap:8px;align-items:center;padding:5px 0;font-size:.82rem}
+.mini-standings .row + .row{border-top:1px dotted rgba(34,31,26,.2)}
+.mini-standings .pos{font-family:var(--font-mono);font-weight:700;color:var(--ink-faint);font-size:.72rem}
+.mini-standings .rec{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-soft)}
+.mini-standings .row.me{background:linear-gradient(90deg, rgba(217,164,65,.18), transparent);border-radius:6px;margin:0 -6px;padding:5px 6px}
+.arrow-up{color:var(--positive);font-weight:700}
+.arrow-dn{color:var(--red-deep);font-weight:700}
+.streak-chip-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ============================================================
+   SCREEN 3 — STANDINGS
+   ============================================================ */
+.board{margin-top:14px;overflow:hidden}
+.board-head{
+  display:grid;grid-template-columns:26px 1fr 52px 44px 40px;gap:6px;align-items:center;
+  padding:9px 14px;background:var(--green);color:var(--cream);
+  font-family:var(--font-mono);font-size:.6rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+}
+.board-row{
+  display:grid;grid-template-columns:26px 1fr 52px 44px 40px;gap:6px;align-items:center;
+  padding:9px 14px;font-size:.84rem;background:var(--surface-1);
+}
+.board-row + .board-row{border-top:1px solid rgba(34,31,26,.1)}
+.board-row .pos{font-family:var(--font-mono);font-weight:700;font-size:.9rem;color:var(--ink-soft)}
+.board-row .who{display:flex;align-items:center;gap:8px;min-width:0}
+.board-row .who b{font-size:.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.board-row .score{font-family:var(--font-mono);font-weight:700;font-size:.8rem;color:var(--green);text-align:right}
+.board-row .rec{font-family:var(--font-mono);font-size:.7rem;color:var(--ink-soft);text-align:right}
+.board-row .mv{font-family:var(--font-mono);font-size:.72rem;font-weight:700;text-align:right}
+.board-row.me{background:linear-gradient(90deg,#F8EFD8, var(--paper-hi));box-shadow:inset 3px 0 0 var(--mustard)}
+.cutline{
+  display:flex;align-items:center;gap:10px;padding:6px 14px;
+  background:var(--cream-2);
+  font-family:var(--font-mono);font-size:.6rem;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--red-deep);
+}
+.cutline::before,.cutline::after{content:"";flex:1;border-top:2px dashed var(--red)}
+.rivalry{margin-top:12px;padding:11px 14px;display:flex;gap:10px;align-items:center}
+.rivalry .flame{font-size:1.1rem}
+
+/* ============================================================
+   SCREEN 4 — SCHEDULING
+   ============================================================ */
+.slot-list{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.slot{
+  display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;
+  padding:11px 13px;border-radius:12px;text-align:left;width:100%;
+  background:var(--surface-1);border:1.5px solid rgba(34,31,26,.16);box-shadow:var(--shadow-card);
+  transition:transform .15s,border-color .15s;cursor:pointer;
+}
+.slot:hover{transform:translateX(3px);border-color:var(--green)}
+.slot .cal{
+  text-align:center;border-right:2px dotted rgba(34,31,26,.25);padding-right:10px;
+  font-family:var(--font-mono);line-height:1.15;
+}
+.slot .cal .d{font-size:1.05rem;font-weight:700;color:var(--green)}
+.slot .cal .m{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red-deep)}
+.slot .t{font-weight:600;font-size:.9rem}
+.slot .sub{font-size:.72rem;color:var(--ink-faint)}
+.slot .go{
+  font-family:var(--font-mono);font-size:.62rem;font-weight:700;letter-spacing:.1em;
+  padding:7px 11px;border-radius:8px;border:1.5px solid var(--green);color:var(--green);
+}
+.slot.picked{border:2px solid var(--red);background:linear-gradient(180deg,var(--paper-hi),#F7EDDE)}
+.slot.picked .go{background:var(--red);border-color:var(--red);color:#fff}
+.court-card{margin-top:12px;overflow:hidden}
+.court-map{
+  height:96px;position:relative;
+  background:
+    linear-gradient(rgba(31,68,51,.08) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(31,68,51,.08) 1.5px, transparent 1.5px),
+    linear-gradient(160deg,#E9E0C8,#EFE7D2);
+  background-size:26px 26px, 26px 26px, cover;
+}
+.map-road{position:absolute;left:-8%;top:52%;width:116%;height:5px;background:rgba(34,51,76,.25);transform:rotate(-7deg);border-radius:3px}
+.map-road.two{top:26%;transform:rotate(12deg);height:4px;opacity:.6}
+.map-pin{
+  position:absolute;width:22px;height:22px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+  border:2px solid var(--paper-hi);box-shadow:0 3px 6px rgba(34,31,26,.3);
+}
+.map-pin::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--paper-hi)}
+.map-pin.a{background:var(--navy);left:16%;top:24%}
+.map-pin.b{background:var(--red);right:14%;top:56%}
+.map-pin.mid{background:var(--green);left:49%;top:38%;width:26px;height:26px;box-shadow:0 0 0 5px rgba(31,68,51,.18),0 3px 6px rgba(34,31,26,.3)}
+.court-meta{padding:11px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.score-entry{margin-top:12px;padding:12px 14px}
+.score-boxes{display:flex;gap:8px;align-items:center;margin-top:8px}
+.sbox{
+  min-width:44px;height:40px;border-radius:8px;padding:0 8px;
+  background:var(--cream-2);box-shadow:var(--shadow-press);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-weight:700;font-size:1rem;color:var(--green);
+}
+.sbox.tb{color:var(--red-deep);min-width:58px}
+.sbox-sep{font-family:var(--font-mono);color:var(--ink-faint)}
+
+/* ============================================================
+   SCREEN 5 — RALLY CHAT
+   ============================================================ */
+.chat-body{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;margin-top:10px}
+.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:.84rem;line-height:1.45}
+.msg.user{
+  align-self:flex-end;background:var(--navy);color:var(--cream);
+  border-bottom-right-radius:4px;box-shadow:var(--shadow-card);
+}
+.msg.rally{
+  align-self:flex-start;background:var(--surface-1);border:1.5px solid rgba(34,31,26,.14);
+  border-bottom-left-radius:4px;box-shadow:var(--shadow-card);color:var(--ink);
+}
+.msg-label{display:flex;align-items:center;gap:7px;margin:2px 0 -2px;align-self:flex-start;
+  font-family:var(--font-mono);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-faint)}
+.msg-label.right{align-self:flex-end}
+.chat-slot-card{
+  margin-top:9px;border-radius:10px;border:1.5px solid rgba(34,31,26,.18);
+  background:var(--cream-2);overflow:hidden;
+}
+.chat-slot-card .head{
+  padding:6px 11px;background:var(--green);color:var(--cream);
+  font-family:var(--font-mono);font-size:.58rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
+  display:flex;justify-content:space-between;
+}
+.chat-slot-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 11px;font-size:.78rem}
+.chat-slot-row + .chat-slot-row{border-top:1px dotted rgba(34,31,26,.24)}
+.chat-slot-row .accept{
+  font-family:var(--font-mono);font-size:.58rem;font-weight:700;letter-spacing:.08em;
+  padding:5px 9px;border-radius:6px;background:var(--red);color:#fff;
+  box-shadow:0 2px 0 var(--red-deep);transition:transform .12s;
+}
+.chat-slot-row .accept:hover{transform:translateY(-1px)}
+.playoff-answer{margin-top:9px;padding:9px 11px;border-radius:10px;background:var(--cream-2);border:1.5px dashed rgba(34,31,26,.28)}
+.playoff-answer .big{font-family:var(--font-mono);font-weight:700;font-size:.9rem;color:var(--green)}
+.chat-input{
+  margin-top:auto;display:flex;align-items:center;gap:9px;
+  padding:11px 13px;border-radius:14px;
+  background:var(--surface-1);border:1.5px solid rgba(34,31,26,.2);box-shadow:var(--shadow-card);
+}
+.chat-input .ph{flex:1;font-size:.84rem;color:var(--ink-faint)}
+.chat-input .mic,.chat-input .send{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:transform .12s;
+}
+.chat-input .mic{border:1.5px solid var(--green);color:var(--green)}
+.chat-input .send{background:var(--red);color:#fff;box-shadow:0 2px 0 var(--red-deep)}
+.chat-input .mic:hover,.chat-input .send:hover{transform:scale(1.07)}
+
+/* ============================================================
+   SCREEN 6 — PROFILE / MEMBERSHIP CARD
+   ============================================================ */
+.member-card{
+  margin-top:12px;border-radius:16px;overflow:hidden;position:relative;
+  background:
+    var(--grain),
+    radial-gradient(140% 120% at 20% 0%, var(--green-3), var(--green) 55%, var(--green-2));
+  color:var(--cream);
+  box-shadow:0 16px 32px -14px rgba(31,68,51,.6), var(--shadow-card);
+  border:1.5px solid var(--green-2);
+}
+.member-card .rib{height:9px;background:var(--grosgrain)}
+.member-card .mc-body{padding:15px 17px 14px}
+.mc-top{display:flex;justify-content:space-between;align-items:flex-start}
+.mc-club{font-family:var(--font-mono);font-size:.56rem;letter-spacing:.3em;text-transform:uppercase;color:var(--mustard-soft)}
+.mc-name{font-family:var(--font-display);font-size:1.65rem;line-height:1.05;margin-top:5px}
+.mc-sub{font-family:var(--font-mono);font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;opacity:.8;margin-top:4px}
+.mc-photo{
+  width:56px;height:56px;border-radius:10px;background:var(--cream);
+  color:var(--green);display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-size:1.35rem;
+  border:2px solid var(--mustard);box-shadow:0 4px 10px rgba(0,0,0,.3);position:relative;
+}
+.mc-photo .verify{
+  position:absolute;bottom:-7px;right:-7px;width:20px;height:20px;border-radius:50%;
+  background:var(--mustard);color:var(--green-2);display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:700;border:2px solid var(--green);
+}
+.mc-divider{border:0;border-top:1.5px dashed rgba(243,236,220,.3);margin:13px 0 11px}
+.mc-stats{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.mc-stat .lab{font-family:var(--font-mono);font-size:.54rem;letter-spacing:.22em;text-transform:uppercase;color:var(--mustard-soft)}
+.mc-stat .val{
+  font-family:var(--font-mono);font-weight:700;font-size:1.5rem;line-height:1.1;color:var(--cream);
+  text-shadow:0 -1px 1px rgba(0,0,0,.5), 0 1px 0 rgba(243,236,220,.18);
+}
+.mc-stat .val small{font-size:.8rem}
+.gauge-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.gauge{padding:11px 12px;display:flex;align-items:center;gap:11px}
+.ring{width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;position:relative}
+.ring::after{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--surface-1)}
+.ring span{position:relative;z-index:1;font-family:var(--font-mono);font-weight:700;font-size:.72rem;color:var(--green)}
+.ring.r98{background:conic-gradient(var(--green) 0 352.8deg, rgba(34,31,26,.12) 0)}
+.ring.r49{background:conic-gradient(var(--mustard) 0 352.8deg, rgba(34,31,26,.12) 0)}
+.gauge .lab b{display:block;font-size:.8rem}
+.gauge .lab span{font-size:.66rem;color:var(--ink-faint)}
+.history{margin-top:12px;padding:11px 14px}
+.history .h-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5.5px 0;font-size:.8rem}
+.history .h-row + .h-row{border-top:1px dotted rgba(34,31,26,.2)}
+.h-res{font-family:var(--font-mono);font-weight:700;font-size:.66rem;width:18px;text-align:center}
+.h-res.w{color:var(--positive)}
+.h-res.l{color:var(--red-deep)}
+.h-score{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-soft)}
+.badge-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.badge-patch{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 11px;border-radius:8px;
+  background:var(--cream-2);border:1.5px solid var(--mustard);
+  font-family:var(--font-mono);font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7A5A10;
+  box-shadow:var(--shadow-card);
+}
+
+/* section labels inside screens */
+.sec-label{
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);font-size:.6rem;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-faint);
+}
+.sec-label::after{content:"";flex:1;border-top:1.5px solid rgba(34,31,26,.14)}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.page-footer{
+  max-width:1720px;margin:0 auto;padding:36px 48px 64px;
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center;
+  font-family:var(--font-mono);font-size:var(--fs-micro);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ PAGE HEADER ══════════════ -->
+<header class="page-header">
+  <div class="crest" aria-hidden="true">
+    <svg viewBox="0 0 76 32" fill="none" stroke="#E8C57C" stroke-width="2">
+      <!-- crossed racquets -->
+      <ellipse cx="26" cy="10" rx="8" ry="6" transform="rotate(-32 26 10)"/>
+      <line x1="32" y1="14" x2="52" y2="27"/>
+      <ellipse cx="50" cy="10" rx="8" ry="6" transform="rotate(32 50 10)"/>
+      <line x1="44" y1="14" x2="24" y2="27"/>
+      <circle cx="38" cy="20" r="2.6" fill="#D96C3D" stroke="none"/>
+    </svg>
+    <span class="monogram">OR</span>
+    <span class="est">Est. '78</span>
+  </div>
+  <div class="masthead">
+    <p class="kicker">OpenRally · Mockup Variation 09</p>
+    <h1>Racquet Club <em>'78</em></h1>
+    <p class="thesis">1970s country-club nostalgia made digital — grosgrain ribbons, letterpress scoreboards, and a membership card you're genuinely proud to flash. Belonging, revived.</p>
+    <div class="meta-row">
+      <span class="meta-chip solid">Austin Chapter</span>
+      <span class="meta-chip">Fall Season 4 · Oct 6 – Nov 23</span>
+      <span class="meta-chip">212 members enrolled</span>
+      <span class="meta-chip hot">Enrollment closes in 5 days</span>
+    </div>
+  </div>
+</header>
+
+<div class="ribbon" role="presentation"></div>
+
+<!-- ══════════════ GALLERY ══════════════ -->
+<main class="gallery">
+
+  <!-- ════════ SCREEN 1 · ONBOARDING ════════ -->
+  <section class="exhibit" aria-label="Screen 1: Onboarding level quiz">
+    <div class="plate"><span class="no">1</span> Declare your standing</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="glyphs">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM8 6c1.7 0 3.2.7 4.3 1.8l-1.4 1.4A4.1 4.1 0 008 8c-1.1 0-2.1.4-2.9 1.2L3.7 7.8A6.1 6.1 0 018 6zm0-4c2.8 0 5.3 1.1 7.1 2.9l-1.4 1.4A8.1 8.1 0 008 4 8.1 8.1 0 002.3 6.3L.9 4.9A10 10 0 018 2z" transform="translate(0 -2)"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+        <div class="body">
+          <div class="app-head">
+            <div class="wordmark"><span class="mini-crest">OR</span><span>OpenRally</span></div>
+            <span class="chip mustard">212 in Austin</span>
+          </div>
+          <div class="form-tag">
+            <span>Membership form — Q.2 of 4</span>
+            <span class="progress-pips"><span class="pip on"></span><span class="pip on"></span><span class="pip"></span><span class="pip"></span></span>
+          </div>
+          <p class="eyebrow">No tryouts. No shame.</p>
+          <h2 class="display">Declare your standing, Maya.</h2>
+          <p class="small" style="margin-top:6px">Pick the rally that looks like yours. Your Rally Score quietly tunes it from real results — nobody stays mis-seeded.</p>
+
+          <div class="level-list">
+            <button class="level" type="button">
+              <span class="band">2.5</span>
+              <span><span class="name">The Newcomer</span><br><span class="desc">Learning to keep three balls in play. Everyone starts here.</span></span>
+              <span class="tick" aria-hidden="true"></span>
+            </button>
+            <button class="level" type="button">
+              <span class="band">3.0</span>
+              <span><span class="name">The Regular</span><br><span class="desc">Steady rallies, working on direction and a real serve.</span></span>
+              <span class="tick" aria-hidden="true"></span>
+            </button>
+            <button class="level selected" type="button" aria-pressed="true">
+              <span class="band">3.5</span>
+              <span><span class="name">The Competitor</span><br><span class="desc">Consistent depth and spin. You play to win the third set.</span></span>
+              <span class="tick" aria-hidden="true">✓</span>
+            </button>
+            <button class="level" type="button">
+              <span class="band">4.0</span>
+              <span><span class="name">The Shotmaker</span><br><span class="desc">You build points on purpose and finish at the net.</span></span>
+              <span class="tick" aria-hidden="true"></span>
+            </button>
+            <button class="level" type="button">
+              <span class="band">4.5+</span>
+              <span><span class="name">The Standard-Bearer</span><br><span class="desc">Former team player. Weapons on both wings.</span></span>
+              <span class="tick" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div style="margin-top:auto">
+            <button class="cta red" type="button">Claim 3.5 · Join Season — <span class="strike">$39</span>&nbsp;$29</button>
+            <p class="join-note micro">Founding-player rate · Season 4 closes in 5 days</p>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SCREEN 2 · HOME / SEASON ════════ -->
+  <section class="exhibit" aria-label="Screen 2: Home season view">
+    <div class="plate"><span class="no">2</span> The clubhouse</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="glyphs">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+        <div class="body">
+          <div class="app-head">
+            <div class="wordmark"><span class="mini-crest">OR</span><span>OpenRally</span></div>
+            <span class="avatar mustard">MC</span>
+          </div>
+          <div class="season-strip">
+            <div>
+              <p class="eyebrow">Fall Season 4 · Austin</p>
+              <h2 class="display" style="font-size:1.5rem">Good evening, Maya.</h2>
+            </div>
+            <span class="chip red">Wk 3 of 7</span>
+          </div>
+
+          <div class="card rib-top hero-match">
+            <span class="stamp">Confirmed</span>
+            <div class="inner">
+              <p class="sec-label" style="color:var(--red-deep)">Next on your card</p>
+              <div class="vs-row">
+                <span class="player-line"><span class="avatar mustard sm">MC</span><b>Maya&nbsp;Chen</b></span>
+                <span class="v">vs.</span>
+                <span class="player-line"><span class="avatar red sm">JP</span><b>Jordan&nbsp;Patel</b>&nbsp;<span class="micro mono">3.61</span></span>
+              </div>
+            </div>
+            <div class="hero-when">
+              <span>THU OCT 23 · 6:30 PM</span>
+              <span style="color:var(--red-deep)">PHARR TENNIS CTR · CT 4</span>
+            </div>
+            <div class="hero-cta-row">
+              <button class="cta" type="button">Match details &amp; directions</button>
+            </div>
+          </div>
+
+          <div class="week-band">
+            <div class="ledger-row">
+              <span class="sec-label" style="flex:1">Season progress</span>
+              <span class="micro mono">4 wks remain</span>
+            </div>
+            <div class="week-track" aria-label="Week 3 of 7">
+              <span class="week-cell done">I</span><span class="week-cell done">II</span><span class="week-cell now">III</span><span class="week-cell">IV</span><span class="week-cell">V</span><span class="week-cell">VI</span><span class="week-cell">VII</span>
+            </div>
+          </div>
+
+          <div class="card mini-standings">
+            <div class="ledger-row" style="margin-bottom:6px">
+              <span class="sec-label" style="flex:1">Box 12 · 3.5 Division</span>
+              <span class="micro mono" style="color:var(--red-deep)">Full board →</span>
+            </div>
+            <div class="row"><span class="pos">1</span><span><b>Jordan Patel</b></span><span class="rec">8–1</span><span class="mono arrow-up">▲1</span></div>
+            <div class="row"><span class="pos">2</span><span><b>Priya Nair</b></span><span class="rec">7–2</span><span class="mono arrow-dn">▼1</span></div>
+            <div class="row me"><span class="pos">3</span><span><b>Maya Chen</b> <span class="micro">you</span></span><span class="rec">7–2</span><span class="mono arrow-up">▲2</span></div>
+          </div>
+
+          <div class="streak-chip-row">
+            <span class="chip fill-green">🔥 4-match streak</span>
+            <span class="chip green">✓ 98% reliability</span>
+            <span class="chip mustard">1.5 wins to playoffs</span>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SCREEN 3 · STANDINGS ════════ -->
+  <section class="exhibit" aria-label="Screen 3: Box standings">
+    <div class="plate"><span class="no">3</span> The board</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="glyphs">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+        <div class="body">
+          <div class="app-head">
+            <div class="wordmark"><span class="mini-crest">OR</span><span>OpenRally</span></div>
+            <span class="chip navy">Wk 3 · 4 remain</span>
+          </div>
+          <p class="eyebrow">Box 12 · 3.5 Division · Austin</p>
+          <h2 class="display">The Standings Board</h2>
+          <p class="small" style="margin-top:5px">Top four advance to the Fall Playoff Draw · Nov 15–23.</p>
+
+          <div class="card board">
+            <div class="board-head"><span>Pos</span><span>Member</span><span style="text-align:right">Rally</span><span style="text-align:right">Rec</span><span style="text-align:right">Mv</span></div>
+            <div class="board-row"><span class="pos">1</span><span class="who"><span class="avatar red sm">JP</span><b>Jordan Patel</b></span><span class="score">3.61</span><span class="rec">8–1</span><span class="mv arrow-up">▲1</span></div>
+            <div class="board-row"><span class="pos">2</span><span class="who"><span class="avatar green sm">PN</span><b>Priya Nair</b></span><span class="score">3.55</span><span class="rec">7–2</span><span class="mv arrow-dn">▼1</span></div>
+            <div class="board-row me"><span class="pos">3</span><span class="who"><span class="avatar mustard sm">MC</span><b>Maya Chen</b></span><span class="score">3.52</span><span class="rec">7–2</span><span class="mv arrow-up">▲2</span></div>
+            <div class="board-row"><span class="pos">4</span><span class="who"><span class="avatar sm">SR</span><b>Sam Rivera</b></span><span class="score">3.48</span><span class="rec">5–4</span><span class="mv" style="color:var(--ink-faint)">—</span></div>
+            <div class="cutline">Playoff line · top 4 advance</div>
+            <div class="board-row"><span class="pos">5</span><span class="who"><span class="avatar green sm">AK</span><b>Alex Kim</b></span><span class="score">3.44</span><span class="rec">4–5</span><span class="mv arrow-up">▲1</span></div>
+            <div class="board-row"><span class="pos">6</span><span class="who"><span class="avatar red sm">DB</span><b>Dana Brooks</b></span><span class="score">3.41</span><span class="rec">3–6</span><span class="mv arrow-dn">▼2</span></div>
+            <div class="board-row"><span class="pos">7</span><span class="who"><span class="avatar sm">CO</span><b>Chris Okafor</b></span><span class="score">3.37</span><span class="rec">2–7</span><span class="mv" style="color:var(--ink-faint)">—</span></div>
+          </div>
+
+          <div class="card rivalry">
+            <span class="flame" aria-hidden="true">🏆</span>
+            <p class="small" style="flex:1"><b>Rivalry brewing:</b> you and Priya have split 1–1 this season. The rematch could decide seed 2.</p>
+          </div>
+
+          <div style="margin-top:auto">
+            <button class="cta" type="button">Challenge Priya to the rematch</button>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SCREEN 4 · SCHEDULING ════════ -->
+  <section class="exhibit" aria-label="Screen 4: Match scheduling">
+    <div class="plate"><span class="no">4</span> Arrange the tie</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="glyphs">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+        <div class="body">
+          <div class="app-head">
+            <div class="wordmark"><span class="mini-crest">OR</span><span>OpenRally</span></div>
+            <span class="chip green">Rd 4 · vs Rivera</span>
+          </div>
+          <p class="eyebrow">Round 4 · No message ping-pong</p>
+          <h2 class="display" style="font-size:1.45rem">Sam Rivera is free at these times.</h2>
+
+          <div class="slot-list">
+            <button class="slot picked" type="button" aria-pressed="true">
+              <span class="cal"><span class="m">Oct</span><br><span class="d">28</span></span>
+              <span><span class="t">Tuesday · 6:30 PM</span><br><span class="sub">Both free · courts usually open</span></span>
+              <span class="go">Picked ✓</span>
+            </button>
+            <button class="slot" type="button">
+              <span class="cal"><span class="m">Oct</span><br><span class="d">30</span></span>
+              <span><span class="t">Thursday · 7:00 PM</span><br><span class="sub">Sam's preferred evening</span></span>
+              <span class="go">Pick</span>
+            </button>
+            <button class="slot" type="button">
+              <span class="cal"><span class="m">Nov</span><br><span class="d">01</span></span>
+              <span><span class="t">Saturday · 9:00 AM</span><br><span class="sub">Daylight · beats the heat</span></span>
+              <span class="go">Pick</span>
+            </button>
+          </div>
+
+          <div class="card court-card">
+            <div class="court-map" role="img" aria-label="Map showing midpoint court between both players">
+              <span class="map-road"></span><span class="map-road two"></span>
+              <span class="map-pin a" title="Maya"></span>
+              <span class="map-pin mid" title="South Austin Rec"></span>
+              <span class="map-pin b" title="Sam"></span>
+            </div>
+            <div class="court-meta">
+              <div>
+                <b style="font-size:.88rem">South Austin Rec</b><br>
+                <span class="micro mono">Fair midpoint · 12 min you · 13 min Sam</span>
+              </div>
+              <span class="chip green">4 cts · free</span>
+            </div>
+          </div>
+
+          <button class="cta red" type="button" style="margin-top:12px">Confirm Tue Oct 28 · 6:30 PM</button>
+          <p class="join-note micro">One tap. Sam gets the card, the court, the calendar invite.</p>
+
+          <div class="card score-entry" style="margin-top:auto">
+            <span class="stamp green" style="top:10px">Verified</span>
+            <p class="sec-label">Last round · report card</p>
+            <div class="score-boxes" aria-label="Score 6-4, 3-6, 10-7 match tiebreak">
+              <span class="sbox">6–4</span><span class="sbox-sep">·</span>
+              <span class="sbox">3–6</span><span class="sbox-sep">·</span>
+              <span class="sbox tb">[10–7]</span>
+            </div>
+            <p class="micro" style="margin-top:7px">d. Priya Nair · countersigned by both players ✓</p>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SCREEN 5 · RALLY CHAT ════════ -->
+  <section class="exhibit" aria-label="Screen 5: Rally agent chat">
+    <div class="plate"><span class="no">5</span> The concierge</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="glyphs">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+        <div class="body">
+          <div class="app-head">
+            <div class="wordmark"><span class="mini-crest">R</span><span>Rally · Front Desk</span></div>
+            <span class="chip mustard">● On duty</span>
+          </div>
+
+          <div class="chat-body">
+            <p class="msg-label right">Maya · 5:42 PM</p>
+            <div class="msg user">Find me a match Thursday after 6, somewhere near South Austin.</div>
+
+            <p class="msg-label">Rally · concierge</p>
+            <div class="msg rally">
+              Very good. Two members at your level are free Thursday evening — both within 15 minutes of you:
+              <div class="chat-slot-card">
+                <div class="head"><span>Thu Oct 30 · Proposals</span><span>3.5 Div</span></div>
+                <div class="chat-slot-row">
+                  <span><b>Sam Rivera</b> <span class="micro mono">3.48</span><br><span class="micro">6:30 PM · South Austin Rec</span></span>
+                  <button class="accept" type="button">Accept</button>
+                </div>
+                <div class="chat-slot-row">
+                  <span><b>Dana Brooks</b> <span class="micro mono">3.41</span><br><span class="micro">7:00 PM · Austin High Courts</span></span>
+                  <button class="accept" type="button">Accept</button>
+                </div>
+              </div>
+            </div>
+
+            <p class="msg-label right">Maya · 5:44 PM</p>
+            <div class="msg user">What do I need to make playoffs?</div>
+
+            <p class="msg-label">Rally · concierge</p>
+            <div class="msg rally">
+              You sit 3rd at 7–2 — inside the line. Win <b>2 of your last 3</b> and no arithmetic can bump you.
+              <div class="playoff-answer">
+                <span class="micro" style="letter-spacing:.18em;text-transform:uppercase">Magic number</span><br>
+                <span class="big">2 WINS · vs Rivera · Kim · Okafor</span>
+              </div>
+              Shall I pencil in Rivera for Tuesday?
+            </div>
+          </div>
+
+          <div class="chat-input" role="group" aria-label="Message Rally">
+            <span class="ph">Ask Rally anything…</span>
+            <button class="mic" type="button" aria-label="Voice input">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 15a4 4 0 004-4V6a4 4 0 10-8 0v5a4 4 0 004 4zm6-4a6 6 0 01-12 0H4a8 8 0 007 7.94V22h2v-3.06A8 8 0 0020 11h-2z"/></svg>
+            </button>
+            <button class="send" type="button" aria-label="Send">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l12 2-12 2z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ SCREEN 6 · PROFILE ════════ -->
+  <section class="exhibit" aria-label="Screen 6: Player profile and membership card">
+    <div class="plate"><span class="no">6</span> Membership card</div>
+    <div class="phone">
+      <div class="screen">
+        <div class="notch"></div>
+        <div class="statusbar">
+          <span>9:41</span>
+          <span class="glyphs">
+            <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+            <svg width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor"/><rect x="2.5" y="2.5" width="15" height="7" rx="1.5" fill="currentColor"/><rect x="22.5" y="3.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+          </span>
+        </div>
+        <div class="body">
+          <div class="app-head">
+            <div class="wordmark"><span class="mini-crest">OR</span><span>OpenRally</span></div>
+            <span class="chip red">Share card ↗</span>
+          </div>
+
+          <div class="member-card">
+            <div class="rib"></div>
+            <div class="mc-body">
+              <div class="mc-top">
+                <div>
+                  <p class="mc-club">OpenRally Racquet Club · Austin Chapter</p>
+                  <p class="mc-name">Maya Chen</p>
+                  <p class="mc-sub">Member № 0212 · Box 12 · 3.5 Div · Est. 2025</p>
+                </div>
+                <div class="mc-photo">MC<span class="verify" title="Photo verified">✓</span></div>
+              </div>
+              <hr class="mc-divider">
+              <div class="mc-stats">
+                <div class="mc-stat"><p class="lab">Rally Score</p><p class="val">3.52</p></div>
+                <div class="mc-stat"><p class="lab">Record</p><p class="val">7<small>W</small>–2<small>L</small></p></div>
+                <div class="mc-stat"><p class="lab">Season form</p>
+                  <svg class="spark" width="88" height="30" viewBox="0 0 88 30" aria-label="Rally Score trend, rising">
+                    <polyline points="2,24 14,22 26,25 38,18 50,19 62,13 74,10 86,6" fill="none" stroke="#D9A441" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="86" cy="6" r="3" fill="#D96C3D" stroke="#F3ECDC" stroke-width="1.5"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="gauge-row">
+            <div class="card gauge">
+              <span class="ring r98"><span>98%</span></span>
+              <span class="lab"><b>Reliability</b><span>Shows up. Every time.</span></span>
+            </div>
+            <div class="card gauge">
+              <span class="ring r49"><span>4.9</span></span>
+              <span class="lab"><b>Sportsmanship</b><span>Opponent-rated</span></span>
+            </div>
+          </div>
+
+          <div class="card history">
+            <p class="sec-label" style="margin-bottom:4px">Season ledger · Fall S4</p>
+            <div class="h-row"><span class="h-res w">W</span><span style="flex:1">Priya Nair</span><span class="h-score">6–4 3–6 [10–7]</span></div>
+            <div class="h-row"><span class="h-res w">W</span><span style="flex:1">Alex Kim</span><span class="h-score">7–5 6–3</span></div>
+            <div class="h-row"><span class="h-res l">L</span><span style="flex:1">Jordan Patel</span><span class="h-score">4–6 6–7(5)</span></div>
+            <div class="h-row"><span class="h-res w">W</span><span style="flex:1">Dana Brooks</span><span class="h-score">6–2 6–4</span></div>
+          </div>
+
+          <div class="badge-row">
+            <span class="badge-patch">🎖 Founding Player</span>
+            <span class="badge-patch">🔥 Streak ×4</span>
+            <span class="badge-patch">🤝 Iron Reliability</span>
+          </div>
+
+          <div style="margin-top:auto">
+            <button class="cta" type="button">Renew for Winter S5 — <span class="strike">$39</span>&nbsp;$29</button>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="ribbon" role="presentation"></div>
+
+<footer class="page-footer">
+  <span>OpenRally · Racquet Club '78 · Variation 09 of 10</span>
+  <span>Set in DM Serif Display · Space Mono · Archivo</span>
+</footer>
+
+</body>
+</html>

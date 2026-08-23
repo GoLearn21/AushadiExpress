@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenRally — Hard Court</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Archivo:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HARD COURT — Design Tokens
+   US Open night session. Electric blue stadium under lights.
+   ============================================================ */
+:root{
+  /* Canvas & surfaces */
+  --bg-0:#050D1C;            /* page night sky */
+  --bg-1:#0A1F3C;            /* deep navy canvas / phone screen */
+  --surface-1:#0E2A50;       /* card */
+  --surface-2:#123563;       /* raised card */
+  --surface-3:#174178;       /* highest elevation */
+  --stroke:rgba(60,150,210,.26);
+  --stroke-soft:rgba(60,150,210,.14);
+
+  /* Court blues */
+  --court:#2478CC;
+  --laykold:#3C96D2;
+  --cyan:#35C4F0;
+  --cyan-soft:rgba(53,196,240,.16);
+  --cyan-glow:rgba(53,196,240,.45);
+
+  /* Stadium light + line call */
+  --ink:#F8FAFC;             /* warm stadium-light white */
+  --ink-dim:#B9CDE4;
+  --ink-faint:#7E97B6;
+  --line-call:#FFD400;       /* hot accent, sparingly */
+
+  /* Semantic */
+  --win:#3DE8A0;
+  --loss:#FF6B7A;
+  --live:#FF4D6D;
+
+  /* Type */
+  --font-display:'Sora','Archivo',system-ui,sans-serif;
+  --font-broadcast:'Archivo','Sora',system-ui,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  --fs-hero:clamp(2.6rem,6vw,4.4rem);
+  --fs-h1:1.45rem;
+  --fs-h2:1.1rem;
+  --fs-body:.86rem;
+  --fs-small:.75rem;
+  --fs-micro:.64rem;
+
+  /* Shape & depth */
+  --r-phone:48px;
+  --r-lg:20px;
+  --r-md:14px;
+  --r-sm:9px;
+  --r-pill:999px;
+  --shadow-card:0 10px 30px rgba(2,8,20,.55);
+  --shadow-glow:0 0 26px rgba(53,196,240,.28);
+  --shadow-phone:0 40px 90px rgba(0,0,0,.65), 0 0 80px rgba(36,120,204,.22);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(1100px 520px at 15% -5%, rgba(36,120,204,.30), transparent 60%),
+    radial-gradient(900px 600px at 85% 8%, rgba(53,196,240,.16), transparent 55%),
+    radial-gradient(1400px 800px at 50% 115%, rgba(23,65,120,.55), transparent 65%),
+    var(--bg-0);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:var(--fs-body);
+  line-height:1.5;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+::selection{background:var(--cyan);color:#04101f}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* ============================================================
+   PAGE HEADER — the stadium
+   ============================================================ */
+.stadium{position:relative;max-width:1480px;margin:0 auto;padding:64px 40px 26px}
+.court-lines-bg{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;
+}
+.court-lines-bg svg{position:absolute;top:-30px;right:-60px;width:640px;max-width:70vw}
+.kicker{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--font-broadcast);font-weight:800;font-size:var(--fs-micro);
+  letter-spacing:.34em;text-transform:uppercase;color:var(--cyan);
+  padding:8px 16px;border:1px solid var(--stroke);border-radius:var(--r-pill);
+  background:linear-gradient(90deg,rgba(53,196,240,.10),rgba(36,120,204,.06));
+}
+.kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 10px var(--live);animation:pulse 1.6s infinite}
+.stadium h1{
+  font-family:var(--font-display);font-weight:800;font-size:var(--fs-hero);
+  letter-spacing:-.03em;line-height:1.02;margin:22px 0 14px;max-width:900px;
+}
+.stadium h1 .electric{
+  background:linear-gradient(92deg,var(--cyan) 0%,var(--laykold) 55%,var(--court) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 22px rgba(53,196,240,.35));
+}
+.thesis{color:var(--ink-dim);font-size:1.02rem;max-width:620px;line-height:1.65}
+.thesis strong{color:var(--ink);font-weight:600}
+.header-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+.meta-chip{
+  font-family:var(--font-broadcast);font-weight:700;font-size:var(--fs-micro);
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:9px 15px;border-radius:var(--r-sm);
+  background:var(--surface-1);border:1px solid var(--stroke-soft);color:var(--ink-dim);
+}
+.meta-chip.hot{color:#0A1F3C;background:var(--line-call);border-color:var(--line-call);box-shadow:0 0 24px rgba(255,212,0,.25)}
+.baseline{
+  height:3px;max-width:1480px;margin:34px auto 0;
+  background:linear-gradient(90deg,transparent,var(--cyan) 18%,var(--court) 50%,var(--cyan) 82%,transparent);
+  opacity:.55;box-shadow:0 0 18px var(--cyan-glow);
+}
+
+/* ============================================================
+   PHONE GRID
+   ============================================================ */
+.court-grid{
+  max-width:1480px;margin:0 auto;padding:44px 40px 90px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));
+  gap:56px 40px;justify-items:center;
+}
+.screen-slot{width:100%;max-width:404px;opacity:0;animation:riseIn .8s cubic-bezier(.2,.8,.25,1) forwards}
+.screen-slot:nth-child(1){animation-delay:.05s}
+.screen-slot:nth-child(2){animation-delay:.15s}
+.screen-slot:nth-child(3){animation-delay:.25s}
+.screen-slot:nth-child(4){animation-delay:.35s}
+.screen-slot:nth-child(5){animation-delay:.45s}
+.screen-slot:nth-child(6){animation-delay:.55s}
+@keyframes riseIn{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s !important;transition-duration:.001s !important}
+  .screen-slot{opacity:1}
+}
+
+.slot-label{
+  display:flex;align-items:baseline;gap:12px;margin:0 6px 16px;
+}
+.slot-num{
+  font-family:var(--font-broadcast);font-weight:900;font-size:1.5rem;color:var(--cyan);
+  text-shadow:0 0 18px var(--cyan-glow);
+}
+.slot-name{font-family:var(--font-display);font-weight:700;font-size:1rem;letter-spacing:-.01em}
+.slot-sub{color:var(--ink-faint);font-size:var(--fs-small)}
+
+/* Phone frame */
+.phone{
+  width:100%;aspect-ratio:390/844;
+  border-radius:var(--r-phone);
+  background:linear-gradient(160deg,#12233f,#060e1d);
+  padding:11px;position:relative;
+  box-shadow:var(--shadow-phone), inset 0 0 0 1.5px rgba(120,180,235,.28);
+  transition:transform .45s cubic-bezier(.2,.8,.25,1), box-shadow .45s;
+}
+.phone:hover{transform:translateY(-8px);box-shadow:0 56px 110px rgba(0,0,0,.7),0 0 110px rgba(53,196,240,.30), inset 0 0 0 1.5px rgba(120,180,235,.4)}
+.screen{
+  position:absolute;inset:11px;border-radius:38px;overflow:hidden;
+  background:
+    radial-gradient(150% 60% at 50% -8%, rgba(53,196,240,.14), transparent 55%),
+    linear-gradient(178deg,#0C2648 0%,var(--bg-1) 45%,#081831 100%);
+  display:flex;flex-direction:column;
+  font-size:var(--fs-body);
+}
+.notch{
+  position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  width:32%;height:22px;background:#050C18;border-radius:var(--r-pill);z-index:30;
+}
+.home-bar{
+  position:absolute;bottom:7px;left:50%;transform:translateX(-50%);
+  width:36%;height:4px;border-radius:var(--r-pill);background:rgba(248,250,252,.4);z-index:30;
+}
+.statusbar{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:14px 22px 4px;font-size:var(--fs-small);font-weight:600;
+  font-variant-numeric:tabular-nums;color:var(--ink);flex:0 0 auto;
+}
+.sb-icons{display:flex;gap:5px;align-items:center}
+.sb-icons svg{display:block}
+.body{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:10px 18px 18px;gap:12px}
+
+/* ============================================================
+   SHARED COMPONENTS
+   ============================================================ */
+.avatar{
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:50%;font-family:var(--font-broadcast);font-weight:800;flex:0 0 auto;
+  background:linear-gradient(140deg,var(--court),#1A5AA0);color:var(--ink);
+  border:1.5px solid rgba(53,196,240,.5);
+}
+.avatar.alt1{background:linear-gradient(140deg,#7A4FD8,#4C2FA0)}
+.avatar.alt2{background:linear-gradient(140deg,#D8564F,#A02F45)}
+.avatar.alt3{background:linear-gradient(140deg,#2FA07A,#176D52)}
+.avatar.alt4{background:linear-gradient(140deg,#C58A1E,#8A5A10)}
+.avatar.alt5{background:linear-gradient(140deg,#3C96D2,#20649B)}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--font-broadcast);font-weight:700;font-size:var(--fs-micro);
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 10px;border-radius:var(--r-pill);
+  background:var(--cyan-soft);color:var(--cyan);border:1px solid rgba(53,196,240,.3);
+}
+.chip.hot{background:rgba(255,212,0,.14);color:var(--line-call);border-color:rgba(255,212,0,.4)}
+.chip.live{background:rgba(255,77,109,.14);color:var(--live);border-color:rgba(255,77,109,.4)}
+.chip.win{background:rgba(61,232,160,.12);color:var(--win);border-color:rgba(61,232,160,.35)}
+.chip.neutral{background:rgba(185,205,228,.08);color:var(--ink-dim);border-color:var(--stroke-soft)}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--live);box-shadow:0 0 8px var(--live);animation:pulse 1.4s infinite}
+
+.card{
+  background:linear-gradient(165deg,var(--surface-2),var(--surface-1));
+  border:1px solid var(--stroke-soft);border-radius:var(--r-lg);
+  box-shadow:var(--shadow-card);
+}
+.cta{
+  display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  font-family:var(--font-display);font-weight:700;font-size:.92rem;letter-spacing:-.01em;
+  color:#04101F;padding:15px;border-radius:var(--r-md);
+  background:linear-gradient(95deg,var(--cyan),var(--laykold) 70%,var(--court));
+  box-shadow:0 8px 26px rgba(53,196,240,.35), inset 0 1px 0 rgba(255,255,255,.35);
+  transition:transform .2s, box-shadow .2s, filter .2s;
+}
+.cta:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 12px 34px rgba(53,196,240,.5)}
+.cta:active{transform:translateY(0)}
+.cta .arrow{font-family:var(--font-body)}
+.screen-title{font-family:var(--font-display);font-weight:800;font-size:var(--fs-h1);letter-spacing:-.025em;line-height:1.15}
+.screen-sub{color:var(--ink-dim);font-size:var(--fs-small);line-height:1.55}
+.section-label{
+  font-family:var(--font-broadcast);font-weight:800;font-size:var(--fs-micro);
+  letter-spacing:.26em;text-transform:uppercase;color:var(--ink-faint);
+  display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--stroke),transparent)}
+
+/* Broadcast score bug — TV lower-third */
+.score-bug{
+  border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--stroke);
+  box-shadow:0 6px 20px rgba(2,8,20,.5), 0 0 18px rgba(53,196,240,.12);
+  font-variant-numeric:tabular-nums;
+}
+.bug-row{
+  display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:0;
+  background:linear-gradient(90deg,#123563 0%,#0E2A50 100%);
+  border-top:1px solid rgba(53,196,240,.12);
+}
+.bug-row:first-child{border-top:none}
+.bug-name{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  font-family:var(--font-broadcast);font-weight:700;font-size:.78rem;letter-spacing:.02em;
+}
+.bug-serve{width:7px;height:7px;border-radius:50%;background:var(--line-call);box-shadow:0 0 8px rgba(255,212,0,.8)}
+.bug-set{
+  width:32px;text-align:center;padding:8px 0;font-family:var(--font-broadcast);
+  font-weight:800;font-size:.82rem;color:var(--ink-dim);border-left:1px solid rgba(53,196,240,.14);
+}
+.bug-set.won{color:var(--ink)}
+.bug-set.now{background:rgba(53,196,240,.16);color:var(--cyan)}
+.bug-topbar{
+  display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(90deg,var(--court),#1A5AA0);
+  padding:5px 12px;font-family:var(--font-broadcast);font-weight:800;
+  font-size:var(--fs-micro);letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+}
+
+/* Bottom tab bar */
+.tabbar{
+  flex:0 0 auto;display:flex;justify-content:space-around;align-items:center;
+  padding:10px 8px 20px;border-top:1px solid var(--stroke-soft);
+  background:rgba(6,17,34,.7);backdrop-filter:blur(8px);
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:var(--fs-micro);font-weight:600;color:var(--ink-faint);letter-spacing:.04em}
+.tab.on{color:var(--cyan);text-shadow:0 0 12px var(--cyan-glow)}
+.tab svg{display:block}
+
+/* ============================================================
+   S1 — ONBOARDING QUIZ
+   ============================================================ */
+.level-list{display:flex;flex-direction:column;gap:8px;overflow:hidden;flex:1;min-height:0}
+.level{
+  display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:var(--r-md);
+  background:var(--surface-1);border:1px solid var(--stroke-soft);
+  transition:border-color .2s, background .2s, transform .2s, box-shadow .2s;
+  text-align:left;width:100%;
+}
+.level:hover{border-color:var(--stroke);transform:translateX(3px)}
+.level .band{
+  font-family:var(--font-broadcast);font-weight:900;font-size:1.02rem;width:44px;flex:0 0 auto;
+  color:var(--laykold);font-variant-numeric:tabular-nums;
+}
+.level .desc{flex:1;min-width:0}
+.level .desc b{display:block;font-family:var(--font-display);font-weight:700;font-size:.82rem;letter-spacing:-.01em}
+.level .desc span{display:block;color:var(--ink-faint);font-size:var(--fs-micro);line-height:1.45;margin-top:1px}
+.level .tick{
+  width:20px;height:20px;border-radius:50%;border:1.5px solid var(--stroke);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;font-size:.6rem;color:transparent;
+  transition:all .2s;
+}
+.level.picked{
+  background:linear-gradient(135deg,rgba(53,196,240,.18),rgba(36,120,204,.10));
+  border-color:var(--cyan);box-shadow:var(--shadow-glow);
+}
+.level.picked .band{color:var(--cyan)}
+.level.picked .tick{background:var(--cyan);border-color:var(--cyan);color:#04101F}
+.quiz-progress{display:flex;gap:5px}
+.quiz-progress i{height:3px;flex:1;border-radius:var(--r-pill);background:rgba(53,196,240,.18)}
+.quiz-progress i.done{background:var(--cyan);box-shadow:0 0 8px var(--cyan-glow)}
+.social-proof-line{
+  display:flex;align-items:center;gap:8px;justify-content:center;
+  font-size:var(--fs-micro);color:var(--ink-faint);
+}
+.stack{display:flex}
+.stack .avatar{width:18px;height:18px;font-size:.5rem;margin-left:-6px;border-width:1px}
+.stack .avatar:first-child{margin-left:0}
+
+/* ============================================================
+   S2 — HOME / SEASON
+   ============================================================ */
+.home-top{display:flex;justify-content:space-between;align-items:center}
+.hello{font-family:var(--font-display);font-weight:800;font-size:1.18rem;letter-spacing:-.02em}
+.hello span{color:var(--cyan)}
+.week-track{display:flex;flex-direction:column;gap:6px}
+.week-meta{display:flex;justify-content:space-between;font-size:var(--fs-micro);color:var(--ink-faint);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-broadcast)}
+.week-meta b{color:var(--line-call)}
+.track{height:6px;border-radius:var(--r-pill);background:rgba(53,196,240,.14);overflow:hidden}
+.track i{display:block;height:100%;width:68%;border-radius:var(--r-pill);
+  background:linear-gradient(90deg,var(--court),var(--cyan));box-shadow:0 0 12px var(--cyan-glow)}
+.hero-match{
+  position:relative;border-radius:var(--r-lg);overflow:hidden;padding:14px;
+  background:
+    radial-gradient(120% 90% at 85% -10%, rgba(53,196,240,.25), transparent 55%),
+    linear-gradient(150deg,#17427A 0%,#0E2A50 70%);
+  border:1px solid var(--stroke);box-shadow:var(--shadow-card),var(--shadow-glow);
+}
+.hero-match .court-mini{position:absolute;right:-24px;bottom:-16px;width:150px;opacity:.5;pointer-events:none}
+.hero-vs{display:flex;align-items:center;gap:10px;margin:10px 0 4px}
+.hero-vs .avatar{width:40px;height:40px;font-size:.8rem}
+.hero-names{flex:1;min-width:0}
+.hero-names b{display:block;font-family:var(--font-display);font-weight:800;font-size:1rem;letter-spacing:-.02em}
+.hero-names span{color:var(--ink-dim);font-size:var(--fs-micro)}
+.vs-mark{font-family:var(--font-broadcast);font-weight:900;font-size:.8rem;color:var(--line-call);text-shadow:0 0 14px rgba(255,212,0,.5)}
+.hero-details{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;position:relative}
+.detail-pill{
+  display:flex;align-items:center;gap:5px;font-size:var(--fs-micro);font-weight:600;
+  color:var(--ink-dim);padding:5px 9px;border-radius:var(--r-sm);
+  background:rgba(5,13,28,.45);border:1px solid var(--stroke-soft);
+}
+.mini-standings{padding:12px 13px;display:flex;flex-direction:column;gap:0}
+.mini-row{display:grid;grid-template-columns:20px 26px 1fr auto;align-items:center;gap:9px;padding:6px 2px;font-size:var(--fs-small)}
+.mini-row .avatar{width:24px;height:24px;font-size:.55rem}
+.mini-row .pos{font-family:var(--font-broadcast);font-weight:800;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.mini-row .rec{font-variant-numeric:tabular-nums;color:var(--ink-dim);font-weight:600;font-size:var(--fs-micro)}
+.mini-row.me{background:rgba(53,196,240,.1);border-radius:var(--r-sm);margin:0 -6px;padding:6px 8px}
+.mini-row.me .pos{color:var(--cyan)}
+.mini-row b{font-weight:600;font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ============================================================
+   S3 — STANDINGS
+   ============================================================ */
+.stand-head{display:flex;justify-content:space-between;align-items:flex-end}
+.stand-table{display:flex;flex-direction:column;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--stroke-soft);background:var(--surface-1);flex:1;min-height:0}
+.stand-cols{
+  display:grid;grid-template-columns:26px 24px 1fr 44px 40px 30px;gap:8px;align-items:center;
+  padding:8px 12px;font-family:var(--font-broadcast);font-weight:800;font-size:.56rem;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);
+  background:rgba(5,13,28,.5);border-bottom:1px solid var(--stroke-soft);
+}
+.stand-row{
+  display:grid;grid-template-columns:26px 24px 1fr 44px 40px 30px;gap:8px;align-items:center;
+  padding:8px 12px;font-size:.78rem;border-bottom:1px solid rgba(53,196,240,.07);
+  font-variant-numeric:tabular-nums;transition:background .2s;
+}
+.stand-row:hover{background:rgba(53,196,240,.05)}
+.stand-row .avatar{width:24px;height:24px;font-size:.55rem}
+.stand-row .rk{display:flex;align-items:center;gap:3px;font-family:var(--font-broadcast);font-weight:800;color:var(--ink-dim)}
+.mv{font-size:.55rem}
+.mv.up{color:var(--win)}
+.mv.dn{color:var(--loss)}
+.mv.same{color:var(--ink-faint)}
+.stand-row .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:6px}
+.stand-row .rec{color:var(--ink-dim);font-weight:600;font-size:.72rem}
+.stand-row .rs{font-family:var(--font-broadcast);font-weight:800;font-size:.74rem;color:var(--laykold)}
+.stand-row .pts{font-weight:700;text-align:right}
+.stand-row.me{background:linear-gradient(90deg,rgba(53,196,240,.16),rgba(53,196,240,.05));border-left:3px solid var(--cyan);padding-left:9px}
+.stand-row.me .rk{color:var(--cyan)}
+.cutline{
+  display:flex;align-items:center;gap:8px;padding:4px 12px;
+  color:var(--line-call);font-family:var(--font-broadcast);font-weight:800;
+  font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;
+  background:rgba(255,212,0,.05);
+}
+.cutline::before,.cutline::after{content:"";flex:1;border-top:2px dashed rgba(255,212,0,.55)}
+.rival-chip{font-size:.5rem;padding:2px 6px}
+
+/* ============================================================
+   S4 — SCHEDULING
+   ============================================================ */
+.slots{display:flex;flex-direction:column;gap:8px}
+.slot{
+  display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:var(--r-md);
+  background:var(--surface-1);border:1px solid var(--stroke-soft);width:100%;text-align:left;
+  transition:all .2s;
+}
+.slot:hover{border-color:var(--stroke);transform:translateX(3px)}
+.slot .cal{
+  width:42px;flex:0 0 auto;text-align:center;border-radius:var(--r-sm);overflow:hidden;
+  border:1px solid var(--stroke-soft);font-variant-numeric:tabular-nums;
+}
+.slot .cal b{display:block;font-family:var(--font-broadcast);font-weight:800;font-size:.5rem;letter-spacing:.14em;background:var(--court);padding:2.5px 0;text-transform:uppercase}
+.slot .cal span{display:block;font-family:var(--font-broadcast);font-weight:800;font-size:.95rem;padding:3px 0;background:rgba(5,13,28,.5)}
+.slot .inf{flex:1;min-width:0}
+.slot .inf b{display:block;font-family:var(--font-display);font-weight:700;font-size:.82rem;letter-spacing:-.01em}
+.slot .inf span{display:block;color:var(--ink-faint);font-size:var(--fs-micro);margin-top:1px}
+.slot .tick{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--stroke);display:flex;align-items:center;justify-content:center;font-size:.58rem;color:transparent;flex:0 0 auto;transition:all .2s}
+.slot.picked{background:linear-gradient(135deg,rgba(53,196,240,.18),rgba(36,120,204,.08));border-color:var(--cyan);box-shadow:var(--shadow-glow)}
+.slot.picked .tick{background:var(--cyan);border-color:var(--cyan);color:#04101F}
+.slot .night{margin-top:2px}
+.map-card{position:relative;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--stroke-soft)}
+.map-card svg{display:block;width:100%}
+.map-tag{
+  position:absolute;left:10px;bottom:10px;display:flex;flex-direction:column;gap:2px;
+  background:rgba(5,13,28,.78);backdrop-filter:blur(6px);border:1px solid var(--stroke-soft);
+  border-radius:var(--r-sm);padding:7px 10px;
+}
+.map-tag b{font-family:var(--font-display);font-weight:700;font-size:.74rem}
+.map-tag span{font-size:.58rem;color:var(--cyan);font-weight:600}
+.score-entry{padding:11px 13px;display:flex;flex-direction:column;gap:8px}
+.score-sets{display:flex;gap:7px}
+.set-box{
+  flex:1;text-align:center;padding:7px 4px;border-radius:var(--r-sm);
+  background:rgba(5,13,28,.5);border:1px solid var(--stroke-soft);
+  font-family:var(--font-broadcast);font-weight:800;font-size:.9rem;font-variant-numeric:tabular-nums;
+}
+.set-box small{display:block;font-size:.5rem;font-weight:700;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:2px}
+.set-box.tb{border-color:rgba(255,212,0,.4);color:var(--line-call)}
+
+/* ============================================================
+   S5 — RALLY CHAT
+   ============================================================ */
+.chat-head{display:flex;align-items:center;gap:10px}
+.rally-mark{
+  width:38px;height:38px;border-radius:12px;flex:0 0 auto;
+  background:linear-gradient(140deg,var(--cyan),var(--court));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 20px rgba(53,196,240,.4);
+}
+.chat-head .who b{display:block;font-family:var(--font-display);font-weight:800;font-size:.95rem;letter-spacing:-.01em}
+.chat-head .who span{font-size:var(--fs-micro);color:var(--win);display:flex;align-items:center;gap:5px}
+.chat-flow{flex:1;min-height:0;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+.msg{max-width:82%;padding:9px 12px;border-radius:16px;font-size:.78rem;line-height:1.5}
+.msg.user{
+  align-self:flex-end;border-bottom-right-radius:5px;color:#04101F;font-weight:500;
+  background:linear-gradient(120deg,var(--cyan),var(--laykold));
+  box-shadow:0 4px 16px rgba(53,196,240,.3);
+}
+.msg.agent{
+  align-self:flex-start;border-bottom-left-radius:5px;
+  background:var(--surface-2);border:1px solid var(--stroke-soft);color:var(--ink);
+}
+.msg.agent b{color:var(--cyan)}
+.inline-card{
+  align-self:flex-start;width:88%;border-radius:var(--r-md);overflow:hidden;
+  border:1px solid var(--stroke);background:var(--surface-1);box-shadow:var(--shadow-card);
+}
+.inline-card .ic-head{
+  display:flex;justify-content:space-between;align-items:center;padding:7px 11px;
+  background:linear-gradient(90deg,var(--court),#1A5AA0);
+  font-family:var(--font-broadcast);font-weight:800;font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;
+}
+.ic-slot{display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-top:1px solid rgba(53,196,240,.08);font-size:.74rem}
+.ic-slot:first-of-type{border-top:none}
+.ic-slot b{font-weight:700;font-family:var(--font-display);font-size:.76rem}
+.ic-slot span{display:block;color:var(--ink-faint);font-size:.6rem}
+.ic-go{
+  font-family:var(--font-broadcast);font-weight:800;font-size:.58rem;letter-spacing:.1em;
+  padding:5px 10px;border-radius:var(--r-pill);text-transform:uppercase;
+  background:var(--cyan-soft);color:var(--cyan);border:1px solid rgba(53,196,240,.35);
+  transition:all .2s;
+}
+.ic-go:hover{background:var(--cyan);color:#04101F}
+.ic-go.best{background:var(--line-call);color:#0A1F3C;border-color:var(--line-call);box-shadow:0 0 14px rgba(255,212,0,.3)}
+.chat-input{
+  display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:var(--r-pill);
+  background:var(--surface-1);border:1px solid var(--stroke);
+}
+.chat-input span{flex:1;color:var(--ink-faint);font-size:.78rem}
+.mic,.send{
+  width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto;
+}
+.mic{background:rgba(53,196,240,.14);color:var(--cyan)}
+.send{background:linear-gradient(120deg,var(--cyan),var(--court));color:#04101F;box-shadow:0 0 14px rgba(53,196,240,.4)}
+.typing{display:flex;gap:4px;align-self:flex-start;padding:10px 14px;background:var(--surface-2);border:1px solid var(--stroke-soft);border-radius:16px;border-bottom-left-radius:5px}
+.typing i{width:5px;height:5px;border-radius:50%;background:var(--cyan);animation:pulse 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.2s}
+.typing i:nth-child(3){animation-delay:.4s}
+
+/* ============================================================
+   S6 — PROFILE
+   ============================================================ */
+.prof-hero{display:flex;align-items:center;gap:13px}
+.prof-hero .avatar{width:58px;height:58px;font-size:1.15rem;border-width:2px;box-shadow:0 0 24px rgba(53,196,240,.3)}
+.prof-id b{display:flex;align-items:center;gap:6px;font-family:var(--font-display);font-weight:800;font-size:1.1rem;letter-spacing:-.02em}
+.verify{width:15px;height:15px;border-radius:50%;background:var(--cyan);display:inline-flex;align-items:center;justify-content:center;color:#04101F;font-size:.55rem;font-weight:900}
+.prof-id span{display:block;color:var(--ink-dim);font-size:var(--fs-micro);margin-top:2px}
+.ring-wrap{display:flex;align-items:center;gap:14px;padding:13px}
+.ring{
+  width:86px;height:86px;border-radius:50%;flex:0 0 auto;position:relative;
+  background:conic-gradient(var(--cyan) 0 252deg, rgba(53,196,240,.14) 252deg 360deg);
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 0 14px rgba(53,196,240,.35));
+}
+.ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--surface-1)}
+.ring .val{position:relative;text-align:center}
+.ring .val b{display:block;font-family:var(--font-broadcast);font-weight:900;font-size:1.25rem;letter-spacing:-.02em;line-height:1}
+.ring .val small{font-size:.48rem;font-weight:800;letter-spacing:.18em;color:var(--ink-faint);text-transform:uppercase}
+.ring-copy{flex:1;min-width:0}
+.ring-copy .rs-line{display:flex;align-items:baseline;gap:7px}
+.ring-copy .rs-line em{font-style:normal;color:var(--win);font-size:.68rem;font-weight:700}
+.ring-copy p{color:var(--ink-faint);font-size:.62rem;line-height:1.5;margin-top:3px}
+.spark{margin-top:5px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.stat-tile{
+  padding:10px 8px;border-radius:var(--r-md);text-align:center;
+  background:var(--surface-1);border:1px solid var(--stroke-soft);
+  transition:border-color .2s, transform .2s;
+}
+.stat-tile:hover{border-color:var(--stroke);transform:translateY(-2px)}
+.stat-tile b{display:block;font-family:var(--font-broadcast);font-weight:900;font-size:1.02rem;font-variant-numeric:tabular-nums}
+.stat-tile.g b{color:var(--win)}
+.stat-tile small{display:block;font-size:.5rem;font-weight:700;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase;margin-top:2px}
+.badges{display:flex;gap:7px}
+.badge{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;
+  border-radius:var(--r-md);background:var(--surface-1);border:1px solid var(--stroke-soft);
+  font-size:.52rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-dim);
+  text-align:center;transition:all .2s;
+}
+.badge:hover{border-color:rgba(255,212,0,.4);transform:translateY(-2px)}
+.badge .bi{font-size:1rem;filter:drop-shadow(0 0 8px rgba(255,212,0,.4))}
+.history{display:flex;flex-direction:column;border-radius:var(--r-md);overflow:hidden;border:1px solid var(--stroke-soft);background:var(--surface-1)}
+.hist-row{display:flex;align-items:center;gap:9px;padding:8px 11px;border-top:1px solid rgba(53,196,240,.07);font-size:.72rem}
+.hist-row:first-child{border-top:none}
+.hist-row .wl{
+  width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-broadcast);font-weight:900;font-size:.6rem;flex:0 0 auto;
+}
+.hist-row .wl.w{background:rgba(61,232,160,.15);color:var(--win);border:1px solid rgba(61,232,160,.35)}
+.hist-row .wl.l{background:rgba(255,107,122,.13);color:var(--loss);border:1px solid rgba(255,107,122,.3)}
+.hist-row b{flex:1;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hist-row span{font-variant-numeric:tabular-nums;color:var(--ink-dim);font-weight:600;font-size:.66rem;white-space:nowrap}
+
+/* ============================================================
+   PAGE FOOTER
+   ============================================================ */
+.stadium-footer{
+  max-width:1480px;margin:0 auto;padding:0 40px 70px;text-align:center;color:var(--ink-faint);font-size:var(--fs-small);
+}
+.stadium-footer .net{
+  height:2px;max-width:520px;margin:0 auto 26px;
+  background:linear-gradient(90deg,transparent,var(--line-call),transparent);opacity:.5;
+}
+@media (max-width:480px){
+  .stadium{padding:44px 22px 20px}
+  .court-grid{padding:30px 18px 60px;gap:40px}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= PAGE HEADER ================= -->
+<header class="stadium">
+  <div class="court-lines-bg" aria-hidden="true">
+    <svg viewBox="0 0 640 360" fill="none">
+      <g stroke="#3C96D2" stroke-opacity=".35" stroke-width="2">
+        <rect x="40" y="30" width="560" height="300"/>
+        <rect x="40" y="70" width="560" height="220"/>
+        <line x1="320" y1="30" x2="320" y2="330"/>
+        <line x1="180" y1="70" x2="180" y2="290"/>
+        <line x1="460" y1="70" x2="460" y2="290"/>
+        <line x1="180" y1="180" x2="460" y2="180"/>
+      </g>
+      <g stroke="#35C4F0" stroke-opacity=".7" stroke-width="3">
+        <line x1="320" y1="18" x2="320" y2="342"/>
+      </g>
+      <circle cx="320" cy="18" r="4" fill="#FFD400" opacity=".8"/>
+      <circle cx="320" cy="342" r="4" fill="#FFD400" opacity=".8"/>
+    </svg>
+  </div>
+  <span class="kicker"><i class="dot"></i>Variation 04 · Night Session · OpenRally</span>
+  <h1>HARD COURT<br><span class="electric">Every match is a night session.</span></h1>
+  <p class="thesis">US Open energy on an electric blue stadium under the lights — <strong>broadcast score bugs, court-line geometry, and TV lower-third stat chips</strong> turn a Tuesday 3.5 box match into the biggest court in tennis. Hype without chaos.</p>
+  <div class="header-meta">
+    <span class="meta-chip">Sora + Archivo + Inter</span>
+    <span class="meta-chip">Navy #0A1F3C · Court #2478CC · Cyan #35C4F0</span>
+    <span class="meta-chip hot">Line-call yellow #FFD400</span>
+    <span class="meta-chip">Austin, TX · Fall Season 4</span>
+  </div>
+</header>
+<div class="baseline" aria-hidden="true"></div>
+
+<!-- ================= PHONE GRID ================= -->
+<main class="court-grid">
+
+  <!-- ============ SCREEN 1 · ONBOARDING ============ -->
+  <section class="screen-slot" aria-label="Screen 1: Onboarding level quiz">
+    <div class="slot-label"><span class="slot-num">01</span><div><div class="slot-name">Onboarding — Level Quiz</div><div class="slot-sub">Self-assigned band, zero shame, seeded by film</div></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span>
+          <div class="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10"><g fill="#F8FAFC"><rect x="0" y="6" width="2.5" height="4" rx=".8"/><rect x="4" y="4" width="2.5" height="6" rx=".8"/><rect x="8" y="2" width="2.5" height="8" rx=".8"/><rect x="12" y="0" width="2.5" height="10" rx=".8"/></g></svg>
+            <svg width="15" height="10" viewBox="0 0 15 10"><path d="M7.5 9.5 10 6.7A3.7 3.7 0 0 0 5 6.7ZM2.5 4A7.2 7.2 0 0 1 12.5 4L14.5 2A10 10 0 0 0 .5 2Z" fill="#F8FAFC"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x=".5" y=".5" width="18" height="9" rx="2.5" stroke="#F8FAFC" fill="none"/><rect x="2" y="2" width="13" height="6" rx="1.4" fill="#35C4F0"/><rect x="19.6" y="3" width="2" height="4" rx="1" fill="#F8FAFC"/></svg>
+          </div>
+        </div>
+        <div class="body">
+          <div class="quiz-progress" aria-label="Step 2 of 3"><i class="done"></i><i class="done"></i><i></i></div>
+          <div>
+            <h2 class="screen-title">Where's your game<br>under the lights?</h2>
+            <p class="screen-sub" style="margin-top:5px">Pick honestly — your Rally Score self-corrects in season. No test. No shame. Just your level.</p>
+          </div>
+          <div class="level-list" role="radiogroup" aria-label="Skill level">
+            <button class="level" role="radio" aria-checked="false"><span class="band">2.5</span><span class="desc"><b>Getting rallies going</b><span>You can trade a few shots and you're hungry for real points.</span></span><span class="tick">✓</span></button>
+            <button class="level" role="radio" aria-checked="false"><span class="band">3.0</span><span class="desc"><b>Steady from the baseline</b><span>Consistent on medium pace, working on direction and depth.</span></span><span class="tick">✓</span></button>
+            <button class="level picked" role="radio" aria-checked="true"><span class="band">3.5</span><span class="desc"><b>Building the point</b><span>Directional control, coming to net, still erratic on pressure balls.</span></span><span class="tick">✓</span></button>
+            <button class="level" role="radio" aria-checked="false"><span class="band">4.0</span><span class="desc"><b>Weapons and patterns</b><span>Dependable spin, pace and lobs — you construct points on purpose.</span></span><span class="tick">✓</span></button>
+            <button class="level" role="radio" aria-checked="false"><span class="band">4.5</span><span class="desc"><b>First-strike tennis</b><span>You force errors, vary attacks, and close out tight sets.</span></span><span class="tick">✓</span></button>
+            <button class="level" role="radio" aria-checked="false"><span class="band">5.0</span><span class="desc"><b>Tournament tested</b><span>Shot-making under pressure. You've won matches that mattered.</span></span><span class="tick">✓</span></button>
+          </div>
+          <div class="social-proof-line">
+            <span class="stack" aria-hidden="true"><span class="avatar alt1">JP</span><span class="avatar alt2">SR</span><span class="avatar alt3">PN</span><span class="avatar alt4">AK</span></span>
+            <span><b style="color:var(--ink)">64 players</b> at 3.5 in Austin right now</span>
+          </div>
+          <button class="cta">Lock in 3.5 · See my box <span class="arrow">→</span></button>
+        </div>
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2 · HOME / SEASON ============ -->
+  <section class="screen-slot" aria-label="Screen 2: Home season dashboard">
+    <div class="slot-label"><span class="slot-num">02</span><div><div class="slot-name">Home — "Season"</div><div class="slot-sub">Next-match hero as a broadcast bug, standings snippet</div></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>7:12</span>
+          <div class="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10"><g fill="#F8FAFC"><rect x="0" y="6" width="2.5" height="4" rx=".8"/><rect x="4" y="4" width="2.5" height="6" rx=".8"/><rect x="8" y="2" width="2.5" height="8" rx=".8"/><rect x="12" y="0" width="2.5" height="10" rx=".8"/></g></svg>
+            <svg width="15" height="10" viewBox="0 0 15 10"><path d="M7.5 9.5 10 6.7A3.7 3.7 0 0 0 5 6.7ZM2.5 4A7.2 7.2 0 0 1 12.5 4L14.5 2A10 10 0 0 0 .5 2Z" fill="#F8FAFC"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x=".5" y=".5" width="18" height="9" rx="2.5" stroke="#F8FAFC" fill="none"/><rect x="2" y="2" width="13" height="6" rx="1.4" fill="#35C4F0"/><rect x="19.6" y="3" width="2" height="4" rx="1" fill="#F8FAFC"/></svg>
+          </div>
+        </div>
+        <div class="body">
+          <div class="home-top">
+            <div>
+              <div class="hello">Night session, <span>Maya</span> 🎾</div>
+              <div class="screen-sub">Fall Season 4 · Oct 6 – Nov 23 · Austin</div>
+            </div>
+            <span class="avatar" style="width:34px;height:34px;font-size:.7rem">MC</span>
+          </div>
+          <div class="week-track">
+            <div class="week-meta"><span>Week 5 of 7</span><b>Playoffs in 18 days</b></div>
+            <div class="track"><i></i></div>
+          </div>
+          <div class="hero-match">
+            <svg class="court-mini" viewBox="0 0 150 100" aria-hidden="true"><g stroke="#35C4F0" stroke-width="1.5" fill="none"><rect x="8" y="8" width="134" height="84"/><line x1="75" y1="8" x2="75" y2="92"/><rect x="30" y="8" width="90" height="84"/><line x1="30" y1="50" x2="120" y2="50"/></g></svg>
+            <div style="display:flex;justify-content:space-between;align-items:center;position:relative">
+              <span class="chip hot">Next match</span>
+              <span class="chip neutral">Round 5 · Box 12</span>
+            </div>
+            <div class="hero-vs">
+              <span class="avatar">MC</span>
+              <div class="hero-names"><b>Maya Chen</b><span>3.52 · 7W–2L · on a 3W streak</span></div>
+              <span class="vs-mark">VS</span>
+              <div class="hero-names" style="text-align:right"><b>Jordan Patel</b><span>3.61 · 6W–3L · #1 in box</span></div>
+              <span class="avatar alt1">JP</span>
+            </div>
+            <div class="hero-details">
+              <span class="detail-pill">🗓 Thu Oct 30 · 7:00 PM</span>
+              <span class="detail-pill">📍 Pharr Tennis Center · Ct 4</span>
+              <span class="detail-pill">💡 Lit courts</span>
+            </div>
+            <button class="cta">Confirm Thursday 7:00 PM <span class="arrow">→</span></button>
+          </div>
+          <div class="section-label">Box 12 · The race</div>
+          <div class="card mini-standings">
+            <div class="mini-row"><span class="pos">1</span><span class="avatar alt1">JP</span><b>Jordan Patel</b><span class="rec">6–3 · 3.61</span></div>
+            <div class="mini-row me"><span class="pos">2</span><span class="avatar">MC</span><b>Maya Chen · you</b><span class="rec">7–2 · 3.52</span></div>
+            <div class="mini-row"><span class="pos">3</span><span class="avatar alt3">PN</span><b>Priya Nair</b><span class="rec">6–3 · 3.55</span></div>
+            <div class="mini-row"><span class="pos">4</span><span class="avatar alt2">SR</span><b>Sam Rivera</b><span class="rec">5–4 · 3.48</span></div>
+          </div>
+        </div>
+        <nav class="tabbar" aria-label="Main navigation">
+          <span class="tab on"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M2 8.5 8.5 2 15 8.5V15h-4.5v-4h-4v4H2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Season</span>
+          <span class="tab"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="M3 14V7M8.5 14V3M14 14v-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Ladder</span>
+          <span class="tab"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="8.5" r="6.5" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 6c3 2.2 9 2.2 12 0M2.5 11c3-2.2 9-2.2 12 0" stroke="currentColor" stroke-width="1.3"/></svg>Rally</span>
+          <span class="tab"><svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="8.5" cy="5.5" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 14.5c.8-3 3.2-4.5 6-4.5s5.2 1.5 6 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>Profile</span>
+        </nav>
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 3 · STANDINGS ============ -->
+  <section class="screen-slot" aria-label="Screen 3: Box standings ladder">
+    <div class="slot-label"><span class="slot-num">03</span><div><div class="slot-name">Box Standings</div><div class="slot-sub">Movement arrows, playoff cutline in line-call yellow</div></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>8:26</span>
+          <div class="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10"><g fill="#F8FAFC"><rect x="0" y="6" width="2.5" height="4" rx=".8"/><rect x="4" y="4" width="2.5" height="6" rx=".8"/><rect x="8" y="2" width="2.5" height="8" rx=".8"/><rect x="12" y="0" width="2.5" height="10" rx=".8"/></g></svg>
+            <svg width="15" height="10" viewBox="0 0 15 10"><path d="M7.5 9.5 10 6.7A3.7 3.7 0 0 0 5 6.7ZM2.5 4A7.2 7.2 0 0 1 12.5 4L14.5 2A10 10 0 0 0 .5 2Z" fill="#F8FAFC"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x=".5" y=".5" width="18" height="9" rx="2.5" stroke="#F8FAFC" fill="none"/><rect x="2" y="2" width="13" height="6" rx="1.4" fill="#35C4F0"/><rect x="19.6" y="3" width="2" height="4" rx="1" fill="#F8FAFC"/></svg>
+          </div>
+        </div>
+        <div class="body">
+          <div class="stand-head">
+            <div>
+              <h2 class="screen-title" style="font-size:1.25rem">Box 12 · 3.5</h2>
+              <p class="screen-sub">Round 5 of 7 · top 3 make the city playoff</p>
+            </div>
+            <span class="chip">212 in season</span>
+          </div>
+          <div class="score-bug" role="group" aria-label="Live match: Rivera vs Nair">
+            <div class="bug-topbar"><span style="display:flex;align-items:center;gap:6px"><i class="live-dot"></i>Live · Austin High Cts</span><span>Set 2</span></div>
+            <div class="bug-row"><span class="bug-name"><span class="avatar alt2" style="width:18px;height:18px;font-size:.48rem">SR</span>RIVERA<i class="bug-serve" aria-label="serving"></i></span><span class="bug-set won">6</span><span class="bug-set now">3</span><span class="bug-set">–</span></div>
+            <div class="bug-row"><span class="bug-name"><span class="avatar alt3" style="width:18px;height:18px;font-size:.48rem">PN</span>NAIR</span><span class="bug-set">4</span><span class="bug-set now">5</span><span class="bug-set">–</span></div>
+          </div>
+          <div class="stand-table">
+            <div class="stand-cols"><span>Pos</span><span></span><span>Player</span><span>W–L</span><span>Rally</span><span style="text-align:right">Pts</span></div>
+            <div class="stand-row"><span class="rk">1<i class="mv same">▬</i></span><span class="avatar alt1">JP</span><span class="nm">Jordan Patel</span><span class="rec">6–3</span><span class="rs">3.61</span><span class="pts">19</span></div>
+            <div class="stand-row me"><span class="rk">2<i class="mv up">▲2</i></span><span class="avatar">MC</span><span class="nm">Maya Chen <span class="chip win rival-chip">3W streak</span></span><span class="rec">7–2</span><span class="rs">3.52</span><span class="pts">18</span></div>
+            <div class="stand-row"><span class="rk">3<i class="mv dn">▼1</i></span><span class="avatar alt3">PN</span><span class="nm">Priya Nair</span><span class="rec">6–3</span><span class="rs">3.55</span><span class="pts">17</span></div>
+            <div class="cutline">Playoff line</div>
+            <div class="stand-row"><span class="rk">4<i class="mv dn">▼1</i></span><span class="avatar alt2">SR</span><span class="nm">Sam Rivera <span class="chip hot rival-chip">Rival</span></span><span class="rec">5–4</span><span class="rs">3.48</span><span class="pts">14</span></div>
+            <div class="stand-row"><span class="rk">5<i class="mv up">▲1</i></span><span class="avatar alt4">AK</span><span class="nm">Alex Kim</span><span class="rec">4–5</span><span class="rs">3.44</span><span class="pts">12</span></div>
+            <div class="stand-row"><span class="rk">6<i class="mv same">▬</i></span><span class="avatar alt5">DB</span><span class="nm">Dana Brooks</span><span class="rec">3–6</span><span class="rs">3.41</span><span class="pts">9</span></div>
+            <div class="stand-row"><span class="rk">7<i class="mv dn">▼2</i></span><span class="avatar alt3">CO</span><span class="nm">Chris Okafor</span><span class="rec">2–7</span><span class="rs">3.37</span><span class="pts">6</span></div>
+          </div>
+          <button class="cta">See my path to the playoff <span class="arrow">→</span></button>
+        </div>
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 4 · SCHEDULING ============ -->
+  <section class="screen-slot" aria-label="Screen 4: Match scheduling">
+    <div class="slot-label"><span class="slot-num">04</span><div><div class="slot-name">Match Scheduling</div><div class="slot-sub">Three proposed slots, midpoint court, one-tap confirm</div></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>6:03</span>
+          <div class="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10"><g fill="#F8FAFC"><rect x="0" y="6" width="2.5" height="4" rx=".8"/><rect x="4" y="4" width="2.5" height="6" rx=".8"/><rect x="8" y="2" width="2.5" height="8" rx=".8"/><rect x="12" y="0" width="2.5" height="10" rx=".8"/></g></svg>
+            <svg width="15" height="10" viewBox="0 0 15 10"><path d="M7.5 9.5 10 6.7A3.7 3.7 0 0 0 5 6.7ZM2.5 4A7.2 7.2 0 0 1 12.5 4L14.5 2A10 10 0 0 0 .5 2Z" fill="#F8FAFC"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x=".5" y=".5" width="18" height="9" rx="2.5" stroke="#F8FAFC" fill="none"/><rect x="2" y="2" width="13" height="6" rx="1.4" fill="#35C4F0"/><rect x="19.6" y="3" width="2" height="4" rx="1" fill="#F8FAFC"/></svg>
+          </div>
+        </div>
+        <div class="body">
+          <div>
+            <span class="chip">Round 5 · vs Jordan Patel</span>
+            <h2 class="screen-title" style="margin-top:8px">Rally found 3 slots<br>you both can play.</h2>
+            <p class="screen-sub" style="margin-top:4px">Matched from both availability grids. One tap and it's booked.</p>
+          </div>
+          <div class="slots" role="radiogroup" aria-label="Proposed match times">
+            <button class="slot picked" role="radio" aria-checked="true">
+              <span class="cal"><b>Oct</b><span>30</span></span>
+              <span class="inf"><b>Thursday · 7:00 PM</b><span>Pharr Tennis Center · Court 4 · lit<span class="night"> 💡</span></span></span>
+              <span class="chip hot" style="font-size:.48rem">Best</span>
+              <span class="tick">✓</span>
+            </button>
+            <button class="slot" role="radio" aria-checked="false">
+              <span class="cal"><b>Oct</b><span>31</span></span>
+              <span class="inf"><b>Friday · 6:30 PM</b><span>South Austin Rec · Court 2 · lit</span></span>
+              <span class="tick">✓</span>
+            </button>
+            <button class="slot" role="radio" aria-checked="false">
+              <span class="cal"><b>Nov</b><span>02</span></span>
+              <span class="inf"><b>Sunday · 10:00 AM</b><span>Austin High Courts · walk-on</span></span>
+              <span class="tick">✓</span>
+            </button>
+          </div>
+          <div class="map-card" aria-label="Midpoint court map">
+            <svg viewBox="0 0 354 128" role="img" aria-label="Map showing Pharr Tennis Center midway between both players">
+              <rect width="354" height="128" fill="#0B2143"/>
+              <g stroke="#1D4E86" stroke-width="2.5" fill="none" opacity=".8">
+                <path d="M-8 96 C 70 88 120 70 178 66 C 240 62 300 44 362 40"/>
+                <path d="M40 -8 C 52 40 60 80 52 136"/>
+                <path d="M270 -8 C 260 40 262 90 276 136"/>
+                <path d="M-8 34 C 80 40 200 20 362 28" opacity=".5"/>
+              </g>
+              <path d="M60 92 C 110 84 140 74 177 62" stroke="#35C4F0" stroke-width="2" stroke-dasharray="5 5" fill="none"/>
+              <path d="M292 30 C 250 40 210 52 177 62" stroke="#35C4F0" stroke-width="2" stroke-dasharray="5 5" fill="none"/>
+              <circle cx="60" cy="92" r="9" fill="#2478CC" stroke="#F8FAFC" stroke-width="1.6"/>
+              <text x="60" y="95.5" text-anchor="middle" font-family="Archivo,sans-serif" font-weight="800" font-size="7.5" fill="#F8FAFC">MC</text>
+              <circle cx="292" cy="30" r="9" fill="#7A4FD8" stroke="#F8FAFC" stroke-width="1.6"/>
+              <text x="292" y="33.5" text-anchor="middle" font-family="Archivo,sans-serif" font-weight="800" font-size="7.5" fill="#F8FAFC">JP</text>
+              <circle cx="177" cy="62" r="13" fill="#FFD400"/>
+              <circle cx="177" cy="62" r="13" fill="none" stroke="#FFD400" stroke-width="2" opacity=".4">
+                <animate attributeName="r" values="13;20" dur="1.8s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values=".5;0" dur="1.8s" repeatCount="indefinite"/>
+              </circle>
+              <text x="177" y="66" text-anchor="middle" font-family="Archivo,sans-serif" font-weight="900" font-size="9" fill="#0A1F3C">🎾</text>
+            </svg>
+            <div class="map-tag"><b>Pharr Tennis Center</b><span>12 min for you · 14 min for Jordan</span></div>
+          </div>
+          <button class="cta">Confirm Thu 7:00 PM · Pharr Ct 4 <span class="arrow">→</span></button>
+          <div class="card score-entry">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <span class="section-label" style="font-size:.56rem">After the match · report score</span>
+            </div>
+            <div class="score-sets" aria-label="Score entry: 6-4, 3-6, 10-7 match tiebreak">
+              <span class="set-box"><small>Set 1</small>6–4</span>
+              <span class="set-box"><small>Set 2</small>3–6</span>
+              <span class="set-box tb"><small>Match TB</small>[10–7]</span>
+            </div>
+            <p class="screen-sub" style="font-size:.6rem">Jordan confirms in one tap — verified scores keep Rally Scores honest.</p>
+          </div>
+        </div>
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 5 · RALLY CHAT ============ -->
+  <section class="screen-slot" aria-label="Screen 5: Rally agent chat">
+    <div class="slot-label"><span class="slot-num">05</span><div><div class="slot-name">Rally — Agent Chat</div><div class="slot-sub">Concierge with broadcast-style inline cards</div></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>9:18</span>
+          <div class="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10"><g fill="#F8FAFC"><rect x="0" y="6" width="2.5" height="4" rx=".8"/><rect x="4" y="4" width="2.5" height="6" rx=".8"/><rect x="8" y="2" width="2.5" height="8" rx=".8"/><rect x="12" y="0" width="2.5" height="10" rx=".8"/></g></svg>
+            <svg width="15" height="10" viewBox="0 0 15 10"><path d="M7.5 9.5 10 6.7A3.7 3.7 0 0 0 5 6.7ZM2.5 4A7.2 7.2 0 0 1 12.5 4L14.5 2A10 10 0 0 0 .5 2Z" fill="#F8FAFC"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x=".5" y=".5" width="18" height="9" rx="2.5" stroke="#F8FAFC" fill="none"/><rect x="2" y="2" width="13" height="6" rx="1.4" fill="#35C4F0"/><rect x="19.6" y="3" width="2" height="4" rx="1" fill="#F8FAFC"/></svg>
+          </div>
+        </div>
+        <div class="body">
+          <div class="chat-head">
+            <span class="rally-mark" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.5" stroke="#04101F" stroke-width="1.8"/><path d="M3 7c4 2.4 10 2.4 14 0M3 13c4-2.4 10-2.4 14 0" stroke="#04101F" stroke-width="1.5"/></svg>
+            </span>
+            <div class="who"><b>Rally</b><span><i class="live-dot" style="background:var(--win);box-shadow:0 0 8px var(--win)"></i>Your season concierge</span></div>
+            <span class="chip" style="margin-left:auto">Voice ready</span>
+          </div>
+          <div class="chat-flow">
+            <div class="msg user">Find me a match Thursday after 6, somewhere near Bouldin Creek.</div>
+            <div class="msg agent">Easy. <b>Jordan Patel</b> (your Round 5 opponent) is free Thursday evening — and Pharr has lit courts 10 minutes from you. Three options:</div>
+            <div class="inline-card">
+              <div class="ic-head"><span>Thu Oct 30 · Openings</span><span style="letter-spacing:.05em">Midpoint sorted</span></div>
+              <div class="ic-slot"><div><b>7:00 PM · Pharr Tennis Center</b><span>Court 4 · lit · 12 min for both</span></div><button class="ic-go best">Book it</button></div>
+              <div class="ic-slot"><div><b>6:30 PM · South Austin Rec</b><span>Court 2 · lit · 15 min avg</span></div><button class="ic-go">Hold</button></div>
+              <div class="ic-slot"><div><b>8:15 PM · Austin High Courts</b><span>Walk-on · free · 9 min avg</span></div><button class="ic-go">Hold</button></div>
+            </div>
+            <div class="msg user">Booked. What do I need to make playoffs?</div>
+            <div class="msg agent">You're <b>#2 with 18 pts</b> — one point above the line with 3 rounds left. Win <b>2 of your last 3</b> and you're mathematically in. Beat Jordan Thursday and you can clinch by Sunday. 🏟️</div>
+            <div class="typing" aria-label="Rally is typing"><i></i><i></i><i></i></div>
+          </div>
+          <div class="chat-input" role="textbox" aria-label="Message Rally">
+            <span class="mic" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4.4" y="1" width="4.2" height="7" rx="2.1" stroke="currentColor" stroke-width="1.4"/><path d="M2.2 6.4a4.3 4.3 0 0 0 8.6 0M6.5 10.7V12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span>
+            <span>Ask Rally anything…</span>
+            <span class="send" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 6h9M7 2.5 10.5 6 7 9.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </div>
+        </div>
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 6 · PROFILE ============ -->
+  <section class="screen-slot" aria-label="Screen 6: Player profile">
+    <div class="slot-label"><span class="slot-num">06</span><div><div class="slot-name">Player Profile</div><div class="slot-sub">Rally Score ring, trust markers, season history</div></div></div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="statusbar"><span>10:02</span>
+          <div class="sb-icons">
+            <svg width="16" height="10" viewBox="0 0 16 10"><g fill="#F8FAFC"><rect x="0" y="6" width="2.5" height="4" rx=".8"/><rect x="4" y="4" width="2.5" height="6" rx=".8"/><rect x="8" y="2" width="2.5" height="8" rx=".8"/><rect x="12" y="0" width="2.5" height="10" rx=".8"/></g></svg>
+            <svg width="15" height="10" viewBox="0 0 15 10"><path d="M7.5 9.5 10 6.7A3.7 3.7 0 0 0 5 6.7ZM2.5 4A7.2 7.2 0 0 1 12.5 4L14.5 2A10 10 0 0 0 .5 2Z" fill="#F8FAFC"/></svg>
+            <svg width="22" height="10" viewBox="0 0 22 10"><rect x=".5" y=".5" width="18" height="9" rx="2.5" stroke="#F8FAFC" fill="none"/><rect x="2" y="2" width="13" height="6" rx="1.4" fill="#35C4F0"/><rect x="19.6" y="3" width="2" height="4" rx="1" fill="#F8FAFC"/></svg>
+          </div>
+        </div>
+        <div class="body">
+          <div class="prof-hero">
+            <span class="avatar">MC</span>
+            <div class="prof-id">
+              <b>Maya Chen <span class="verify" title="Photo-verified">✓</span></b>
+              <span>3.5 · Box 12 · Austin, TX · Season 4 founding player</span>
+              <div style="display:flex;gap:6px;margin-top:6px">
+                <span class="chip win">7W–2L</span>
+                <span class="chip">98% reliable</span>
+              </div>
+            </div>
+          </div>
+          <div class="card ring-wrap">
+            <div class="ring" role="img" aria-label="Rally Score 3.52, 70 percent to next band">
+              <span class="val"><b>3.52</b><small>Rally Score</small></span>
+            </div>
+            <div class="ring-copy">
+              <div class="rs-line"><span class="section-label" style="font-size:.54rem;flex:none">Season form</span><em>▲ +0.14</em></div>
+              <p>Trending toward 3.75 promotion band. Verified across 9 matches this season.</p>
+              <svg class="spark" width="100%" height="26" viewBox="0 0 160 26" preserveAspectRatio="none" role="img" aria-label="Rally Score trend rising over the season">
+                <defs><linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#35C4F0" stop-opacity=".35"/><stop offset="1" stop-color="#35C4F0" stop-opacity="0"/></linearGradient></defs>
+                <path d="M0 20 L20 18 L40 21 L60 15 L80 16 L100 11 L120 12 L140 6 L160 4 V26 H0 Z" fill="url(#sparkFill)"/>
+                <path d="M0 20 L20 18 L40 21 L60 15 L80 16 L100 11 L120 12 L140 6 L160 4" stroke="#35C4F0" stroke-width="2" fill="none" stroke-linecap="round"/>
+                <circle cx="160" cy="4" r="3" fill="#FFD400"/>
+              </svg>
+            </div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile g"><b>98%</b><small>Shows up</small></div>
+            <div class="stat-tile"><b>4.9★</b><small>Sportsmanship</small></div>
+            <div class="stat-tile"><b>3</b><small>Win streak</small></div>
+          </div>
+          <div class="section-label">Badges</div>
+          <div class="badges">
+            <span class="badge"><span class="bi">🌙</span>Night Owl</span>
+            <span class="badge"><span class="bi">⚡</span>TB Closer</span>
+            <span class="badge"><span class="bi">🛡</span>Iron Streak</span>
+            <span class="badge"><span class="bi">🏟</span>Founding</span>
+          </div>
+          <div class="section-label">Season 4 history</div>
+          <div class="history">
+            <div class="hist-row"><span class="wl w">W</span><b>vs Sam Rivera</b><span>6–4 3–6 [10–7]</span></div>
+            <div class="hist-row"><span class="wl w">W</span><b>vs Alex Kim</b><span>7–5 6–3</span></div>
+            <div class="hist-row"><span class="wl l">L</span><b>vs Priya Nair</b><span>4–6 6–7(5)</span></div>
+            <div class="hist-row"><span class="wl w">W</span><b>vs Dana Brooks</b><span>6–2 6–4</span></div>
+          </div>
+          <button class="cta">Share my season card <span class="arrow">→</span></button>
+        </div>
+        <div class="home-bar"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="stadium-footer">
+  <div class="net" aria-hidden="true"></div>
+  <p><b style="color:var(--ink)">OpenRally · Hard Court (v04)</b> — one of ten studio pitches for the same product.</p>
+  <p style="margin-top:4px">Fall Season 4 closes in 5 days · 212 players in · <span style="text-decoration:line-through;opacity:.6">$39</span> <b style="color:var(--line-call)">$29 founding player</b></p>
+</footer>
+
+<script>
+// Minimal vanilla interactions: radio-style selection on level cards and slot cards.
+document.querySelectorAll('[role="radiogroup"]').forEach(function(group){
+  var radios = group.querySelectorAll('[role="radio"]');
+  radios.forEach(function(r){
+    r.addEventListener('click', function(){
+      radios.forEach(function(o){
+        o.classList.remove('picked');
+        o.setAttribute('aria-checked','false');
+      });
+      r.classList.add('picked');
+      r.setAttribute('aria-checked','true');
+    });
+  });
+});
+</script>
+</body>
+</html>
