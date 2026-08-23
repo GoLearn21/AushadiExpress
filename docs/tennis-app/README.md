@@ -9,6 +9,7 @@ A complete research-to-design package for a US-first, mobile-native competitive 
 | Document | What it is |
 |---|---|
 | **[report/DEEP-RESEARCH-REPORT.md](report/DEEP-RESEARCH-REPORT.md)** | The master document: market, competition, format engine, personas, UX blueprint, CRO playbook, agentic design, trust architecture, legal summary, unit economics, city-by-city GTM, KPI tree, risk register, roadmap, design system |
+| **[adjudication/CHATGPT-STRATEGY-ADJUDICATION.md](adjudication/CHATGPT-STRATEGY-ADJUDICATION.md)** | Point-by-point verification of an external strategy memo against four new research streams — what held up, what was refuted, and the merged final strategy |
 | **[mockups/index.html](mockups/index.html)** | Gallery of 10 complete design directions — open in a browser |
 | [PRODUCT-CONCEPT.md](PRODUCT-CONCEPT.md) | The one-page concept |
 | [FEATURES.md](FEATURES.md) | Feature blueprint, MVP → v3, differentiators marked ★ |
@@ -21,6 +22,10 @@ A complete research-to-design package for a US-first, mobile-native competitive 
 | [research/02-format-catalog.md](research/02-format-catalog.md) | Every competition format with concrete rule parameters: challenge/pyramid/box/point-accumulation/ELO ladders, USTA team + ALTA + flex + World TeamTennis leagues, all tournament draw types, all scoring variants, all rating systems, registration patterns, and the full match lifecycle (scheduling, defaults, weather, score confirmation) |
 | [research/03-legal-compliance.md](research/03-legal-compliance.md) | Liability & platform-vs-organizer posture, waiver enforceability by state, insurance, entity & ToS, COPPA/teen laws/SafeSport, Apple & Google payment rules, money transmission, refunds & auto-renewal, taxes, prize/skill-contest law, the 2026 state privacy map, geolocation, safety & FCRA, ADA/WCAG, division-by-gender analysis, trademark, TCPA/CAN-SPAM — plus a phased compliance checklist |
 | [research/04-monetization-growth-cro-design.md](research/04-monetization-growth-cro-design.md) | Competitor pricing, DUPR/Pickleheads/B2B SaaS comps, subscription benchmarks, growth playbooks, marketplace liquidity doctrine, onboarding & paywall CRO data, push benchmarks, trust mechanics, agentic UX precedents, and a design teardown of Netflix/Discord/Strava/WHOOP/ESPN with concrete tokens |
+| [research/05-competitor-verification.md](research/05-competitor-verification.md) | Traction-verified state of Tenisime, Tweener, PerfectSwing, MATCHi, RacketPal, TennisPAL, SwingVision, PlayYourCourt — rating counts, funding, team size, and a threat ranking. Includes the category graveyard |
+| [research/06-improvement-thesis-test.md](research/06-improvement-thesis-test.md) | Whether "we make you better" survives as a core promise: NTRP progression rates, adult coaching spend, retention by app category, and the decisive golf analog (GHIN/GolfNow vs Arccos/Shot Scope/GAME GOLF) |
+| [research/07-analytics-data-requirements.md](research/07-analytics-data-requirements.md) | Can an AI coach work without video? Information content of a scoreline, statistical power for tactical claims, Elo/Glicko convergence, IMU limits, self-report reliability — with original computations and Match Charting Project analysis |
+| [research/08-orchestration-layer-feasibility.md](research/08-orchestration-layer-feasibility.md) | Is "orchestration layer" viable? UTR Engage API terms, USTA Connect, club-system API gating, the platform-severance record (Strava/Reddit/Twitter/Google Fit), scraping law, and what's legitimately free on day one |
 | [research/00-persona-debate.md](research/00-persona-debate.md) | Eleven personas — league director, returner, grinder, woman player, parks admin, counsel, growth operator, agentic skeptic, CFO, accessibility reviewer, incumbent — each with a devil's-advocate attack and a binding resolution |
 
 ## The ten design directions
@@ -58,3 +63,14 @@ Each file is self-contained HTML (Google Fonts only, no other external assets) s
 3. **Free rating forever** (DUPR's lesson), paid season pass at $29 (the market-cleared band).
 4. **Platform posture, 18+, no cash prizes, never hold player funds** — the four legal decisions that de-risk the company.
 5. **One city until 300 paid players and 70% renewal** — the liquidity gate that expansion pressure cannot override.
+
+## Revised conclusions after the adjudication pass
+
+A second research round (streams 05–08) tested an external strategy memo arguing that the discover→play→improve loop is no longer differentiated and that the moat should move to improvement intelligence. Four independent streams converged on the opposite prescription:
+
+1. **Liquidity is the binding constraint, not features.** Six competitors built adequate versions of the loop and died of empty networks — TennisPAL at ~280 Android installs/month, RacketPal down to 2 employees, PlayYourCourt at 3.3★. The universal forum complaint is *"there's nobody there."* The answer to feature-rich, user-poor products is density, not a ninth feature.
+2. **Improvement is a founder trap as the core promise.** Golf ran the experiment: GHIN (3.2M) and GolfNow (40M rounds/yr) beat Arccos and Shot Scope by 10–30×, and the first mover in improvement analytics died. **Improvement data is single-player — a switching cost, never a network effect.** Matchmaking is two-sided; analytics is not.
+3. **Tactical AI claims without video are arithmetically impossible.** The showcase claim format needs n≈114; a rec player reaches n≈31 in 18 matches, where the 95% CI spans [46%, 80%]. Scanning 200 candidate patterns at that sample size yields ~20 expected false findings.
+4. **The orchestration layer is a dependency trap.** UTR's Engage API licenses ratings display-only, explicitly forbidding "analytics… or product development," with 24-hour revocation for any reason or none.
+
+**The merged promise:** *Get the right match. Keep the record. And because you do, we can show you what to work on.* Improvement becomes the payoff and the premium tier — never the pitch.
