@@ -10,6 +10,7 @@ A complete research-to-design package for a US-first, mobile-native competitive 
 |---|---|
 | **[report/DEEP-RESEARCH-REPORT.md](report/DEEP-RESEARCH-REPORT.md)** | The master document: market, competition, format engine, personas, UX blueprint, CRO playbook, agentic design, trust architecture, legal summary, unit economics, city-by-city GTM, KPI tree, risk register, roadmap, design system |
 | **[adjudication/CHATGPT-STRATEGY-ADJUDICATION.md](adjudication/CHATGPT-STRATEGY-ADJUDICATION.md)** | Point-by-point verification of an external strategy memo against four new research streams — what held up, what was refuted, and the merged final strategy |
+| **[prd/LIQUIDITY-AND-WEDGE-PRD.md](prd/LIQUIDITY-AND-WEDGE-PRD.md)** | The build plan: liquidity math, first-cluster strategy, Match Fit and reliability models, ladder design, two parallel experiments, and explicit go/kill thresholds |
 | **[mockups/index.html](mockups/index.html)** | Gallery of 10 complete design directions — open in a browser |
 | [PRODUCT-CONCEPT.md](PRODUCT-CONCEPT.md) | The one-page concept |
 | [FEATURES.md](FEATURES.md) | Feature blueprint, MVP → v3, differentiators marked ★ |
@@ -26,6 +27,7 @@ A complete research-to-design package for a US-first, mobile-native competitive 
 | [research/06-improvement-thesis-test.md](research/06-improvement-thesis-test.md) | Whether "we make you better" survives as a core promise: NTRP progression rates, adult coaching spend, retention by app category, and the decisive golf analog (GHIN/GolfNow vs Arccos/Shot Scope/GAME GOLF) |
 | [research/07-analytics-data-requirements.md](research/07-analytics-data-requirements.md) | Can an AI coach work without video? Information content of a scoreline, statistical power for tactical claims, Elo/Glicko convergence, IMU limits, self-report reliability — with original computations and Match Charting Project analysis |
 | [research/08-orchestration-layer-feasibility.md](research/08-orchestration-layer-feasibility.md) | Is "orchestration layer" viable? UTR Engage API terms, USTA Connect, club-system API gating, the platform-severance record (Strava/Reddit/Twitter/Google Fit), scraping law, and what's legitimately free on day one |
+| [research/09-liquidity-and-matching.md](research/09-liquidity-and-matching.md) | Marketplace liquidity math, real NTRP level distribution, the filter-compounding model, TrueSkill match quality, "good match ≠ even match" evidence, no-show base rates and deposit effects, invite-loop case law, and concierge MVP precedents |
 | [research/00-persona-debate.md](research/00-persona-debate.md) | Eleven personas — league director, returner, grinder, woman player, parks admin, counsel, growth operator, agentic skeptic, CFO, accessibility reviewer, incumbent — each with a devil's-advocate attack and a binding resolution |
 
 ## The ten design directions
@@ -74,3 +76,11 @@ A second research round (streams 05–08) tested an external strategy memo argui
 4. **The orchestration layer is a dependency trap.** UTR's Engage API licenses ratings display-only, explicitly forbidding "analytics… or product development," with 24-hour revocation for any reason or none.
 
 **The merged promise:** *Get the right match. Keep the record. And because you do, we can show you what to work on.* Improvement becomes the payoff and the premium tier — never the pitch.
+
+## The three findings that set the launch plan
+
+From the liquidity research (stream 09):
+
+1. **The unit of launch is a club cluster, not a radius.** Every real precedent is ~10–50 actives *per named place* — Nextdoor activates a neighborhood at 10 verified members, Meetup groups are viable at 20–50, ALTA runs ~22–27 members per facility. Nobody has ever published a users-per-square-mile threshold because distance is not the real filter.
+2. **Declared availability is the cheapest liquidity in the product.** Moving a player from 2 to 4 declared weekend slots takes slot-overlap probability from 0.32 to 0.86 — nearly tripling their effective opponent pool without adding a single user to the network.
+3. **Money is the no-show mechanism.** Free RSVP events run 30–50% no-show; paid events 5–15%. OpenTable deposits cut no-shows 57%, while a card-on-file achieves only 16%. The season fee is not only monetization — it is the commitment device.
