@@ -252,3 +252,70 @@ An ADR is immutable once accepted. To change one, write a new ADR that supersede
 - We keep the *Life360* posture rather than the *Lyft* one — a $4M difference in UI
 
 **Alternatives rejected.** Contact-list bulk invite with send-side rewards (explicit $4M precedent, plus Apple rejection risk).
+
+---
+
+# Technical ADRs (016–024)
+
+Derived from `architecture/TECHNICAL-ARCHITECTURE.md`. Same immutability rule applies.
+
+| ADR | Title | Status |
+|---|---|---|
+| 016 | Expo/React Native + TypeScript everywhere, shared `@core` | Accepted |
+| 017 | Modular monolith on Postgres, two workers | Accepted |
+| 018 | Append-only ledger + derived read models | Accepted |
+| 019 | Two-tier availability representation | Accepted |
+| 020 | Batch candidate generation + on-demand ranking, market-scoped | Accepted |
+| 021 | Batch clearing (max-weight matching) for league scheduling | Accepted |
+| 022 | Capability registry enforces GUI/agent parity in CI | Accepted |
+| 023 | Rating periods, not per-match updates | Accepted |
+| 024 | Closed format-config union; no user-authored logic | Accepted |
+
+## ADR-016 — Expo/RN + TypeScript everywhere
+**Context.** Solo team, three surfaces (iOS, Android, web), a domain with real logic (rating math, compatibility scoring, format configs).
+**Decision.** Expo/React Native with the New Architecture for mobile; a separate Next.js app for SEO/admin; both consuming a shared `@core` package holding types, Zod contracts, rating math, and the format engine.
+**Consequences.** Domain logic written once. OTA updates via EAS let the core loop be tuned weekly without App Review. Web is rebuilt (~8 screens) rather than shared via react-native-web, because RNW markup is poor for SEO. We accept lower ceiling raw rendering performance, which this product does not need.
+**Rejected.** Flutter (forces writing the domain twice or over HTTP; smaller talent pool; JS-first AI SDK ecosystem). Native Swift+Kotlin (two codebases, no capability here demands it).
+
+## ADR-017 — Modular monolith on Postgres, two workers
+**Decision.** One Fastify deployable with `application/`, `http/`, `agent/`, `domain/` modules, plus a matchmaker worker and a ledger worker. Jobs on `pgmq`/`graphile-worker`, not Redis, until ~50–100K MAU.
+**Consequences.** No distributed tracing burden, no service mesh, no cross-service transactions. Module boundaries in one repo give ~90% of the benefit at ~5% of the cost. The matchmaker is a queue consumer with a JSON contract, so rewriting it in Go later touches no other code.
+**Rejected.** Microservices, Kubernetes, serverless request path (cold starts poison the agent latency budget; long matchmaking jobs don't fit; serverless Postgres connection management is a recurring tax).
+
+## ADR-018 — Append-only ledger + derived read models
+**Decision.** Two zones. Mutable operational (profiles, availability, proposals, courts) and append-only ledger (confirmed results, reliability events, rating snapshots, standings). Ledger corrections are new rows with `supersedes_id`. Every derived value carries `ruleset_version` and `input_digest`.
+**Consequences.** Disputes, late results, and admin corrections become bounded deterministic recomputes rather than manual database surgery. Algorithm changes can be computed under a new `ruleset_version` alongside the old and compared offline before flipping one market at a time. Costs more storage and requires recompute jobs.
+**Rejected.** In-place mutation of ratings and standings (makes disputes unwindable only by hand and algorithm changes a hard cutover).
+
+## ADR-019 — Two-tier availability representation
+**Decision.** `availability_rule` (RRULE + IANA tz + local window + strength) is the source of truth. A 42-bit `weekly_mask bigint` on `player` is the SQL pre-filter. A 126-byte rolling 30-minute `availability_mask` (`hard` and `preferred`) is ANDed in application memory for exact intersection.
+**Consequences.** The bigint AND prunes 80–95% of a market in one index-supported scan. Exact intersection on 500 candidates is 63KB of buffers ANDed in microseconds. Contiguity is three shifts and two ANDs. Two masks preserve the distinction between "can play" and "wants to play" — the difference between a match played and a match no-showed. Masks must be rebuilt on rule change and nightly to roll the horizon.
+**Rejected.** Doing the intersection in SQL (Postgres bit-string operators are awkward across versions and force N round trips); a single combined mask (loses preference signal).
+
+## ADR-020 — Batch candidate generation + on-demand ranking, market-scoped
+**Decision.** A worker generates and caches top-40 candidates per active player every 10 minutes per market (TTL 30 min); the API reads, applies request constraints, re-ranks, returns top 5 at p95 <150ms. **The user-facing path never runs candidate generation.** `MarketScope` is a required parameter with no unscoped variant, and a hard cap of 500 candidates per player is enforced in the query builder.
+**Consequences.** The N² problem never materialises. Cost risk #1 (a code path dropping the scope, turning 250K users into 3.1×10¹⁰ comparisons) is structurally prevented rather than monitored. Candidates can be up to 10 minutes stale, mitigated by event-triggered regeneration.
+**Rejected.** On-demand generation (unbounded latency and cost); global unscoped matchmaking.
+
+## ADR-021 — Batch clearing for league scheduling
+**Context.** At low density, greedy first-come allocation is actively destructive: the first player to open the app takes the only available opponent and the second gets nothing.
+**Decision.** For the weekly league-scheduling pass, collect all open demand for a window and run a maximum-weight matching over the compatibility graph. Open/instant matchmaking stays greedy, because users expect immediacy there.
+**Consequences.** Globally better assignments in thin markets — the highest-leverage matchmaking decision in the product. Adds a scheduled clearing job and a small graph-matching dependency. League matches are assigned on a cadence rather than instantly, which must be communicated.
+**Rejected.** Greedy everywhere (the naive implementation, and the one that starves thin markets).
+
+## ADR-022 — Capability registry enforces GUI/agent parity in CI
+**Decision.** A registry declares every capability's Zod I/O, `agentExposure`, and `guiRoute`. Three CI assertions fail the build: (1) every tool-exposed capability has a binding whose JSON Schema is generated from the same Zod input; (2) every capability has a resolving `guiRoute` or an explicit waiver; (3) no HTTP or tool handler contains business logic, enforced by an import lint rule.
+**Consequences.** Parity is structural, not maintained by discipline. Adding a GUI feature without a tool, or a tool without a GUI, breaks CI at the commit that causes it. Authorization, validation, and rate limits are enforced once. Constrains agent-only "clever" behaviours that bypass business rules — deliberately.
+**Rejected.** A separate agent backend (guaranteed drift, doubled auth surface, the source of most agentic-product incidents).
+
+## ADR-023 — Rating periods, not per-match updates
+**Context.** Glicko-2 is *defined* over rating periods; games within a period are treated as simultaneous. Per-match sequential updates make arrival order load-bearing and recompute a nightmare.
+**Decision.** Nightly rating periods per market, weekly per division for league play. Job key `(rating_period_id, format, ruleset_version)` equals the snapshot primary key. A **provisional** rating is computed on read for display and never written back.
+**Consequences.** Order independence within a period — the concurrency problem does not exist rather than being solved. Natural idempotency; re-running is a no-op. Deterministic replay. The cost is felt latency, mitigated by the provisional display labelled "official rating updates Sunday." Two numbers, one authoritative, beats one number whose derivation cannot be reproduced.
+**Rejected.** Per-match Elo/Glicko updates (ordering hazard, concurrency correctness risk, unreproducible history).
+
+## ADR-024 — Closed format-config union; no user-authored logic
+**Context.** "Any format is a config" is correct and is the most common way this class of system dies — configs acquire conditionals, then expressions, then an undebuggable JSON-encoded interpreter.
+**Decision.** The config is a closed, versioned, schema-validated Zod discriminated union per format kind. **No formula strings, no scripting, no `eval`, ever.** A format the union cannot express is a new TypeScript variant, not a richer DSL. `computeStandings(config, results)` is pure. Every format ships a golden-file test with expected standings and tiebreak traces; adding a format without one fails CI. Configs are immutable once a season starts.
+**Consequences.** Format changes stay typed, tested, and reviewable. `tiebreak_trace` doubles as the agent's evidence for "why am I ranked 3rd?". A mid-season rule change requires a new version and a recorded migration, which is correct — a silently-edited season config is unreproducible history.
+**Rejected.** An expressive rules DSL (unbounded complexity, no type checking, no stack traces, no tests).

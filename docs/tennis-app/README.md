@@ -10,6 +10,12 @@ A complete research-to-design package for a US-first, mobile-native competitive 
 |---|---|
 | **[report/DEEP-RESEARCH-REPORT.md](report/DEEP-RESEARCH-REPORT.md)** | The master document: market, competition, format engine, personas, UX blueprint, CRO playbook, agentic design, trust architecture, legal summary, unit economics, city-by-city GTM, KPI tree, risk register, roadmap, design system |
 | **[adjudication/CHATGPT-STRATEGY-ADJUDICATION.md](adjudication/CHATGPT-STRATEGY-ADJUDICATION.md)** | Point-by-point verification of an external strategy memo against four new research streams — what held up, what was refuted, and the merged final strategy |
+| **[decisions/CONSOLIDATED-DECISION-LOG.md](decisions/CONSOLIDATED-DECISION-LOG.md)** | Every correction on the record, settled facts, 28 settled decisions, rejected options with reasons, and the honestly unknown list |
+| **[investment/IC-MEMO-SEED-REVIEW.md](investment/IC-MEMO-SEED-REVIEW.md)** | Independent VC investment committee memo — **PASS at high conviction**, with the TAM arithmetic, comparable exits, and the eight diligence questions |
+| **[investment/RESPONSE-TO-IC-MEMO.md](investment/RESPONSE-TO-IC-MEMO.md)** | What the PASS proves, the venture-vs-bootstrap category error, and how the plan changes |
+| **[architecture/TECHNICAL-ARCHITECTURE.md](architecture/TECHNICAL-ARCHITECTURE.md)** | Vendor-neutral technical assessment: stack, play-graph data model, matchmaking service, agent architecture with evidence-tier enforcement, cost model, and the five architectural risks |
+| **[decisions/adr/ADR-INDEX.md](decisions/adr/ADR-INDEX.md)** | 24 architecture decision records (15 product/strategy, 9 technical) |
+| **[release/RELEASE-PLAN-OKRS-KPIS.md](release/RELEASE-PLAN-OKRS-KPIS.md)** | Gate-driven release plan with a kill criterion on every gate, a KPI dictionary, and an instrumentation contract |
 | **[prd/LIQUIDITY-AND-WEDGE-PRD.md](prd/LIQUIDITY-AND-WEDGE-PRD.md)** | The build plan: liquidity math, first-cluster strategy, Match Fit and reliability models, ladder design, two parallel experiments, and explicit go/kill thresholds |
 | **[mockups/index.html](mockups/index.html)** | Gallery of 10 complete design directions — open in a browser |
 | [PRODUCT-CONCEPT.md](PRODUCT-CONCEPT.md) | The one-page concept |
@@ -84,3 +90,11 @@ From the liquidity research (stream 09):
 1. **The unit of launch is a club cluster, not a radius.** Every real precedent is ~10–50 actives *per named place* — Nextdoor activates a neighborhood at 10 verified members, Meetup groups are viable at 20–50, ALTA runs ~22–27 members per facility. Nobody has ever published a users-per-square-mile threshold because distance is not the real filter.
 2. **Declared availability is the cheapest liquidity in the product.** Moving a player from 2 to 4 declared weekend slots takes slot-overlap probability from 0.32 to 0.86 — nearly tripling their effective opponent pool without adding a single user to the network.
 3. **Money is the no-show mechanism.** Free RSVP events run 30–50% no-show; paid events 5–15%. OpenTable deposits cut no-shows 57%, while a card-on-file achieves only 16%. The season fee is not only monetization — it is the commitment device.
+
+## Where this landed
+
+An independent VC review returned **PASS at high conviction** — and the arithmetic is accepted in full. $100M of revenue would require 1.38M paying players, or 580% of the entire USTA-rated population. Reaching $10M ARR at this plan's own city gate needs 460 successful cities; the US has 387 metros. City #10 costs ~$49K to launch against ~$24K of lifetime contribution.
+
+**But the memo answers a question that was never asked.** The same facts make this a poor venture investment and a good bootstrapped business — Terri's Ladder does ~$200K/year from one metro on a Wix site. The default path is now **bootstrap to profitability**, not venture.
+
+The memo also lands a fair criticism of this repository: the plan instructed itself not to write more plan before running the pilot, and then wrote more plan. **No further planning artifacts until a cluster exists.** The next step is a two-week, zero-cost test of challenge-invite conversion — the memo's own cheapest flip condition, and a number nobody in any sport has ever published.
