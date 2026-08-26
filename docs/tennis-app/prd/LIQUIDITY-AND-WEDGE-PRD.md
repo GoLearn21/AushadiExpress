@@ -1,6 +1,7 @@
 # Liquidity & Wedge PRD
 ### First city, first cluster, first 90 days — with explicit go/kill thresholds
 
+**Version:** 2.0 (supersedes 1.0; adds §4.4 evidence hierarchy, §12 personas, §13 competitive answer, §14 MVP screens, §15 privacy & safety)
 **Status:** thesis frozen. This document defines what gets built, what gets measured, and what kills the project.
 **Governing constraint:** the binding scarcity is not features, AI, or ratings. It is *players who reliably show up, near each other, at the same level, at the same time.* Every decision below is subordinate to that.
 
@@ -177,6 +178,27 @@ A precise number computed from four fields is the same error as "63% of points w
 
 **Borrow Hinge's expiry mechanic** 🟢: surface a small number of high-fit matches that expire in 24–48h. Expiry is a liquidity device disguised as scarcity — it forces the decision and recycles inventory.
 
+### 4.4 The evidence hierarchy — enforced in code, not in the prompt
+
+Every statement the system makes carries a machine-assigned tier. A statistics service computes n, confidence interval, and multiplicity-corrected significance and returns the tier; **the LLM may only verbalize claims the service has already tiered.** It never computes or asserts a statistic itself (ADR-007).
+
+| Tier | Meaning | Example |
+|---|---|---|
+| **FACT** | System-of-record data | "You lost 6-4, 3-6, 8-10." |
+| **PLAYER REPORT** | Self-reported, unverified | "You said your second serve felt weak." |
+| **OBSERVED** | Objectively captured | "Video shows seven double faults." |
+| **INFERRED** | Statistically supported, **always with n and interval** | "Across 19 net points — 63%, range 41–81%. Too few to call." |
+| **HYPOTHESIS** | Explicitly speculative | "Your toss position could be contributing." |
+| **CONFIRMED** | Passed the significance gate | Only after n and multiplicity correction |
+
+**What this sounds like in the product:**
+
+> *"That's now your third match mentioning second-serve problems. I don't want to call it a weakness yet — we don't have enough objective evidence. If you record 10–15 minutes of your next match, I can investigate."*
+
+**Brand proposition:** *Your assistant tells you what it knows — and what it doesn't.*
+
+This is an unusually strong trust position in a category whose default failure mode is confident fabrication, and it is the direct product expression of the statistical findings in `research/07`.
+
 ---
 
 ## 5. Reliability model
@@ -346,9 +368,107 @@ Both are pre-product. Neither requires an app. **The PRD's assumptions are what 
 6. **Playtomic/MATCHi fill rates** — not disclosed by anyone.
 7. **Users-per-square-mile thresholds** — never published for any local activity marketplace. Nextdoor's 10-per-neighborhood and Meetup's 20–50-per-group are the only real proxies, and both are *per named place* — which is why §3.2 uses clusters.
 
+
 ---
 
-## 12. The first ten days
+## 12. Who this is for
+
+| Persona | % of base | The job | What kills them today |
+|---|---|---|---|
+| **The Returner** (34, back after a decade) | ~35% | "Find people at my level without embarrassing myself" | Doesn't know their NTRP; won't message a stranger; fears a blowout |
+| **The Social Competitor** (45, doubles) | ~30% | "Regular games with a good crew" | Group-chat coordination hell |
+| **The Relocator** (new in town) | ~15% | "Instant tennis community" | Closed club cliques, no entry point |
+| **The Grinder** (4.0–4.5, 4×/week) | ~5% of users, **~40% of matches** | "Maximum quality matches, a number that moves" | Thin depth at level; unreliable self-reported scores |
+| **The Woman Player** (cross-cutting) | ~40% of base | "Compete without safety anxiety" | Meeting male strangers at empty courts |
+| **The Organizer / CTA volunteer** | small, strategic | "Run my ladder without spreadsheets" | Free tools are our supply-side wedge |
+
+**Primary persona for v1: The Returner.** Not the Grinder. The Grinder generates the matches but is 5% of the base and will tolerate a rough product; the Returner is the growth engine and churns permanently on a single bad first experience. **The first-match experience is designed for the Returner and everything else bends to it.**
+
+---
+
+## 13. The question that must be answerable before building
+
+> **Why would a US recreational tennis player choose us over Tenisime, UTR, TennisPAL, PlayYourCourt, RacketPal, Playtomic, SwingVision — and the WhatsApp group they already use?**
+
+It cannot be "more features." **Tenisime already ships more features than this v1 plan** — matching, ELO, ladders, tournaments, Apple Watch tracking, training journal, AI Coach, opponent briefings, weekly focus, clinics, chat, court discovery. The honest answers, in order of defensibility:
+
+| # | Answer | Defensible? |
+|---|---|---|
+| 1 | **There are actually people to play with here** | ✅ **The only real moat.** Two-sided, compounding, un-copyable |
+| 2 | **The match actually happens** — reliability + commitment device | ⚠️ Copyable in ~2 quarters |
+| 3 | **It takes 20 seconds, not 20 minutes** — complexity hiding | ⚠️ Copyable, but culturally hard |
+| 4 | **It tells the truth about what it knows** — evidence tiers | ⚠️ Copyable, but requires discipline most teams lack |
+
+**Governing consequence: everything that is not liquidity is a means to liquidity.** #2, #3, and #4 are executional advantages that buy time for #1 to compound. If a roadmap item does not serve one of these four, it is out of scope.
+
+### 13.1 The design principle this implies
+
+A recent Tenisime App Store review says, in effect: *great for finding people to play, but too many options — overcomplicated.* That is the most valuable competitive intelligence available, because it is a user telling us where a feature-complete competitor loses.
+
+> **We do not win by adding capabilities. We win by hiding complexity.**
+
+Home screen shows four things, not eleven:
+
+```
+What do you want to do?
+
+🎾  Play this week
+🏆  Compete
+📈  See my progress
+🤖  Ask my assistant
+```
+
+The agent orchestrates underneath. One job per screen; one dominant action per screen.
+
+---
+
+## 14. MVP screens (v1 scope — nothing else ships)
+
+| # | Screen | Single job | Dominant action |
+|---|---|---|---|
+| 1 | **Onboarding / level self-placement** | Get to a level band without shame | "Find me a match" |
+| 2 | **Availability picker** | Declare ≥3 of 12 weekend slots | "Save — 3× more opponents at 4 slots" |
+| 3 | **Home ("Play this week")** | Answer "who can I play?" | Accept a proposed slot |
+| 4 | **Match proposal / confirm** | Turn a proposal into a commitment | One-tap Confirm |
+| 5 | **Score entry** | Capture the result at the court, offline | Submit score |
+| 6 | **Box standings** | Create unfinished business | Challenge someone |
+| 7 | **Player card** | Decide whether to accept a stranger | Reliability + Accept |
+| 8 | **Agent** | Everything else | — |
+
+**Explicitly NOT in v1:** video, tactical analytics, tournaments, clinics, training journal, achievements, public profiles, social feed, coach marketplace, doubles partner finder. Each is a real product; none increases the probability that two people play this weekend.
+
+---
+
+## 15. Privacy, safety & trust requirements (v1, non-negotiable)
+
+Derived from `research/03-legal-compliance.md`. These are launch-gating, not fast-follows.
+
+**Safety**
+- In-app messaging only until **both** players confirm a match. No phone numbers exchanged by default
+- Court proposals default to **busy public facilities in daylight hours**
+- Share-my-match (time, place, opponent) with a trusted contact
+- One-tap block that **propagates through matchmaking permanently** — a blocked user never appears again
+- Report → human review queue (also an Apple Guideline 1.2 requirement for UGC apps)
+- Women-only divisions offered whenever ≥6 signups, pooling across adjacent levels to reach density
+- **Market conservatively, implement generously.** Platforms are sued for *promising* safety and executing poorly, not for lacking features. Never claim "verified" or "background-checked" beyond what is literally true
+
+**Privacy**
+- Coarse location by default; precise is opt-in, per-purpose, never shared between users, never sold (ADR-011)
+- Data-subject-request intake covering the 20+ state privacy laws in force in 2026; honour Global Privacy Control
+- Data minimisation to the Maryland standard; written retention policy; no biometric templates (BIPA)
+- Breach response plan before first user
+
+**Legal**
+- 18+ gate: DOB, ToS eligibility clause, 17+ store rating, honour app-store age signals
+- Clickwrap ToS with arbitration + class waiver (mass-arbitration batching, small-claims and CA public-injunction carve-outs)
+- **Separate scroll-wrap waiver screen at season checkout**, typed-name signature, stored per user per season, Texas express-negligence language. Note waivers are void in **Louisiana and Virginia** — assumption of risk and platform posture carry those states
+- Tech E&O + cyber + CGL bound **before match one**
+- WCAG 2.2 AA as a build gate, not a polish task; accessibility statement published
+- TCPA: written consent, 10DLC registration, 8am–9pm local quiet hours, all-method opt-out ≤10 business days
+
+---
+
+## 16. The first ten days
 
 1. Pick the cluster (2–4 facilities), walk them, photograph them.
 2. Recruit two organizers who already run groups there.
