@@ -35,7 +35,9 @@ google-credentials-base64.txt
 .railway/
 
 # Agent/IDE & Tooling Cache
-.claude/
+.claude/*
+# vendored agent skills are part of the repo; local settings are not
+!.claude/skills/
 .playwright-mcp/
 .gemini/
 .antigravity/
