@@ -23,7 +23,8 @@
   --line-soft:    #EDE2D2;
 
   /* clay accents */
-  --clay:         #C4502C;
+  /* WCAG AA fix (audited by tools/contrast-audit.py) */ was #C4502C, 4.37:1 under #FFF7F0
+  --clay:         #BE4D2A;
   --clay-deep:    #A63E20;
   --sienna:       #8A3218;
   --clay-tint:    #F4DDD2;
@@ -408,7 +409,8 @@ h1.mast-title em svg{
 .hero-match{
   margin-top:15px;
   background:
-    radial-gradient(140% 110% at 50% -25%, #D2643C 0%, var(--clay) 46%, var(--clay-deep) 100%);
+    /* light stop darkened from #D2643C: #FFF4EC on it was 3.45:1 */
+    radial-gradient(140% 110% at 50% -25%, #A84726 0%, var(--clay) 46%, var(--clay-deep) 100%);
   border-radius:var(--r-arch);
   padding:34px 22px 20px;
   color:#FFF4EC;

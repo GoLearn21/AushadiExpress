@@ -24,8 +24,12 @@
   --accent:#E8442A;
   --accent-hot:#FF3B30;
   --accent-deep:#B32315;
-  --accent-grad:linear-gradient(135deg,#FF3B30 0%,#E8442A 55%,#C42D18 100%);
+  --accent-grad:linear-gradient(135deg,#FF6B4A 0%,#FF5A3D 55%,#E8442A 100%);
   --accent-glow:rgba(232,68,42,.35);
+  /* Ink for text/icons sitting ON the accent. White fails AA on this hue
+     (#fff on #E8442A = 3.97:1, on #FF3B30 = 3.55:1). This near-black clears
+     5.04:1 at the darkest gradient stop and 7.10:1 at the lightest. */
+  --on-accent:#120507;
 
   /* text */
   --text:#F5F5F1;
@@ -75,7 +79,7 @@ body::before{
     radial-gradient(700px 600px at -10% 40%, rgba(232,68,42,.08), transparent 55%),
     radial-gradient(1200px 700px at 50% 115%, rgba(196,45,24,.12), transparent 60%);
 }
-::selection{background:var(--accent);color:#fff}
+::selection{background:var(--accent);color:var(--on-accent)}
 a{color:inherit}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
 :focus-visible{outline:2px solid var(--accent-hot);outline-offset:3px;border-radius:6px}
@@ -92,7 +96,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .masthead .kicker .mark{
   display:inline-grid;place-items:center;width:26px;height:26px;border-radius:6px;
-  background:var(--accent-grad);color:#fff;font-family:var(--font-display);
+  background:var(--accent-grad);color:var(--on-accent);font-family:var(--font-display);
   font-size:15px;letter-spacing:.02em;box-shadow:var(--glow-red);
 }
 .masthead h1{
@@ -213,10 +217,13 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .avatar.sm{width:30px;height:30px;font-size:11px}
 .avatar.lg{width:56px;height:56px;font-size:18px}
-.av-red{background:linear-gradient(135deg,#E8442A,#8C1B0E)}
-.av-plum{background:linear-gradient(135deg,#7C4DFF,#3F1F8C)}
-.av-teal{background:linear-gradient(135deg,#1FB6A6,#0E5D55)}
-.av-blue{background:linear-gradient(135deg,#3E7BFA,#1C3B8C)}
+/* Avatar initials are 13px bold — normal text under WCAG, so 4.5:1 applies.
+   The original light stops failed: #E8442A 3.97, #3E7BFA 3.88, #1FB6A6 2.53.
+   Darkened so white initials clear 4.5:1 against the lightest stop. */
+.av-red{background:linear-gradient(135deg,#C0301C,#8C1B0E)}
+.av-plum{background:linear-gradient(135deg,#6A3AE0,#3F1F8C)}
+.av-teal{background:linear-gradient(135deg,#14776D,#0E5D55)}
+.av-blue{background:linear-gradient(135deg,#2B5BC4,#1C3B8C)}
 .av-amber{background:linear-gradient(135deg,#F5A623,#8C5A0E)}
 .av-rose{background:linear-gradient(135deg,#F1567B,#8C1B3B)}
 .av-slate{background:linear-gradient(135deg,#5F6B7A,#2B323C)}
@@ -224,7 +231,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .btn-primary{
   display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
   padding:16px 18px;border-radius:var(--r-md);
-  background:var(--accent-grad);color:#fff;
+  background:var(--accent-grad);color:var(--on-accent);
   font-family:var(--font-head);font-weight:900;font-size:15px;
   letter-spacing:.1em;text-transform:uppercase;
   box-shadow:0 10px 26px rgba(232,68,42,.38);
@@ -264,7 +271,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .tab .dot{width:4px;height:4px;border-radius:50%;background:transparent}
 .tab-rally{
   width:52px;height:52px;border-radius:50%;display:grid;place-items:center;margin-top:-26px;
-  background:var(--accent-grad);color:#fff;box-shadow:0 8px 24px rgba(232,68,42,.5);
+  background:var(--accent-grad);color:var(--on-accent);box-shadow:0 8px 24px rgba(232,68,42,.5);
   border:3px solid #0B0B0F;
 }
 
@@ -303,7 +310,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
   border-color:rgba(255,59,48,.65);box-shadow:var(--glow-red);
 }
 .level.selected .band{color:var(--accent-hot)}
-.level.selected .play{background:var(--accent-grad);color:#fff;border-color:transparent}
+.level.selected .play{background:var(--accent-grad);color:var(--on-accent);border-color:transparent}
 .level.selected::after{
   content:"YOUR PICK";position:absolute;top:9px;right:12px;
   font-family:var(--font-head);font-weight:900;font-size:8.5px;letter-spacing:.18em;color:#FF9C8E;
@@ -328,7 +335,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .home-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .logo-mark{
   width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
-  background:var(--accent-grad);font-family:var(--font-display);font-size:18px;color:#fff;
+  background:var(--accent-grad);font-family:var(--font-display);font-size:18px;color:var(--on-accent);
   box-shadow:0 4px 14px rgba(232,68,42,.4);
 }
 .home-top .city{display:flex;flex-direction:column}
@@ -554,7 +561,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 }
 .bubble.user{
   align-self:flex-end;border-radius:16px 16px 5px 16px;
-  background:var(--accent-grad);color:#fff;font-weight:500;
+  background:var(--accent-grad);color:var(--on-accent);font-weight:500;
   box-shadow:0 6px 18px rgba(232,68,42,.3);
 }
 .bubble.agent{

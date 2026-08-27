@@ -21,6 +21,8 @@ An ADR is immutable once accepted. To change one, write a new ADR that supersede
 | [014](#adr-014) | Both-confirm score protocol with dispute freeze | Accepted |
 | [015](#adr-015) | Per-contact invite selection only | Accepted |
 
+Technical ADRs 016–024 and stack-change ADRs 025–029 are indexed in their own sections below.
+
 ---
 
 ## ADR-001 — Enter through liquidity, not improvement {#adr-001}
@@ -261,23 +263,25 @@ Derived from `architecture/TECHNICAL-ARCHITECTURE.md`. Same immutability rule ap
 
 | ADR | Title | Status |
 |---|---|---|
-| 016 | Expo/React Native + TypeScript everywhere, shared `@core` | Accepted |
-| 017 | Modular monolith on Postgres, two workers | Accepted |
+| 016 | Expo/React Native + TypeScript everywhere, shared `@core` | **Superseded by 025, 029** |
+| 017 | Modular monolith on Postgres, two workers | **Superseded in part by 026** (structure stands; Node/Fastify replaced) |
 | 018 | Append-only ledger + derived read models | Accepted |
 | 019 | Two-tier availability representation | Accepted |
 | 020 | Batch candidate generation + on-demand ranking, market-scoped | Accepted |
 | 021 | Batch clearing (max-weight matching) for league scheduling | Accepted |
-| 022 | Capability registry enforces GUI/agent parity in CI | Accepted |
+| 022 | Capability registry enforces GUI/agent parity in CI | **Superseded in part by 027** (intent stands; Zod mechanism replaced) |
 | 023 | Rating periods, not per-match updates | Accepted |
-| 024 | Closed format-config union; no user-authored logic | Accepted |
+| 024 | Closed format-config union; no user-authored logic | **Superseded in part by 028** (prohibition stands; Zod mechanism replaced) |
 
 ## ADR-016 — Expo/RN + TypeScript everywhere
+**Status.** Superseded 2026-08-27 by ADR-025 (mobile) and ADR-029 (web). Retained verbatim; ADRs are immutable.
 **Context.** Solo team, three surfaces (iOS, Android, web), a domain with real logic (rating math, compatibility scoring, format configs).
 **Decision.** Expo/React Native with the New Architecture for mobile; a separate Next.js app for SEO/admin; both consuming a shared `@core` package holding types, Zod contracts, rating math, and the format engine.
 **Consequences.** Domain logic written once. OTA updates via EAS let the core loop be tuned weekly without App Review. Web is rebuilt (~8 screens) rather than shared via react-native-web, because RNW markup is poor for SEO. We accept lower ceiling raw rendering performance, which this product does not need.
 **Rejected.** Flutter (forces writing the domain twice or over HTTP; smaller talent pool; JS-first AI SDK ecosystem). Native Swift+Kotlin (two codebases, no capability here demands it).
 
 ## ADR-017 — Modular monolith on Postgres, two workers
+**Status.** Language and framework superseded 2026-08-27 by ADR-026. The modular-monolith structure below stands unchanged.
 **Decision.** One Fastify deployable with `application/`, `http/`, `agent/`, `domain/` modules, plus a matchmaker worker and a ledger worker. Jobs on `pgmq`/`graphile-worker`, not Redis, until ~50–100K MAU.
 **Consequences.** No distributed tracing burden, no service mesh, no cross-service transactions. Module boundaries in one repo give ~90% of the benefit at ~5% of the cost. The matchmaker is a queue consumer with a JSON contract, so rewriting it in Go later touches no other code.
 **Rejected.** Microservices, Kubernetes, serverless request path (cold starts poison the agent latency budget; long matchmaking jobs don't fit; serverless Postgres connection management is a recurring tax).
@@ -304,6 +308,7 @@ Derived from `architecture/TECHNICAL-ARCHITECTURE.md`. Same immutability rule ap
 **Rejected.** Greedy everywhere (the naive implementation, and the one that starves thin markets).
 
 ## ADR-022 — Capability registry enforces GUI/agent parity in CI
+**Status.** Mechanism superseded 2026-08-27 by ADR-027. The three CI assertions stand unchanged.
 **Decision.** A registry declares every capability's Zod I/O, `agentExposure`, and `guiRoute`. Three CI assertions fail the build: (1) every tool-exposed capability has a binding whose JSON Schema is generated from the same Zod input; (2) every capability has a resolving `guiRoute` or an explicit waiver; (3) no HTTP or tool handler contains business logic, enforced by an import lint rule.
 **Consequences.** Parity is structural, not maintained by discipline. Adding a GUI feature without a tool, or a tool without a GUI, breaks CI at the commit that causes it. Authorization, validation, and rate limits are enforced once. Constrains agent-only "clever" behaviours that bypass business rules — deliberately.
 **Rejected.** A separate agent backend (guaranteed drift, doubled auth surface, the source of most agentic-product incidents).
@@ -315,7 +320,443 @@ Derived from `architecture/TECHNICAL-ARCHITECTURE.md`. Same immutability rule ap
 **Rejected.** Per-match Elo/Glicko updates (ordering hazard, concurrency correctness risk, unreproducible history).
 
 ## ADR-024 — Closed format-config union; no user-authored logic
+**Status.** Mechanism superseded 2026-08-27 by ADR-028. The no-DSL prohibition stands unchanged.
 **Context.** "Any format is a config" is correct and is the most common way this class of system dies — configs acquire conditionals, then expressions, then an undebuggable JSON-encoded interpreter.
 **Decision.** The config is a closed, versioned, schema-validated Zod discriminated union per format kind. **No formula strings, no scripting, no `eval`, ever.** A format the union cannot express is a new TypeScript variant, not a richer DSL. `computeStandings(config, results)` is pure. Every format ships a golden-file test with expected standings and tiebreak traces; adding a format without one fails CI. Configs are immutable once a season starts.
 **Consequences.** Format changes stay typed, tested, and reviewable. `tiebreak_trace` doubles as the agent's evidence for "why am I ranked 3rd?". A mid-season rule change requires a new version and a recorded migration, which is correct — a silently-edited season config is unreproducible history.
 **Rejected.** An expressive rules DSL (unbounded complexity, no type checking, no stack traces, no tests).
+
+---
+
+# Stack-change ADRs (025–029)
+
+Written 2026-08-27 in response to the founder's directive to build the MVP on Kotlin
+Multiplatform + Compose Multiplatform, and to the four governance panels convened to
+review it. These five supersede four accepted ADRs. Two independent panels flagged that
+`prd/PRD-PHASE1-MVP.md` cited ADR-025 before it existed; that defect is closed here.
+
+Evidence base for 025–029: `research/10-kmp-cmp-state-of-the-art.md` (versions verified
+against Maven Central and kotlinlang.org on 2026-08-27) and the Panel B joint review
+recorded in `decisions/GOVERNANCE-REVIEW-PANELS.md`.
+
+| ADR | Title | Status | Supersedes |
+|---|---|---|---|
+| 025 | Kotlin Multiplatform + Compose Multiplatform for all client surfaces | Accepted | 016 (mobile clause) |
+| 026 | Kotlin/Ktor backend; one language across client and server | Accepted | 017 (Fastify/Node clause) |
+| 027 | Contracts and capability registry in kotlinx.serialization | Accepted | 022 (Zod mechanism) |
+| 028 | Format-config union as a Kotlin sealed hierarchy | Accepted | 024 (Zod mechanism) |
+| 029 | Ktor-served public web; no separate Next.js app | Accepted | 016 (Next.js clause) |
+
+**Scope note.** 025–029 supersede the *mechanism* of 016, 017, 022, 024. The *reasoning*
+of 018–024 — append-only ledger, two-tier availability, market-scoped candidate
+generation, batch clearing, rating periods, closed format union — is language-independent
+and survives intact. Nothing in 001–015 is touched.
+
+---
+
+## ADR-025 — Kotlin Multiplatform + Compose Multiplatform for all client surfaces {#adr-025}
+
+**Status.** Accepted 2026-08-27. Supersedes ADR-016's mobile clause. ADR-016 remains in
+the record as written.
+
+**Context.** ADR-016 chose Expo/React Native on four arguments: (a) one shared TypeScript
+domain with a Node backend, (b) OTA updates via EAS, (c) talent pool, (d) a JS-first AI
+SDK ecosystem. The founder directed a change to KMP + CMP. Four panels reviewed it.
+
+The decisive fact is that this product's entire promise is *"our numbers are correct."*
+The domain layer — score canonicalisation, the attestation state machine, availability
+intersection, standings, rating display policy — is the asset. TypeScript is structurally
+typed, has `any`, and erases at runtime; Zod exists to redo at runtime what the type
+system could not guarantee. Kotlin's sealed hierarchies, value classes, and exhaustive
+`when` are checked by the compiler *and* survive to runtime. For a domain whose failure
+mode is a silently wrong number, that difference is load-bearing.
+
+Argument (a) is neutralised only if the backend also moves — see ADR-026, which is a
+precondition, not a companion. Argument (d) is neutralised by the architecture's own
+design: the LLM gateway is a ~300-line vendor-neutral HTTPS client with JSON-Schema tool
+definitions, and language is nearly irrelevant to it. Argument (c) is a mild real loss.
+Argument (b) is a **real, permanent loss** and is treated as such below.
+
+**Decision.** Client code is Kotlin Multiplatform with Compose Multiplatform shared UI on
+iOS and Android. Repository layout follows JetBrains' 2026 recommended structure
+(`composeApp/` is no longer the default; AGP 9 forbids `com.android.application` in a
+multiplatform module):
+
+```
+androidApp/   iosApp/   (webAdmin — see ADR-029)
+core/         # result types, dispatchers, logging — stdlib + serialization only
+domain/       # pure Kotlin: entities, state machines, canon encoder. No Compose, no Android
+data/         # Ktor client + SQLDelight implementations of domain interfaces
+sharedUi/     # Compose Multiplatform: design system, screens, view models
+```
+
+`sharedLogic` stays separate from `sharedUI`. This is the escape hatch: if CMP-on-iOS
+disappoints, `sharedUi` is dropped and 100% of `domain/` survives behind native SwiftUI.
+
+Pinned versions (verified 2026-08-27): Kotlin 2.4.10, Compose Multiplatform 1.12.0,
+AGP 9.3.0, **Gradle 9.5.1** (Kotlin 2.4.0 documents support to 9.5.0; AGP 9.3.0 requires
+≥9.5.0 — the window is one version wide), KSP 2.3.11, JDK 17, compileSdk 37, Xcode 26.4,
+iOS deployment minimum 15.0. Everything in `gradle/libs.versions.toml`. Stable-channel
+Kotlin only. **No nice-to-have library may ever gate a Kotlin upgrade — drop the library.**
+
+Library selections: Ktor client 3.5.2 · kotlinx.serialization 1.11.0 · coroutines 1.11.0 ·
+**SQLDelight 2.3.2** · multiplatform-settings 1.3.0 · **Koin 4.2.2** · official
+Navigation Compose 2.9.2 · Coil 3.6.0 · kotlin.test + Turbine 1.2.1 · Okio 3.18.1.
+
+Three of those are contested and the reasoning is recorded, not assumed:
+- **SQLDelight over Room 3.0.2.** Room 3.0 went stable 2026-07-01 and is now the
+  defensible default for a generic new app — Google-resourced, coroutine-native, covers
+  JS/Wasm. We decline it here because the outbox is the one table that must survive an
+  app upgrade with two-week-old rows intact, SQLDelight's explicit migration files and
+  longer KMP production record are worth more than Room's ergonomics, and Room 3.0's
+  *native/iOS* driver story is materially less documented than its Android/web story.
+  Revisit after a `BundledSQLiteDriver`-on-iOS spike.
+- **Koin over Metro.** Metro 1.4.2 is the interesting entrant — compile-time graph
+  validation, no KAPT or KSP — but it is a Kotlin compiler plugin with no published
+  stability guarantee, which is precisely the coupling risk the version-lockstep rule
+  above exists to avoid. Koin for a ten-screen app.
+- **Official Navigation over Decompose.** Decompose 3.5.0 has the better iOS
+  swipe-back and process-death story and is the known escape hatch; we start official and
+  budget a spike for edge-swipe-back, which is where teams bail.
+
+**The OTA loss, stated plainly.** Apple guideline 2.5.2 forbids downloading or executing
+code that changes app functionality. Kotlin OTA runtimes exist (Ketoy, `.ktx` bytecode
+bundles) but are Android-only and would themselves be a 2.5.2 problem. RN/Expo's tolerated
+position rests on a JS-interpreted-code precedent a Kotlin bytecode VM does not inherit.
+**Plan for zero OTA on iOS, permanently.**
+
+| | Expo/EAS | KMP |
+|---|---|---|
+| Author → 90% of actives | ~2–6 hours | ~10–14 days |
+| Rollback of a bad ranking change | OTA revert, hours | none, without a server flag |
+| Clean one-week A/B on client logic | yes | **no** |
+
+The *measurement* cost exceeds the shipping cost. A weekly A/B on client-computed ranking
+is uninterpretable when treatment reaches half the users in four days and 90% in two
+weeks: arms are contaminated by app version, and app version correlates with device age,
+OS version, and engagement. You would be measuring *"people who update fast."*
+
+**Consequences.**
+- Every weekly-tuned decision moves server-side. This is not a mitigation bolted on; it is
+  the condition under which the OTA loss collapses from *"we cannot tune weekly"* to
+  *"we cannot change pixels weekly."* See ADR-026 and the PRD §5.2/§5.3 rewrite.
+- `min_supported_client` version floor plus a forced-upgrade screen ship in **build 1**.
+  A version floor cannot be retrofitted, by definition — clients already in the field
+  have no code to check it.
+- Server supplies `FitWeights`, `DisplayPolicy`, reason templates, and a string bundle
+  with a baked-in fallback. Onboarding and offer copy are exactly where iteration is
+  wanted and exactly what a release otherwise gates.
+- The availability grid is built **first**, as a go/no-go spike, against real VoiceOver
+  and TalkBack, before the stack is locked. It is simultaneously the highest-ROI screen
+  in the product and the worst case for CMP interop: drag-to-paint, haptics, live counter,
+  full screen-reader and switch-control operability. Two weeks budgeted, with a written
+  native-fallback plan (SwiftUI screen over a shared `commonMain` view model via
+  `UIViewControllerRepresentable`).
+- Cross-target golden tests run on `jvm` + `iosSimulatorArm64` + `androidTest`, not JVM
+  alone. `kotlin.math` transcendentals are not guaranteed bit-identical between
+  `java.lang.Math` and Native `libm`; `kotlinx-datetime` on Darwin reads the *device's*
+  tzdb, so pinning tzdata on the client is unachievable; non-ASCII `String` ordering
+  differs by target. Therefore: **no `Double` in anything hashed, ordered, or
+  equality-compared**; fixed-point `Int` scoring; all timezone-dependent date arithmetic
+  server-side against a pinned tzdb, client formats only; every tiebreak chain terminates
+  on an explicit ID ordering, never on locale-sensitive `compareTo`.
+- iOS binary size takes a floor of Skia + Kotlin/Native runtime + Compose runtime.
+  Reported figures are large enough to be an App Store download-size conversation; measure
+  ours before launch rather than inheriting a number.
+- iOS debugging is materially worse than Android. Xcode integration for the Kotlin/Native
+  debugger is an unshipped roadmap item.
+- CI: `jvmTest` on Linux as the fast gate, Android assemble on Linux, iOS simulator on
+  macOS **gated to PRs against `main` and nightly** — macOS runners are roughly 10× Linux
+  per minute. Cache `~/.konan` separately from the Gradle cache; it is the single
+  highest-leverage KMP CI optimisation.
+- Both platforms ship from week one. A club roster of 100 splits roughly evenly
+  iOS/Android; shipping one platform excludes half the cluster and destroys the density
+  ADR-002 says is the entire point. This is also the strongest single argument for KMP.
+
+**Honest weakness in the evidence.** JetBrains' own use-cases page names only Instabee and
+Respawn Pro as shipping *Compose UI on iOS*. Forbes, McDonald's, Google Docs, Cash App,
+Bitkey, Duolingo, Quizlet, Netflix and the rest are **KMP shared-logic** adopters with
+native SwiftUI/UIKit on top. Vendor claims that these run CMP UI at hundreds of millions
+of DAU are not supported by JetBrains' page and should be treated as marketing. The
+enterprise evidence base is for shared logic, not shared UI. Separately: no credible
+"we moved off KMP" post-mortem dated 2026 could be found — the absence of failure
+write-ups is a gap in the evidence, not evidence of absence. ADR-025 rests on the
+`sharedLogic`/`sharedUI` split precisely because the shared-*logic* case is the one the
+evidence actually supports.
+
+**Alternatives rejected.**
+- *Stay on Expo/RN (ADR-016).* Keeps OTA, loses the type system on the one layer whose
+  correctness is the product. The panels judged the domain-layer gain to exceed the OTA
+  loss **only** because the OTA loss is mitigable by moving tuned logic server-side, which
+  we would want anyway.
+- *Flutter.* Forces the domain to be written twice or reached over HTTP — the same defect
+  that would sink Kotlin-client-on-Node-backend.
+- *Native Swift + Kotlin.* Two codebases at n=1 engineer.
+- *Compose Multiplatform for Web.* See ADR-029.
+- **Mobile web instead of any native app — Panel A's recommendation, and the strongest
+  dissent on record.** Panel A (seed VC + scaled solo founder) named this *"the single
+  highest-leverage cut"* and argued it removes two toolchains, the Mac dependency, two
+  store accounts, App Review latency and its ~40% first-submission rejection rate, Google
+  Play's 12-tester/14-day closed-testing gate, a second push stack, a second device
+  matrix, a second accessibility pass, **and the no-OTA problem entirely** — while
+  deleting no user story and no Phase 1 gate metric. Its costed estimate: 45 weeks →
+  ~11 weeks, $110–165K → ~$30K, NPV from decisively negative to defensible. Its stated
+  costs: iOS push behind add-to-home-screen (mitigated by SMS, which is what the concierge
+  pilot already ran on) and App Store discovery (irrelevant, since growth is 100%
+  challenge-invite by construction).
+
+  **This ADR overrides that recommendation on the founder's explicit direction, and the
+  dissent is recorded rather than rebutted, because it is not obviously wrong.** Panel A's
+  economics stand: they are an argument about *how much to build*, and they are adopted in
+  full through the PRD scope cuts (S3 demoted to assisted, S4's deposit rail deferred, the
+  operator console and reschedule flow added, a support-minutes-per-player budget made a
+  first-class non-functional requirement). What is rejected is only the conclusion that
+  the *client platform* should therefore be web. Two considerations decide it: Panels C and
+  D independently concluded that shipping one platform halves liquidity in a market whose
+  entire thesis is liquidity — and the same argument applies with more force to shipping a
+  surface neither platform treats as a first-class app; and the availability picker, which
+  three of four panels named the highest-ROI surface in the product, is a drag-to-paint
+  grid with haptics whose interaction quality is materially better native.
+
+  **The honest reading: Panel A is right that this is the most expensive decision in the
+  plan, and it is the one most worth revisiting if the availability-grid spike (C5) goes
+  badly.** The spike is scheduled first precisely so that this ADR can be reversed cheaply
+  rather than discovered to be wrong in month four.
+
+---
+
+## ADR-026 — Kotlin/Ktor backend; one language across client and server {#adr-026}
+
+**Status.** Accepted 2026-08-27. Supersedes ADR-017's Fastify/Node clause. **This ADR is
+a precondition of ADR-025, not a companion to it.**
+
+**Context.** Panel B's condition C1, verbatim: *"Backend moves to Kotlin/Ktor. If Node
+stays, KMP is rejected — you would write the domain twice, the exact reason the prior
+assessment rejected Flutter."* A Kotlin client against a Node server is the worst of both
+worlds: it pays KMP's OTA and tooling costs while forfeiting the single-domain benefit
+that justifies them.
+
+**Decision.** Ktor server 3.5.2 on the JVM, same version line as the client, same
+`kotlinx.serialization`, same coroutines. Modular monolith structure is unchanged from
+ADR-017 — `application/`, `http/`, `agent/`, `domain/` modules plus a matchmaker worker
+and a ledger worker on Postgres-backed queues. Only the language and framework change.
+
+A `core` (contract) module targeting `jvm` + `android` + `ios*` holds `@Serializable`
+DTOs and parse functions, consumed by server and clients alike. A field rename breaks
+compilation on both sides. This is the single biggest structural win of an all-Kotlin
+stack and it is real.
+
+**Four rules that keep it a win rather than a coupling:**
+1. **`core` stays dependency-free** — stdlib, serialization, `kotlin.time`, nothing else.
+   The moment it pulls Ktor client, Compose, or an Android artifact, the server inherits it.
+2. **Share contracts, not server-side business rules.** Server logic leaking into a client
+   binary is both a security problem and a binary-size problem.
+3. **No `kotlinx-datetime` types on the wire.** It is pre-1.0 (the roadmap item is
+   literally "to Beta"). Use `kotlin.time.Instant` (Stable since Kotlin 2.3.0) or
+   epoch-millis `Long`, converting at the edges.
+4. **Plain REST + shared DTOs, not kotlinx-rpc.** kotlinx-rpc 0.10.3 is genuinely
+   attractive and is 0.x with no production-stability declaration. Acceptable for an
+   internal admin API only.
+
+**Server owns, and the client never does:**
+- **Ordering authority.** The server ranks and returns an ordered list of offers with
+  reasons. The client renders, and may filter, but **never re-orders**. If the client ever
+  re-ranks, it scores in scaled `Int`, never `Double`, or client order and the logged
+  `fit_breakdown` will disagree on ties and the user sees a list the server did not produce.
+- **`FitWeights`, `DisplayPolicy`, reason templates, string bundle.**
+- **Opponent counts** and every other live-pool number the UI displays.
+- **The authoritative Glicko-2 computation.** The volatility solver iterates on
+  `exp`/`ln`/`pow`, which are not guaranteed bit-identical across JVM and Native. The
+  client shares the band-width function `k·√(φa²+φb²)` and the display mapping only.
+  **Never hash a `Double`.**
+- **RRULE + IANA timezone → availability mask expansion.** No credible multiplatform
+  RFC-5545 library exists, and `kotlinx-datetime` on Darwin reads the device tzdb, so
+  the architecture's "pin the tzdata version" is unachievable client-side. The client
+  sends rule descriptors and receives materialised masks.
+- **Every time-bearing value in a payload.** Played-at instants and all deadlines are
+  server-assigned or server-clamped. A device with its clock set forward could otherwise
+  post-date a match into a different rating period. The 7-day auto-confirm clock starts
+  from **server receipt**, never from the device's `created_at` — otherwise a phone left
+  in a bag silently burns the countersign window, and iOS `BGTaskScheduler` gives no
+  guarantee the outbox ever flushes unattended.
+- **Idempotency.** `UNIQUE(idempotency_key)` makes at-least-once delivery
+  effectively-once, and **the server returns the same response body for a duplicate key,
+  never a 409**. Otherwise a retry after a lost ACK shows the user an error for a write
+  that succeeded — the most common idempotency bug in this category.
+- **The active canon version**, supplied to clients and cached. See ADR-027.
+
+**Consequences.**
+- Server and clients move in lockstep on the Kotlin version, because they share a compiled
+  module. Backend deploy cadence is now coupled to the mobile toolchain. This is a real
+  organisational cost, not a hypothetical, and it is the price of the single-domain win.
+- The JVM's operational profile (heap tuning, warmup) replaces Node's. Neither is harder;
+  they are different, and the team learns one instead of two.
+- Hiring is for one kind of engineer rather than two, which partially cancels ADR-025's
+  talent-pool loss.
+- Ktor 3.4.0 added OpenAPI generation, which covers most of what ADR-022's Zod-derived
+  emission provided. The rest is ADR-027's job.
+
+**Alternatives rejected.**
+- *Keep Fastify/Node.* Rejected as C1 states: it forfeits the entire justification for
+  ADR-025 while paying all of its costs. **If this alternative is ever chosen, ADR-025 is
+  withdrawn and ADR-016 is reinstated.** The two decisions stand or fall together.
+- *Spring Boot.* Heavier, and its coroutine story is worse than Ktor's for a codebase that
+  is coroutine-native end to end.
+- *Keep Node for the AI gateway only.* A second deployable and a second auth surface for
+  a 300-line HTTPS client.
+
+---
+
+## ADR-027 — Contracts and capability registry in kotlinx.serialization {#adr-027}
+
+**Status.** Accepted 2026-08-27. Supersedes ADR-022's mechanism. ADR-022's *intent* —
+parity enforced structurally in CI rather than by discipline — is unchanged and binding.
+
+**Context.** ADR-022 specified the capability registry in Zod: one schema generating both
+the OpenAPI document and the JSON Schema for LLM tool definitions. `Zod → JSON Schema` is
+a one-liner. `kotlinx.serialization → JSON Schema` is not off-the-shelf. Panel B costed
+the gap at roughly one week of work plus discipline. That is the honest price of ADR-025.
+
+**Decision.** Capabilities are declared in a Kotlin registry: `@Serializable` input and
+output types, `agentExposure`, `guiRoute`, and a handler reference. JSON Schema for tool
+definitions is generated from `SerialDescriptor` by a small in-house emitter covering the
+closed set of shapes the registry permits — primitives, `data class`, `List`, `Map` with
+string keys, enums, and sealed hierarchies with an explicit discriminator. Anything the
+emitter cannot express is a compile-time-rejected capability shape, not a richer emitter.
+
+**Three CI assertions carry over unchanged in intent:**
+1. Every tool-exposed capability has a binding whose JSON Schema is generated from the
+   same `SerialDescriptor` as its handler input.
+2. Every capability resolves a `guiRoute` or carries an explicit waiver.
+3. No HTTP or tool handler contains business logic — enforced by a Konsist import rule:
+   `http/**` and later `agent/**` may import `application/**`, never `domain/**` or `db/**`.
+
+**Serialization discipline, mandatory:**
+- Explicit `@SerialName` on **every** sealed subtype. Never rely on the fully-qualified
+  class name — a package refactor would silently rename the wire format and brick every
+  queued outbox row and every stored ledger payload.
+- `classDiscriminator` set explicitly. `ignoreUnknownKeys = true` on read.
+- A **wire-format golden test** serialising every sealed subtype against a checked-in
+  fixture, so a field reorder or a rename fails CI.
+
+**Type discipline, repo-wide and enforced by lint:**
+- Sealed interfaces for every state machine; `@JvmInline value class` for every identifier
+  and unit; `when` as an **expression with no `else`** over domain sealed types (Konsist
+  or detekt — non-exhaustive `when` *statements* have been errors since Kotlin 1.7, but
+  `else` still silently absorbs new states).
+- `Either<E, T>` / Arrow `Raise<E>` at every service boundary. Arrow usage is confined to
+  `Either`, `Raise`, and `ensure`.
+- **`kotlin.Result` is rejected** — it erases the error to `Throwable`, so `when` over it
+  is not exhaustive, which discards the entire point.
+- **`throw` is banned in `commonMain` domain code**, except `require` on programmer errors.
+- Parse, don't validate, at every boundary. Because domain types have no constructor that
+  can hold nonsense, **`domain/` contains zero validation code**. That is the payoff.
+- Scale confusion killed at the type level: `Glicko2Mu` (internal, ÷173.7178) and
+  `EloRating` (display, 1500-centred) are distinct value classes. Mixing them is *the*
+  classic Glicko-2 implementation defect.
+
+**Every service returns `ToolEnvelope<T> = data + claims[] + actions[]`, to the GUI, in
+Phase 1.** This is the highest-leverage AI decision available and it costs almost nothing,
+because the PRD already demands templated claims: S3's "reasons, not a score," S4's
+reliability band, S1's rating band. Those **are** `Claim`s with `template` + `params`.
+Render the GUI from them and the Phase 2 agent becomes a *selector over an existing claim
+stream* rather than a rewrite of every tool. `RatingBand` and the reliability band are
+`T2_MODELED` claims, not UI rules.
+
+**Consequences.** Six of the seven agent-readiness items are things Phase 1 needs for the
+GUI anyway: the application service layer with its import rule, `ToolEnvelope`, the
+registry with `agentExposure` unused, `ProposedAction` + HMAC `action_token` +
+`commit_action` (S4's confirmation card and S5's score submission are *already*
+confirm-then-commit), `audit_event.source` including `agent` and `offline_sync` (one
+column, unaddable cleanly later), and the numeric-and-superlative filter as a pure tested
+`commonMain` function (~80 lines, unused until Phase 2 — writing it against a live agent
+is the failure mode). The seventh, logging the full `fit_breakdown` feature vector with
+outcomes from day one, is already in the architecture and is simultaneously the future
+training set and the agent's evidence. **Phase 1 builds the constraint, not the capability.**
+
+**Alternatives rejected.** A JSON-Schema-first source of truth with Kotlin generated from
+it (inverts the type system's role and reintroduces a codegen step in both directions);
+hand-maintained parallel JSON Schemas (guaranteed drift, which is the exact failure
+ADR-022 exists to prevent).
+
+---
+
+## ADR-028 — Format-config union as a Kotlin sealed hierarchy {#adr-028}
+
+**Status.** Accepted 2026-08-27. Supersedes ADR-024's mechanism. ADR-024's prohibition —
+**no formula strings, no scripting, no `eval`, ever** — is unchanged and absolute.
+
+**Decision.** The format config is a closed, versioned `@Serializable sealed interface`
+with an explicit `@SerialName` per variant and an explicit `classDiscriminator`. A format
+the union cannot express is a new Kotlin variant, not a richer DSL.
+`computeStandings(config, results)` is a pure function in `commonMain` and is fully
+shared — but the **authority** is not: a client-computed table is a display cache, and the
+ledger snapshot is the record.
+
+**Consequences.**
+- Golden-file tests per format now run on `jvm` + `iosSimulatorArm64` + `androidTest`
+  asserting *identical* output, not on the JVM alone. Adding a format without golden files
+  fails CI, as before.
+- **Every tiebreak chain terminates on an explicit ID ordering.** Locale-sensitive
+  `String.compareTo` is banned in tiebreaks: non-ASCII collation differs across targets,
+  so the same season could produce two different standings on two devices.
+- `tiebreak_trace` still doubles as the agent's evidence for *"why am I ranked 3rd?"* and
+  is now a `Claim` under ADR-027 rather than an ad-hoc string.
+- Configs remain immutable once a season starts; a mid-season rule change is a new version
+  and a recorded migration.
+
+**Alternatives rejected.** An expressive rules DSL — unchanged from ADR-024, and the
+reasoning is language-independent.
+
+---
+
+## ADR-029 — Ktor-served public web; no separate Next.js app {#adr-029}
+
+**Status.** Accepted 2026-08-27. Supersedes ADR-016's Next.js clause.
+
+**Context.** ADR-012's claim that court-directory SEO can compound *before any player
+joins* is a genuine strategic asset with a clock on it, and it was the reason for a
+separate Next.js app. Under an all-Kotlin stack there were three options: export
+`commonMain` to Next.js via Kotlin/JS `@JsExport` (works, but non-annotated declarations
+are name-mangled and sealed hierarchies and value classes do not cross cleanly, so an
+export surface must now be maintained); render from Ktor; or Compose for Web.
+
+**Decision.** The public web surface — court directory, cluster pages, SEO content — is
+served by the Ktor server with server-side templating and static generation, sharing the
+domain natively. **The Next.js app is deleted from the plan.**
+
+**Compose Multiplatform for Web is explicitly rejected for every web surface.** It is
+Beta while the mobile targets are Stable — putting the *lowest-risk* surface on the
+*highest-risk* runtime. It paints to a canvas: no DOM, therefore no SEO at all (fatal
+here), no browser text selection, no extensions, degraded accessibility tooling, no CSS.
+Wasm first-load latency needs a loading indicator. For an admin console the reuse argument
+collapses anyway, since an admin dashboard shares almost no UI with a consumer mobile app.
+
+**If and when a league-admin console outgrows server-rendered pages,** it is built as a
+separate conventional frontend against the same Ktor server, reusing the `core` DTO module
+compiled to `js`/`wasmJs`. That keeps the type-sharing win — which is the actual value —
+without betting an internal tool on a Beta renderer. Revisit Compose for Web only if
+Kotlin/Wasm reaches Stable *and* CMP web is promoted alongside it.
+
+**Consequences.** An entire toolchain, dependency tree, and deploy target is deleted. SEO
+pages share domain types with no export surface. The cost is that rich interactive web
+views are now more work than they would have been in React — acceptable, because the
+public web surface is mostly static content and the product is mobile-first by ADR-025.
+
+**Alternatives rejected.** Kotlin/JS `@JsExport` to Next.js (maintains an export surface
+across a boundary that mangles exactly the constructs the domain is built from);
+Compose/Wasm (above); react-native-web (moot once ADR-016 is superseded).
+
+---
+
+## Amendment to ADR-014 — dispute resolution in Phase 1 {#adr-014-amendment}
+
+**Recorded 2026-08-27.** ADR-014 routes disputes to *"agent-mediated resolution."* The
+Phase 1 PRD forbids an AI agent, and the architecture's Phase 0 line says disputes are
+handled by email. As written, ADR-014 authorises an agent the PRD forbids.
+
+**Amendment.** For Phase 1, a dispute freezes the result and opens a **human review queue**
+item worked by the operator. No agent mediation. ADR-014's protocol — both attestations
+retained, digest equality within a canon version, freeze on mismatch — is otherwise
+unchanged. Agent mediation is re-proposed, if at all, in a Phase 2 ADR against a real
+dispute corpus.

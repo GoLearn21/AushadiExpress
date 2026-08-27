@@ -20,14 +20,16 @@
   --green:        #1F4433;   /* racing green */
   --green-2:      #163628;   /* green shade */
   --green-3:      #2A5A44;   /* green tint */
-  --red:          #D96C3D;   /* retro red-orange */
-  --red-deep:     #C25529;
+  /* WCAG AA fix (audited by tools/contrast-audit.py) */ --red was #D96C3D, 3.41:1 under #fff; --red-deep was #C25529, 3.59:1 on cream
+  --red:          #B65A33;   /* retro red-orange */
+  --red-deep:     #A64923;
   --mustard:      #D9A441;
   --mustard-soft: #E8C57C;
   --navy:         #22334C;
   --ink:          #221F1A;
   --ink-soft:     #4A443A;
-  --ink-faint:    #7A7263;
+  /* WCAG AA fix (audited by tools/contrast-audit.py) */ was #7A7263, 4.40:1 on the cream surface
+  --ink-faint:    #766E60;
 
   /* semantic */
   --bg-page:      var(--cream);

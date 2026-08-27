@@ -35,7 +35,9 @@
   --down:#F472A6;
   --warn:#F5C56B;
   /* gradients */
-  --grad-cta:linear-gradient(120deg,#4F46E5 0%,#8B5CF6 48%,#EC4899 100%);
+  /* WCAG AA fix (audited by tools/contrast-audit.py) */ stops darkened from #8B5CF6 (4.23:1) and #EC4899 (3.53:1) under #fff.
+     --violet/--magenta keep their original values for decorative orbs and rings. */
+  --grad-cta:linear-gradient(120deg,#4338CA 0%,#8457E9 48%,#CA3D83 100%);
   --grad-cool:linear-gradient(120deg,#2DD4BF,#4F46E5);
   --grad-ring:conic-gradient(from 220deg,#2DD4BF 0deg,#4F46E5 120deg,#8B5CF6 200deg,#EC4899 252deg,rgba(255,255,255,0.07) 252deg 360deg);
   --grad-text:linear-gradient(100deg,#A5B4FC,#C4B5FD 40%,#5EEAD4);

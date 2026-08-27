@@ -5,17 +5,36 @@ import kotlin.test.*
 
 class RatingTest {
 
+    private val policy = DisplayPolicy.CONSERVATIVE_FALLBACK
+
     @Test fun `a new player is never shown a point estimate`() {
         val seed = RatingBand.SOLID.seed()
-        val d = seed.display(matchesCounted = 3)
-        assertIs<RatingDisplay.Provisional>(d, "below 5 matches the UI must show a range only")
+        val d = seed.display(matchesCounted = 3, policy = policy)
+        assertIs<RatingDisplay.Provisional>(d, "while phi is wide the UI must show a range only")
     }
 
     @Test fun `an established player gets a point estimate with its interval`() {
         val settled = Glicko(mu = 3.5, phi = 0.2, sigma = 0.06)
-        val d = settled.display(matchesCounted = 20)
+        val d = settled.display(matchesCounted = 20, policy = policy)
         assertIs<RatingDisplay.Established>(d)
         assertTrue(d.range.start < d.value && d.value < d.range.endInclusive)
+    }
+
+    @Test fun `the display gate is confidence, not a match count`() {
+        // The correction: an earlier draft hid the number below 5 counted matches, a constant
+        // inherited from a competitor's marketing copy. Our own measurements put Glicko RD near
+        // 144 at 5 matches -- roughly a full tier of uncertainty. Two players can have the same
+        // match count and very different confidence, and the display must follow the confidence.
+        val confidentAtFour = Glicko(mu = 3.5, phi = 0.15, sigma = 0.06)
+        val vagueAtThirty = Glicko(mu = 3.5, phi = 0.55, sigma = 0.06)
+        assertIs<RatingDisplay.Established>(confidentAtFour.display(4, policy))
+        assertIs<RatingDisplay.Provisional>(vagueAtThirty.display(30, policy))
+    }
+
+    @Test fun `the display policy is data, so it can be tuned without a release`() {
+        val vague = Glicko(mu = 3.5, phi = 0.5, sigma = 0.06)
+        assertIs<RatingDisplay.Provisional>(vague.display(10, DisplayPolicy(0.30, 5)))
+        assertIs<RatingDisplay.Established>(vague.display(10, DisplayPolicy(0.60, 5)))
     }
 
     @Test fun `beating a stronger opponent raises the rating`() {

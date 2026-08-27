@@ -43,11 +43,38 @@ data class Glicko(val mu: Double, val phi: Double, val sigma: Double) {
 
     val isReliable: Boolean get() = phi <= RatingBand.RELIABLE_PHI
 
-    /** 95% interval. The only thing the UI may show below [MIN_MATCHES_FOR_POINT_ESTIMATE]. */
+    /** 95% interval. The only thing the UI may show while the rating is provisional. */
     val confidenceInterval: ClosedFloatingPointRange<Double>
         get() = (mu - 1.96 * phi)..(mu + 1.96 * phi)
+}
 
-    companion object { const val MIN_MATCHES_FOR_POINT_ESTIMATE = 5 }
+/**
+ * When a point estimate may be shown, and how wide the matchmaking band is.
+ *
+ * **Server-supplied, never compiled in.** Two reasons, and the second is the one that matters:
+ * this is a display rule we expect to tune, and on a no-OTA platform a compiled-in constant is
+ * frozen for 10-14 days per change — and worse, any A/B test on it is uninterpretable, because
+ * treatment reaches half the users in four days and update speed correlates with engagement.
+ *
+ * The gate is [maxPhiForPointEstimate], **not a match count**. An earlier draft used "no number
+ * below 5 counted matches", inherited from a competitor's marketing copy. Our own measurements put
+ * Glicko RD at roughly 144 after 5 matches -- a +/-283 Elo interval, nearly a full tier. A count is
+ * a proxy for confidence; phi *is* confidence, so gating on it is both more correct and
+ * self-adjusting for players who arrive with an unusually informative first few results.
+ */
+data class DisplayPolicy(
+    val maxPhiForPointEstimate: Double,
+    val minMatchesForReliabilityLabel: Int,
+) {
+    init { require(maxPhiForPointEstimate > 0.0) { "phi threshold must be positive" } }
+
+    companion object {
+        /** Fallback only, for a cold client that has never reached the server. */
+        val CONSERVATIVE_FALLBACK = DisplayPolicy(
+            maxPhiForPointEstimate = RatingBand.RELIABLE_PHI,
+            minMatchesForReliabilityLabel = 5,
+        )
+    }
 }
 
 /**
@@ -59,8 +86,14 @@ sealed interface RatingDisplay {
     data class Established(val value: Double, val range: ClosedFloatingPointRange<Double>) : RatingDisplay
 }
 
-fun Glicko.display(matchesCounted: Int): RatingDisplay =
-    if (matchesCounted < Glicko.MIN_MATCHES_FOR_POINT_ESTIMATE)
+/**
+ * The only constructor of a [RatingDisplay].
+ *
+ * `Provisional` has no point-estimate field, so a screen that should not show a number *cannot*
+ * show one. Written as a rule, someone forgets it on one screen; written as a type, they cannot.
+ */
+fun Glicko.display(matchesCounted: Int, policy: DisplayPolicy): RatingDisplay =
+    if (phi > policy.maxPhiForPointEstimate)
         RatingDisplay.Provisional(confidenceInterval, matchesCounted)
     else
         RatingDisplay.Established(mu, confidenceInterval)

@@ -10,12 +10,53 @@ import kotlin.math.sqrt
  * a returning player often wants a winnable match, and a competitive player wants a stretch.
  */
 enum class MatchIntent(val bandLow: Double, val bandHigh: Double) {
-    /** Default. Asymmetric: easier for a stronger player to join than a weaker one, which protects
-     *  the weaker player from a blowout while giving the stronger one a mild stretch. */
+    /**
+     * Default, *after* the placement window. Asymmetric upward: a mild stretch for a player who
+     * has three results on record and has seen the product work.
+     */
     BALANCED(-0.25, 0.75),
     CHALLENGE_ME(0.0, 1.0),
     KEEP_IT_FRIENDLY(-0.75, 0.25),
+
+    /**
+     * No score kept. The cheapest churn reducer available: it removes the losing-badly risk
+     * entirely for exactly the players most at risk of it.
+     */
+    JUST_A_HIT(-0.75, 0.75),
+    ;
+
+    companion object {
+        /** Matches 1-3. A result inside this window moves the band and never demotes. */
+        const val PLACEMENT_WINDOW_MATCHES = 3
+
+        /**
+         * The band for the placement window, and it is the **mirror** of [BALANCED].
+         *
+         * An earlier draft applied -0.25/+0.75 from match one. Reviewed against the target
+         * persona -- returning after years off, rusty, will churn permanently on one bad first
+         * match -- that default is pointed at the player it claims to protect: it systematically
+         * offers a rusty stranger someone stronger, in public, on their first outing. The stretch
+         * is worth having and is **earned after match 3**, not imposed before match 1.
+         *
+         * Hard exclusion also tightens inside the window: see [MatchFit.HARD_EXCLUSION_GAP].
+         */
+        val PLACEMENT_BAND_LOW = -0.75
+        val PLACEMENT_BAND_HIGH = 0.25
+        const val PLACEMENT_HARD_EXCLUSION_GAP = 1.0
+    }
 }
+
+/** The band actually applied to a seeker, which depends on how much history they have. */
+fun MatchIntent.bandFor(matchesCounted: Int): ClosedFloatingPointRange<Double> =
+    if (this == MatchIntent.JUST_A_HIT || matchesCounted >= MatchIntent.PLACEMENT_WINDOW_MATCHES)
+        bandLow..bandHigh
+    else
+        MatchIntent.PLACEMENT_BAND_LOW..MatchIntent.PLACEMENT_BAND_HIGH
+
+/** Hard exclusion is tighter while a player is still being placed. */
+fun hardExclusionGapFor(matchesCounted: Int): Double =
+    if (matchesCounted >= MatchIntent.PLACEMENT_WINDOW_MATCHES) MatchFit.HARD_EXCLUSION_GAP
+    else MatchIntent.PLACEMENT_HARD_EXCLUSION_GAP
 
 /**
  * A reason a pairing was surfaced. Phase 1 shows these instead of a percentage: with only four of
