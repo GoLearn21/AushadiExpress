@@ -1,0 +1,601 @@
+<title>The Tolan Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+
+<style>
+:root{
+  --ground:#F0F2F1;
+  --surface:#FFFFFF;
+  --surface-2:#E6EBEA;
+  --ink:#111817;
+  --ink-2:#3F4F4D;
+  --ink-3:#6D807D;
+  --line:#D3DBD9;
+  --line-2:#B6C2C0;
+  --accent:#0B6E6B;
+  --accent-ink:#0B6E6B;
+  --accent-soft:#DBEDEB;
+  --hot:#B8462D;
+  --hot-soft:#F6E2DC;
+  --shadow:0 1px 2px rgba(17,24,23,.05), 0 8px 24px -16px rgba(17,24,23,.28);
+  --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;
+  --body:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1413;
+    --surface:#151D1C;
+    --surface-2:#1D2625;
+    --ink:#E9EFED;
+    --ink-2:#A7B7B4;
+    --ink-3:#7A8C89;
+    --line:#26312F;
+    --line-2:#3A4846;
+    --accent:#4ED3C7;
+    --accent-ink:#68DDD1;
+    --accent-soft:#10302E;
+    --hot:#F07E63;
+    --hot-soft:#31201B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 28px -18px rgba(0,0,0,.9);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1413;
+  --surface:#151D1C;
+  --surface-2:#1D2625;
+  --ink:#E9EFED;
+  --ink-2:#A7B7B4;
+  --ink-3:#7A8C89;
+  --line:#26312F;
+  --line-2:#3A4846;
+  --accent:#4ED3C7;
+  --accent-ink:#68DDD1;
+  --accent-soft:#10302E;
+  --hot:#F07E63;
+  --hot-soft:#31201B;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 28px -18px rgba(0,0,0,.9);
+}
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--body);
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-soft);color:var(--ink);}
+a{color:var(--accent-ink);text-underline-offset:3px;text-decoration-thickness:1px;}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px;}
+
+.wrap{max-width:1090px;margin-inline:auto;padding-inline:clamp(1.15rem,4vw,3rem);}
+.band{border-top:1px solid var(--line);}
+.band-pad{padding-block:clamp(2.75rem,6vw,4.5rem);}
+.layout{display:grid;grid-template-columns:8.5rem minmax(0,1fr);gap:clamp(1.25rem,3.5vw,3rem);align-items:start;}
+@media (max-width:860px){.layout{grid-template-columns:1fr;gap:.85rem;}}
+
+.rail{position:sticky;top:1.5rem;}
+@media (max-width:860px){.rail{position:static;}}
+.rail-label{
+  font-family:var(--mono);font-size:.66rem;font-weight:500;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);display:block;line-height:1.5;
+}
+.rail-num{
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.1em;color:var(--accent-ink);
+  display:block;margin-bottom:.3rem;
+}
+
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;line-height:1.12;letter-spacing:-.015em;}
+h2{font-size:clamp(1.5rem,3.1vw,2.05rem);margin-bottom:1rem;}
+h3{font-size:clamp(1.12rem,2vw,1.3rem);letter-spacing:-.008em;line-height:1.25;}
+h4{font-size:.98rem;letter-spacing:-.005em;}
+p{margin:0 0 1.05rem;max-width:66ch;}
+p:last-child{margin-bottom:0;}
+.lede{font-size:clamp(1.06rem,1.7vw,1.2rem);color:var(--ink-2);}
+strong{font-weight:600;color:var(--ink);}
+em{font-style:italic;}
+
+/* ---------- masthead ---------- */
+.masthead{padding-block:clamp(2.5rem,7vw,4.75rem) clamp(2rem,5vw,3.25rem);}
+.brandline{display:flex;align-items:center;gap:.85rem;margin-bottom:clamp(1.75rem,4vw,2.75rem);flex-wrap:wrap;}
+.mark{flex:none;display:block;}
+.mark .orb-faint{fill:none;stroke:var(--line-2);stroke-width:1;}
+.mark .orb{fill:none;stroke:var(--accent);stroke-width:1;}
+.mark .core{fill:var(--accent);}
+.mark .eye{fill:var(--surface);}
+.kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-3);}
+.kicker b{color:var(--accent-ink);font-weight:500;}
+h1{font-size:clamp(2.4rem,7.2vw,4.35rem);line-height:1.02;letter-spacing:-.032em;font-weight:700;max-width:14ch;}
+.subhead{font-size:clamp(1.1rem,2.1vw,1.35rem);color:var(--ink-2);max-width:56ch;margin-top:1.35rem;line-height:1.5;}
+.pullquote{
+  margin-top:clamp(2rem,4.5vw,3rem);padding:1.4rem 0 0;border-top:2px solid var(--ink);
+  max-width:60ch;
+}
+.pullquote q{font-family:var(--display);font-size:clamp(1.15rem,2.4vw,1.5rem);font-weight:500;line-height:1.32;letter-spacing:-.012em;quotes:none;display:block;}
+.pullquote cite{display:block;margin-top:.8rem;font-style:normal;font-family:var(--mono);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);}
+
+/* ---------- data panels ---------- */
+.panel{
+  background:var(--surface);border:1px solid var(--line);border-radius:3px;
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.panel-head{
+  padding:.7rem 1rem;border-bottom:1px solid var(--line);background:var(--surface-2);
+  font-family:var(--mono);font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-2);
+  display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:.9rem;min-width:520px;}
+th,td{text-align:left;padding:.62rem 1rem;border-bottom:1px solid var(--line);vertical-align:top;}
+thead th{
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3);font-weight:500;white-space:nowrap;
+}
+tbody tr:last-child td{border-bottom:0;}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:500;white-space:nowrap;color:var(--ink);}
+td.metric{font-family:var(--display);font-weight:500;}
+.note{font-family:var(--body);color:var(--ink-2);font-size:.86rem;}
+
+.tag{
+  display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
+  text-transform:uppercase;padding:.16rem .42rem;border-radius:2px;white-space:nowrap;line-height:1.4;
+}
+.tag-stated{background:var(--accent-soft);color:var(--accent-ink);}
+.tag-est{border:1px solid var(--line-2);color:var(--ink-3);}
+.tag-hot{background:var(--hot-soft);color:var(--hot);}
+
+/* ---------- mechanism list ---------- */
+.mechs{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;}
+.mech{background:var(--surface);padding:1.2rem 1.35rem;}
+.mech h3{margin-bottom:.5rem;}
+.mech p{font-size:.94rem;color:var(--ink-2);margin-bottom:0;max-width:72ch;}
+.mech .stat{
+  display:block;margin-top:.7rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.02em;
+  color:var(--accent-ink);border-left:2px solid var(--accent);padding-left:.6rem;line-height:1.55;
+}
+
+/* ---------- timeline ---------- */
+.tl{display:grid;gap:0;border-left:1px solid var(--line-2);margin-left:.35rem;}
+.tl-row{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:1.1rem;padding:.85rem 0 .85rem 1.35rem;position:relative;}
+.tl-row::before{content:"";position:absolute;left:-4px;top:1.42rem;width:7px;height:7px;border-radius:50%;background:var(--accent);}
+.tl-row + .tl-row{border-top:1px dashed var(--line);}
+.tl-date{font-family:var(--mono);font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);padding-top:.18rem;}
+.tl-body{font-size:.95rem;color:var(--ink-2);}
+.tl-body b{color:var(--ink);font-weight:600;}
+@media (max-width:620px){.tl-row{grid-template-columns:1fr;gap:.15rem;}}
+
+/* ---------- cards / blueprints ---------- */
+.cards{display:grid;gap:1.1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,17.5rem),1fr));}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:1.3rem 1.35rem;box-shadow:var(--shadow);}
+.card-eyebrow{font-family:var(--mono);font-size:.63rem;letter-spacing:.13em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:.5rem;}
+.card h3{margin-bottom:.7rem;}
+.spec{display:grid;gap:.7rem;margin-top:.9rem;padding-top:.9rem;border-top:1px solid var(--line);}
+.spec div{display:grid;grid-template-columns:5.2rem minmax(0,1fr);gap:.7rem;font-size:.88rem;}
+.spec dt{font-family:var(--mono);font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);padding-top:.28rem;}
+.spec dd{margin:0;color:var(--ink-2);}
+.spec dd b{color:var(--ink);font-weight:600;}
+@media (max-width:420px){.spec div{grid-template-columns:1fr;gap:.15rem;}}
+
+/* ---------- callouts ---------- */
+.callout{
+  border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--surface);
+  padding:1.1rem 1.3rem;border-radius:2px;margin:1.5rem 0;
+}
+.callout.warn{border-left-color:var(--hot);}
+.callout p{font-size:.94rem;margin-bottom:.7rem;}
+.callout p:last-child{margin-bottom:0;}
+.callout .h{font-family:var(--mono);font-size:.64rem;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:.55rem;}
+.callout.warn .h{color:var(--hot);}
+
+/* ---------- model diagram ---------- */
+.model{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-block:1.5rem;}
+.model-step{background:var(--surface);padding:1.15rem 1.15rem 1.25rem;}
+.model-step .n{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;color:var(--accent-ink);display:block;margin-bottom:.55rem;}
+.model-step h4{margin-bottom:.4rem;}
+.model-step p{font-size:.86rem;color:var(--ink-2);margin:0;}
+.model-step.missing{background:var(--surface-2);}
+.model-step.missing .n{color:var(--hot);}
+
+/* ---------- phases ---------- */
+.phase{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.1rem;padding:1.15rem 0;border-top:1px solid var(--line);}
+.phase:first-of-type{border-top:0;padding-top:0;}
+.phase-n{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:var(--ink-3);
+  border:1px solid var(--line-2);border-radius:2px;padding:.28rem .5rem;height:max-content;white-space:nowrap;
+}
+.phase h3{margin-bottom:.4rem;}
+.phase p{font-size:.93rem;color:var(--ink-2);margin-bottom:.6rem;}
+.gate{font-family:var(--mono);font-size:.72rem;color:var(--accent-ink);letter-spacing:.01em;}
+.gate b{color:var(--accent-ink);}
+
+ul.tight{margin:.2rem 0 0;padding-left:1.05rem;font-size:.92rem;color:var(--ink-2);max-width:66ch;}
+ul.tight li{margin-bottom:.42rem;}
+ul.tight li::marker{color:var(--accent);}
+
+/* ---------- sources ---------- */
+.sources{columns:2;column-gap:2.5rem;font-size:.83rem;line-height:1.55;}
+@media (max-width:700px){.sources{columns:1;}}
+.sources li{break-inside:avoid;margin-bottom:.6rem;color:var(--ink-2);}
+.sources a{word-break:break-word;}
+
+footer.foot{padding-block:2.5rem 3.5rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase;}
+
+@media (prefers-reduced-motion:no-preference){
+  .card,.mech{transition:border-color .18s ease;}
+  .card:hover,.mech:hover{border-color:var(--line-2);}
+}
+</style>
+
+<header class="wrap masthead">
+  <div class="brandline">
+    <svg class="mark" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+      <ellipse class="orb-faint" cx="20" cy="20" rx="18.5" ry="7"/>
+      <ellipse class="orb" cx="20" cy="20" rx="18.5" ry="7" transform="rotate(58 20 20)"/>
+      <circle class="core" cx="20" cy="20" r="6"/>
+      <circle class="eye" cx="17.7" cy="18.6" r="1.5"/>
+      <circle class="eye" cx="22.4" cy="18.6" r="1.5"/>
+    </svg>
+    <span class="kicker">Field report &middot; <b>Portola / Tolan</b> &middot; compiled Aug 2026</span>
+  </div>
+
+  <h1>The Tolan Playbook</h1>
+
+  <p class="subhead">A twelve-person team turned a cartoon alien into 100,000 paying subscribers and a seven-figure month in under a year. Here is the machine underneath it &mdash; and the parts of it that transfer to a test-prep app, a property-management app, and a pharmacy marketplace.</p>
+
+  <blockquote class="pullquote">
+    <q>Emotional support and practical life management are not competing product features &mdash; they are the same feature.</q>
+    <cite>Ajay Mehta, co-founder &amp; president, Portola</cite>
+  </blockquote>
+</header>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">01 &mdash; The record</span></div>
+    <div>
+      <h2>What actually happened</h2>
+      <p class="lede">Your recollection checks out: 100,000+ paying subscribers, revenue above $1M per month. Both are company-stated figures from July 2025, when Portola raised a $20M Series A. Here is the full ledger, with each number marked by how much weight it can carry.</p>
+
+      <div class="panel" style="margin-top:1.6rem;">
+        <div class="panel-head"><span>Metrics of record</span><span>stated = from the company &nbsp;&middot;&nbsp; est. = third-party estimate</span></div>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Metric</th><th>Value</th><th>As of</th><th>Weight</th></tr></thead>
+          <tbody>
+            <tr><td class="metric">Downloads</td><td class="num">3,000,000+</td><td class="num">Jul 2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Paying subscribers</td><td class="num">100,000+</td><td class="num">Jul 2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Revenue</td><td class="num">&gt; $1M / month</td><td class="num">Jul 2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Annualised run-rate</td><td class="num">$12M</td><td class="num">Jul 2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Capital raised</td><td class="num">$30M</td><td class="num">Feb + Jul 2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Team at launch</td><td class="num">12 people</td><td class="num">Feb 2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Session length</td><td class="num">30&ndash;40 min</td><td class="num">2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Voice share of interactions</td><td class="num">&gt; 70%</td><td class="num">2026</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">App Store rating</td><td class="num">4.8 / 160k ratings</td><td class="num">2026</td><td><span class="tag tag-est">est.</span></td></tr>
+            <tr><td class="metric">Paying-user profile</td><td class="num">Women, 35&ndash;45</td><td class="num">2026</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Peak viral install days</td><td class="num">10&ndash;15k / day</td><td class="num">2025</td><td><span class="tag tag-stated">stated</span></td></tr>
+            <tr><td class="metric">Web traffic trend</td><td class="num">&minus;34.6% / 3 mo</td><td class="num">Jul 2026</td><td><span class="tag tag-est">est.</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <span class="h">Where the sources disagree</span>
+        <p><strong>Downloads:</strong> the company says 3M+ as of July 2025; third-party trackers put cumulative installs above 5M around the same period. <strong>Pricing:</strong> reported tiers range across $2.99&ndash;$4.99/week, $9.99&ndash;$10/month, $49.99&ndash;$70/year, with a premium tier reported near $25/month in 2026. Treat all pricing as directional &mdash; they have clearly been running price tests, and 100k subscribers &divide; $1M+/month implies a blended ARPU around $10&ndash;25.</p>
+      </div>
+
+      <h3 style="margin-top:2.4rem;">The timeline</h3>
+      <div class="tl" style="margin-top:1rem;">
+        <div class="tl-row"><span class="tl-date">Nov 2024</span><span class="tl-body">Soft launch on iOS, no press, no influencer push. <b>An organic TikTok clip of someone venting to their alien takes off before any marketing exists.</b> That clip is the hook the entire growth engine is later built on.</span></div>
+        <div class="tl-row"><span class="tl-date">+2&ndash;3 weeks</span><span class="tl-body">Token costs from 30&ndash;40-minute daily sessions become unsustainable. The team puts up a <b>hard paywall within three weeks of launch</b> &mdash; not as strategy, as survival.</span></div>
+        <div class="tl-row"><span class="tl-date">Feb 2025</span><span class="tl-body">Official iOS launch alongside a <b>$10M seed</b> led by Lachy Groom. ARR moves from roughly $1M to $4M inside four weeks.</span></div>
+        <div class="tl-row"><span class="tl-date">Apr 2025</span><span class="tl-body">Tops App Store category charts in the US, Canada and UK for days at a time.</span></div>
+        <div class="tl-row"><span class="tl-date">Jul 2025</span><span class="tl-body"><b>$20M Series A</b> led by Khosla Ventures (Keith Rabois). 3M+ downloads, 100k+ paying users, $12M run-rate. Total raised: $30M in under six months.</span></div>
+        <div class="tl-row"><span class="tl-date">Late 2025</span><span class="tl-body">Shift from hard paywall toward freemium; social &ldquo;solar system&rdquo; features announced &mdash; your friends and their Tolans.</span></div>
+        <div class="tl-row"><span class="tl-date">Jan 2026</span><span class="tl-body">OpenAI publishes a case study: moving to GPT-5.1 personas cut <b>memory-recall misses 30%</b> and lifted <b>next-day retention over 20%</b>.</span></div>
+        <div class="tl-row"><span class="tl-date">Mid 2026</span><span class="tl-body">Revenue holds near $1M MRR but growth stalls &mdash; estimated traffic down ~35% over three months, pricing complaints surfacing, 56 active Meta ad variants running. <b>The novelty curve is bending.</b></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">02 &mdash; Mechanism</span></div>
+    <div>
+      <h2>Seven things that are actually doing the work</h2>
+      <p class="lede">None of these is &ldquo;we used a good LLM.&rdquo; Every competitor has the same model access. These are product and go-to-market decisions, and each one is copyable.</p>
+
+      <div class="mechs" style="margin-top:1.7rem;">
+        <div class="mech">
+          <h3>The character is the advertisement</h3>
+          <p>A cartoon alien is not a design flourish, it is the distribution strategy. It is customisable (skin, hair, outfit, voice), so it becomes <em>yours</em> &mdash; and a thing that is yours gets screenshotted and posted. Users share &ldquo;my Tolan&rdquo; the way they share a pet. The non-human form does double duty: it also suppresses romantic projection, which is what got every other companion app into trouble.</p>
+          <span class="stat">A shareable identity object turns every activated user into unpaid creative.</span>
+        </div>
+        <div class="mech">
+          <h3>Memory is the aha, and it is measurable</h3>
+          <p>The reported magic moment is precise: <em>your Tolan brings up something you said yesterday, unprompted.</em> That is the instant a tool becomes a relationship. Portola engineers memory as a retrieval system with compression and vector search, not a rolling transcript &mdash; each turn assembles a recent-conversation summary, a persona card, retrieved memories, and tone guidance.</p>
+          <span class="stat">Memory-recall misses &minus;30% &nbsp;/&nbsp; next-day retention +20% when persona consistency improved.</span>
+        </div>
+        <div class="mech">
+          <h3>Proactivity inverts who carries the conversation</h3>
+          <p>ChatGPT waits for a prompt. A Tolan opens with something. It generates a set of daily activities, recommends a show, reacts to photos you upload, and asks about the thing you were stressed about last week. Users never face a blank box &mdash; which is the single biggest drop-off point in every chat product ever shipped.</p>
+          <span class="stat">The product opens the loop; the user only has to answer.</span>
+        </div>
+        <div class="mech">
+          <h3>Emotional support and practical help are one feature</h3>
+          <p>This is the load-bearing insight of the whole company. A user says she is stressed she hasn&rsquo;t sorted out summer camp; the alien responds with empathy <em>and</em> a plan. Products that treat &ldquo;wellness&rdquo; and &ldquo;productivity&rdquo; as separate categories are splitting a single human need in half. The feeling is what gets you opened; the plan is what gets you renewed.</p>
+          <span class="stat">This is the one idea that transfers to every vertical below.</span>
+        </div>
+        <div class="mech">
+          <h3>Voice, not text, is the format</h3>
+          <p>Over 70% of interactions are spoken. That changes the relationship &mdash; you talk to it while cooking, driving, folding laundry, which is why sessions run 30&ndash;40 minutes instead of three. The engineering constraint is brutal and specific: the full loop has to stay inside about two seconds or immersion collapses. Shaving 0.7s off speech initiation was a headline result.</p>
+          <span class="stat">Sub-second responsiveness decides whether it feels conversational or mechanical.</span>
+        </div>
+        <div class="mech">
+          <h3>The paywall went up in week three &mdash; and that helped</h3>
+          <p>Inference costs on 30-minute daily voice sessions forced monetisation almost immediately. Mehta calls this &ldquo;a real help to both our growth and product development.&rdquo; Charging before you are ready removes the option of hiding behind engagement metrics. Industry data backs the structure: hard-paywall apps see roughly 8&ndash;9&times; the revenue per install of freemium apps at day 14 ($2.32 vs $0.27 median), while one-year subscriber retention is effectively identical (27% vs 28%).</p>
+          <span class="stat">You give up almost nothing in retention and gain an order of magnitude in revenue per install.</span>
+        </div>
+        <div class="mech">
+          <h3>Character craft is a staffed function, not a prompt</h3>
+          <p>The head of story is a published science-fiction novelist. Animators shaped the creature. Behavioural researchers, writers and game designers review conversation logs, curate datasets, tune prompts in a playground and ship to production <em>without an engineering handoff</em>. That is an org-design decision, and it produced a 4&times; improvement in prompt-iteration velocity.</p>
+          <span class="stat">Personality is a content pipeline with non-engineers in the loop.</span>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.6rem;">
+        <span class="h">The eighth, quieter one: category arbitrage</span>
+        <p>Tolan does not list itself under Social or Entertainment, where it would be buried under Instagram and Netflix. It sits in <strong>Health &amp; Fitness</strong> &mdash; a category where a top-20 position is achievable and where the audience is already primed to pay a subscription for feeling better. Pick the App Store category you can win, not the one that describes you most literally.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">03 &mdash; Distribution</span></div>
+    <div>
+      <h2>The growth engine, in the order they built it</h2>
+      <p class="lede">The sequence matters more than any individual tactic. They did not build a marketing plan and execute it &mdash; they found a hook by accident, verified it organically for free, and only then paid to reproduce it.</p>
+
+      <div class="model">
+        <div class="model-step"><span class="n">Step 1</span><h4>Find the hook for free</h4><p>An unpaid clip of a real person venting to their alien outperformed anything planned. That emotional situation &mdash; not the feature list &mdash; became the creative brief.</p></div>
+        <div class="model-step"><span class="n">Step 2</span><h4>Flood at volume</h4><p>Many creator accounts, several posts a week each, cheap per video. Comparable operators run 40+ accounts and 200+ videos a week; roughly 2&ndash;3% clear 100k views and under five videos drive ~80% of all views.</p></div>
+        <div class="model-step"><span class="n">Step 3</span><h4>Ride the spikes</h4><p>When a video hit, installs ran 10&ndash;15k in a day and effective cost per install collapsed toward zero. The algorithm, not a following, did the targeting.</p></div>
+        <div class="model-step"><span class="n">Step 4</span><h4>Industrialise it as paid</h4><p>Paid creative <em>restages</em> the organic hook with cast actors rather than reusing raw screen recordings &mdash; the same emotional scene, produced reliably, bought at scale.</p></div>
+      </div>
+
+      <p>Two details in that sequence are easy to miss and expensive to get wrong. First, the winning hooks are <strong>humour and relatable situations with a face on camera</strong> &mdash; the app is often not even shown, just named in the caption. Product demos do not travel. Second, they did not buy media until organic had proven which scene converts, which is why their cost per install was low enough to survive a $10/month price point.</p>
+
+      <div class="callout warn">
+        <span class="h">The finding that should change your plan</span>
+        <p>Tolan went viral among <strong>Gen Z women on TikTok</strong>. The people who actually pay are <strong>women aged 35&ndash;45</strong>, many of them mothers in the American Midwest, who found it through cooking content rather than tech media. Mehta&rsquo;s words: &ldquo;We didn&rsquo;t set out to build for Midwestern moms&hellip; Midwestern moms showed up.&rdquo;</p>
+        <p>Your distribution audience and your monetisation audience do not have to be the same people, and forcing them to be will cost you one of the two. Build the creative for whoever shares; build the pricing, the onboarding and the roadmap for whoever pays. Then go look at who is actually paying you, because it is probably not who you designed for.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">04 &mdash; Risk</span></div>
+    <div>
+      <h2>What is cracking &mdash; and why that is your opening</h2>
+      <p class="lede">Copy the engine, not the trajectory. Tolan in mid-2026 is a company whose growth has stalled, and the reasons are structural rather than execution failures.</p>
+
+      <ul class="tight" style="margin-top:1.3rem;">
+        <li><strong>Novelty decays and there is nothing underneath it.</strong> A user cannot tell you whether their Tolan <em>worked</em>. There is no score, no dollar saved, no outcome. Charm has to be re-earned every single month, forever.</li>
+        <li><strong>The category churns hard.</strong> AI-powered apps generate roughly <strong>41% more revenue per user but churn about 36% faster</strong> than non-AI apps. High ARPU on a leaky bucket is a treadmill.</li>
+        <li><strong>Price fatigue.</strong> Complaints about pricing and ads track alongside the estimated traffic decline. A weekly price point extracts well and resents well.</li>
+        <li><strong>The category is now crowded.</strong> 337 revenue-generating companion apps exist, 128 of them launched in 2025 alone &mdash; and the top 10% capture 89% of the revenue.</li>
+        <li><strong>Regulation arrived.</strong> California&rsquo;s SB 243 took effect 1 January 2026: mandatory disclosure that responses are AI-generated, break reminders every three hours for minors, crisis-response protocols, no sexual content for minors, and a private right of action at the greater of actual damages or $1,000 per violation.</li>
+        <li><strong>Still iOS-only</strong>, which in most of the world means most of the market.</li>
+      </ul>
+
+      <div class="callout" style="margin-top:1.7rem;">
+        <span class="h">The strategic read</span>
+        <p>Tolan&rsquo;s ceiling is that it is <em>only</em> a relationship. Your three products each have something it does not: <strong>a verifiable outcome</strong>. A score that went up. Rent that got collected. A prescription that did not get missed.</p>
+        <p>So the move is not to build a companion. It is to take the companion&rsquo;s front end &mdash; character, memory, ritual, voice &mdash; and bolt it onto a product that can prove it worked. Tolan has to keep being charming forever. An SAT app only has to raise a score once, and the proof does the selling from then on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">05 &mdash; The model</span></div>
+    <div>
+      <h2>Four parts, and you should build all four</h2>
+      <p class="lede">Strip out the aliens and the company-specific detail, and what is left is a four-part structure. Tolan has the first three. The fourth is the one you can add.</p>
+
+      <div class="model">
+        <div class="model-step"><span class="n">Part 1</span><h4>A character with a face</h4><p>Non-human, customisable, named by the user. It is what gets screenshotted, and it is what makes a subscription feel like keeping a friend rather than renting software.</p></div>
+        <div class="model-step"><span class="n">Part 2</span><h4>A memory that proves itself</h4><p>Not perfect recall &mdash; <em>selective</em> recall, surfaced unprompted. &ldquo;You mentioned this last Tuesday.&rdquo; This is the activation moment. Instrument it and measure the miss rate.</p></div>
+        <div class="model-step"><span class="n">Part 3</span><h4>A ritual it owns</h4><p>It opens the loop, daily or weekly, at a time it chose. Never a blank input box. Add a sink for the engagement &mdash; Tolan converts talk-time into energy you spend decorating a planet.</p></div>
+        <div class="model-step missing"><span class="n">Part 4</span><h4>A proof it delivers</h4><p><strong>Tolan does not have this.</strong> A number that moved because the product existed. It is what survives novelty decay, what justifies a higher price, and what makes the shareable post write itself.</p></div>
+      </div>
+
+      <h3 style="margin-top:2.2rem;">Three operating rules that come with it</h3>
+      <ul class="tight" style="margin-top:.8rem;">
+        <li><strong>Charge in week three, not month nine.</strong> With AI inference costs, free users are a real liability, and an early paywall forces the product to be worth something immediately. Put it right after the character pairing, when attachment is highest and before the first real interaction.</li>
+        <li><strong>Find the hook before you buy the media.</strong> Post 30&ndash;50 organic videos across several accounts first. If nothing clears 100k views, you do not have a hook and paid spend will only make that expensive. When one lands, restage it as paid creative.</li>
+        <li><strong>Staff the character.</strong> A writer and a designer with production access to prompts, reviewing real conversation logs weekly. This is a hire, not a sprint task. It is what produced the 4&times; iteration velocity and the retention lift.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">06 &mdash; Adaptation</span></div>
+    <div>
+      <h2>Three blueprints</h2>
+      <p class="lede">Same four-part model, three very different physics. The SAT app is the closest analogue and should be built first. Property management needs the proactivity but must drop the cuteness entirely.</p>
+
+      <div class="cards" style="margin-top:1.7rem;">
+
+        <div class="card">
+          <div class="card-eyebrow">Blueprint A &middot; highest fit</div>
+          <h3>SAT prep</h3>
+          <p style="font-size:.93rem;color:var(--ink-2);">Teenagers, high anxiety, daily habit required, and an outcome that is a literal number. This is the vertical where the Tolan model is <em>stronger</em> than Tolan.</p>
+          <div class="spec">
+            <div><dt>The one feature</dt><dd><b>Test anxiety and a study plan are the same feature.</b> &ldquo;I&rsquo;m panicking about December&rdquo; returns reassurance, a six-week plan, and tonight&rsquo;s twenty questions.</dd></div>
+            <div><dt>Character</dt><dd>A creature that visibly grows as the score band rises. Not an owl, not a robot &mdash; those are taken and generic.</dd></div>
+            <div><dt>Memory</dt><dd>&ldquo;That&rsquo;s the third geometry-angle question this week &mdash; same as last Tuesday. Want to kill it tonight?&rdquo;</dd></div>
+            <div><dt>Ritual</dt><dd>A 15-minute nightly session <em>it</em> starts, with every wrong answer explained aloud in voice.</dd></div>
+            <div><dt>Proof</dt><dd>A predicted score band, updated weekly. This is also your viral object &mdash; &ldquo;1180 &rarr; 1340&rdquo; is the post.</dd></div>
+            <div><dt>Money</dt><dd>Hard paywall after diagnostic + pairing. <b>Parents pay, students use</b> &mdash; the same two-audience split Tolan hit by accident. Sell the parent a weekly progress report.</dd></div>
+            <div><dt>Watch out</dt><dd>Education has the flattest pricing curve of any category and is discounting harder than any other (14.3% of transactions, up from 8.0%). Do not compete on price &mdash; monetise the outcome. And SB 243 applies: minors, disclosure, break reminders, crisis protocols, from day one.</dd></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-eyebrow">Blueprint B &middot; different physics</div>
+          <h3>Property management</h3>
+          <p style="font-size:.93rem;color:var(--ink-2);">Low frequency, high stakes, and the emotion is dread rather than loneliness. Take the proactivity and the memory; leave the alien behind.</p>
+          <div class="spec">
+            <div><dt>The one feature</dt><dd><b>Landlord dread and admin are the same feature.</b> &ldquo;Unit 3 hasn&rsquo;t paid&rdquo; comes back with the reminder already drafted, the notice period for that state, and the ledger attached.</dd></div>
+            <div><dt>Character</dt><dd>Competent, not cute. A calm operator with a consistent voice and a name. Cartoon warmth reads as unserious to someone holding a mortgage.</dd></div>
+            <div><dt>Memory</dt><dd>&ldquo;This tenant paid on the 9th last April too &mdash; send the softer reminder, like last time?&rdquo;</dd></div>
+            <div><dt>Ritual</dt><dd>A Monday 07:00 voice briefing: what&rsquo;s due, what&rsquo;s late, what&rsquo;s expiring, what&rsquo;s broken. Weekly, not daily &mdash; match the real cadence.</dd></div>
+            <div><dt>Proof</dt><dd>Dollarised. &ldquo;Collected $14,200, six days faster than last month, four hours of your time saved.&rdquo;</dd></div>
+            <div><dt>Money</dt><dd>Per-unit, not per-seat. Paywall lands after the first briefing that shows real money, not before.</dd></div>
+            <div><dt>Watch out</dt><dd><b>Do not run the TikTok volume play here.</b> This audience lives in landlord forums, Facebook groups and YouTube. The shareable object is the outcome screenshot and the referral, not the character.</dd></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-eyebrow">Blueprint C &middot; two characters</div>
+          <h3>AushadiExpress</h3>
+          <p style="font-size:.93rem;color:var(--ink-2);">A pharmacy marketplace has two distinct users and needs two distinct companions &mdash; and the daily loop is already there, in the dosing schedule.</p>
+          <div class="spec">
+            <div><dt>The one feature</dt><dd><b>Adherence worry and refill logistics are the same feature.</b> Consumer side: the dose check-in. Retailer side: the stock check-in.</dd></div>
+            <div><dt>Character</dt><dd>Two. A warm health companion for the customer; a sharp shop-floor operator for the retailer. Same engine, different persona card and tone guidance.</dd></div>
+            <div><dt>Memory</dt><dd>&ldquo;Your BP strips run out Thursday &mdash; the shop 400m away has them in stock.&rdquo; Retailer side: &ldquo;You ran out of this brand twice last month.&rdquo;</dd></div>
+            <div><dt>Ritual</dt><dd>A ten-second voice dose check-in. This is <b>the strongest retention loop of the three</b> because it is genuinely daily and medically motivated &mdash; you are not inventing a reason to open the app.</dd></div>
+            <div><dt>Proof</dt><dd>Adherence streak, doses not missed, money saved against MRP. Retailer: stockouts avoided, faster fulfilment.</dd></div>
+            <div><dt>Money</dt><dd>Consumer subscription is a hard sell in this market; monetise the retailer side and let the consumer companion drive order volume.</dd></div>
+            <div><dt>Watch out</dt><dd>Regulated health advice. Copy Tolan&rsquo;s guardrail architecture exactly: no diagnosis, escalate to a real professional, log every refusal. The guardrails are a trust asset, not a tax.</dd></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">07 &mdash; Execution</span></div>
+    <div>
+      <h2>Ninety days, in order</h2>
+      <p class="lede">This sequence is deliberately hook-first. The most common way to lose money on this playbook is to spend eight weeks building a beautiful character and then discover nothing about it travels.</p>
+
+      <div style="margin-top:1.6rem;">
+        <div class="phase">
+          <span class="phase-n">Wk 1&ndash;3</span>
+          <div>
+            <h3>Find the hook before you build anything</h3>
+            <p>Five to ten fresh accounts. Thirty to fifty videos. Faces on camera, humour, a real situation &mdash; the panic before a test, the tenant who won&rsquo;t pay, the prescription you forgot. Product barely visible; named in the caption.</p>
+            <span class="gate">Gate: at least one video clears 100k views. If none does, you do not have a hook yet &mdash; iterate the scene, not the app.</span>
+          </div>
+        </div>
+        <div class="phase">
+          <span class="phase-n">Wk 4&ndash;6</span>
+          <div>
+            <h3>Character, memory, one ritual, paywall</h3>
+            <p>Ship the pairing onboarding as a real personality quiz &mdash; it is simultaneously the personalisation data, the attachment moment and the shareable artefact. Build memory as retrieval, not transcript. Pick exactly one ritual and make the product open it. Hard paywall immediately after pairing, before the first real interaction.</p>
+            <span class="gate">Gate: a user who returns on day 2 is greeted by something they said on day 1.</span>
+          </div>
+        </div>
+        <div class="phase">
+          <span class="phase-n">Wk 7&ndash;9</span>
+          <div>
+            <h3>Instrument the character</h3>
+            <p>Give a writer and a designer production access to prompts and a log-review habit. Track memory-miss rate as a first-class metric alongside D1. Get voice latency inside two seconds end to end &mdash; if you cannot, ship text-first rather than shipping slow voice.</p>
+            <span class="gate">Gate: a non-engineer ships a persona change to production without a code deploy.</span>
+          </div>
+        </div>
+        <div class="phase">
+          <span class="phase-n">Wk 10&ndash;13</span>
+          <div>
+            <h3>Industrialise the winning hook</h3>
+            <p>Restage the organic winner as produced paid creative &mdash; cast it, do not screen-record it. Scale the account count. Simultaneously start reading who is actually paying you, and be prepared for it to be a different person than you built for.</p>
+            <span class="gate">Gate: paid CAC below blended 90-day ARPU, and you can name your paying cohort in one sentence.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:2.2rem;">
+        <div class="panel-head"><span>Targets to hold yourself to</span><span>2026 industry benchmarks</span></div>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Metric</th><th>Benchmark</th><th>What it means for you</th></tr></thead>
+          <tbody>
+            <tr><td class="metric">Download &rarr; paid (D35, N. America)</td><td class="num">2.6% median</td><td class="note">Below 2% means the paywall is in the wrong place or the character isn&rsquo;t landing.</td></tr>
+            <tr><td class="metric">Download &rarr; paid, higher-priced apps</td><td class="num">2.8% / 6.1% top quartile</td><td class="note">Charging more does not necessarily convert worse. Price up before you discount.</td></tr>
+            <tr><td class="metric">Revenue per install, D14 &mdash; hard paywall</td><td class="num">$2.32</td><td class="note">vs $0.27 freemium. Roughly 8&ndash;9&times;. This is the single biggest structural lever.</td></tr>
+            <tr><td class="metric">1-year subscriber retention</td><td class="num">27% hard / 28% freemium</td><td class="note">The hard paywall costs you almost nothing in retention. Take the 8&times;.</td></tr>
+            <tr><td class="metric">Annual vs monthly RPI</td><td class="num">~2&times; / ~5&times; vs weekly</td><td class="note">Push annual plans. Weekly pricing is what generates the resentment Tolan is now seeing.</td></tr>
+            <tr><td class="metric">Viral hit rate on UGC</td><td class="num">2&ndash;3% clear 100k</td><td class="note">Budget for volume. Under five videos will drive ~80% of your views.</td></tr>
+            <tr><td class="metric">AI-app churn penalty</td><td class="num">~36% faster</td><td class="note">Assume you will churn faster than a normal app. Part 4 &mdash; proof &mdash; is your answer to this.</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">08 &mdash; Corroboration</span></div>
+    <div>
+      <h2>The model is not a one-off</h2>
+      <p class="lede">One data point is a story. Two is a pattern &mdash; and the second one contradicts Tolan on monetisation in a way worth knowing.</p>
+      <p><strong>Finch</strong>, a self-care app built around a virtual pet you care for by completing real-life tasks, reached an estimated $30&ndash;40M ARR <em>bootstrapped</em>, with over $1M/month on Android alone. Same structure: onboarding starts with hatching the pet rather than a feature tour, the creature&rsquo;s wellbeing depends on your behaviour, and the emotional bond does the retention work. As one analysis put it: people will journal for their Finch when they would not journal for themselves.</p>
+      <p>But Finch runs a <strong>soft</strong> paywall and generous free tier, and got further than Tolan on less capital. The reconciliation is inference cost: Finch&rsquo;s loop is cheap to serve, Tolan&rsquo;s 30-minute voice sessions are not. <strong>Your paywall hardness should be a function of your marginal cost per active user, not a philosophy.</strong> If your product is voice-heavy and token-hungry, gate early like Tolan. If your loop is mostly local and cheap, a great free experience will out-convert a locked one.</p>
+      <p>The third reference point is <strong>Duolingo</strong>, which proves the character and the streak can carry a brand to 116M monthly actives &mdash; and that the mascot works best when it has an actual personality with edges, not a smiling neutral helper.</p>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">09 &mdash; Sources</span></div>
+    <div>
+      <h2>Where this came from</h2>
+      <p class="lede">Company-stated figures come from Portola&rsquo;s founders in interviews and from OpenAI&rsquo;s published case study. Anything marked &ldquo;est.&rdquo; is a third-party tracker and should be treated as directional.</p>
+      <ol class="sources" style="margin-top:1.4rem;padding-left:1.1rem;">
+        <li><a href="https://www.geekwire.com/2025/ai-companionship-app-tolan-raises-20m-to-help-more-people-grow-with-a-virtual-alien-friend/">GeekWire &mdash; Tolan raises $20M Series A</a></li>
+        <li><a href="https://openai.com/index/tolan/">OpenAI &mdash; How Tolan builds voice-first AI with GPT-5.1</a></li>
+        <li><a href="https://subclub.com/episode/fueling-growth-with-ai-and-viral-product-features-ajay-mehta-portola">Sub Club (RevenueCat) &mdash; Ajay Mehta on growth and viral features</a></li>
+        <li><a href="https://www.revenuecat.com/blog/growth/ajay-mehta-sub-club-podcast-2025">RevenueCat &mdash; Building a lovable alien and a $1M ARR AI app</a></li>
+        <li><a href="https://every.to/podcast/this-ai-alien-will-bring-in-4-million-a-year-in-revenue">Every (AI &amp; I) &mdash; Quinten Farmer and Eliot Peper</a></li>
+        <li><a href="https://finance.biggo.com/news/90896ef39f48b2d6">BigGo &mdash; Tolan built a $10M business on Midwestern moms</a></li>
+        <li><a href="https://homebrew.co/blog/2025/07/08/building-a-different-type-of-ai-companion-tolan-developer-portola-raises-usd20-million-series-a">Homebrew &mdash; Building a different type of AI companion</a></li>
+        <li><a href="https://www.braintrust.dev/customers/portola">Braintrust &mdash; How Portola empowers subject-matter experts</a></li>
+        <li><a href="https://www.systemaic.com/teardowns/tolan">Systemaic &mdash; Tolan revenue, ad spend and growth channels</a></li>
+        <li><a href="https://medium.com/@nicobottaro/the-tiktok-ugc-engine-lessons-from-viral-b2c-startups-like-yope-gauth-tolan-and-more-08d54f07b852">The TikTok UGC Engine &mdash; Yope, Gauth, Tolan</a></li>
+        <li><a href="https://www.revenuecat.com/state-of-subscription-apps">RevenueCat &mdash; State of Subscription Apps 2026</a></li>
+        <li><a href="https://www.revenuecat.com/state-of-subscription-apps-2026-education">RevenueCat &mdash; State of Subscription Apps 2026, Education</a></li>
+        <li><a href="https://readthesignal.co/p/ai-companion-tolan-4m-to-12m-arr">Read the Signal &mdash; Tolan $4M to $12M ARR and three aha moments</a></li>
+        <li><a href="https://www.retention.blog/p/my-alien-friend">Retention.Blog &mdash; My Alien Friend</a></li>
+        <li><a href="https://www.roborhythms.com/ai-companion-app-market-2026/">Roborhythms &mdash; AI companion app market breakdown 2026</a></li>
+        <li><a href="https://www.gunder.com/en/news-insights/insights/client-insight-california-sb-243-new-compliance-requirements-for-operators-of-ai-companion-chatbots">Gunderson Dettmer &mdash; California SB 243 compliance requirements</a></li>
+        <li><a href="https://fpf.org/blog/understanding-the-new-wave-of-chatbot-legislation-california-sb-243-and-beyond/">Future of Privacy Forum &mdash; The new wave of chatbot legislation</a></li>
+        <li><a href="https://blog.sparrowapps.io/p/finch-how-a-self-care-app-hit-30m-arr-without-vc-money">Sparrow &mdash; How Finch hit $30M ARR without VC money</a></li>
+        <li><a href="https://www.adweek.com/brand-marketing/duolingo-duo-owl-marketing-strategy/">Adweek &mdash; The marketing strategy behind Duo</a></li>
+        <li><a href="https://eu.36kr.com/en/p/3378446113298949">36Kr &mdash; 12-person team, $30M in half a year</a></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer class="band wrap foot">
+  Compiled for AushadiExpress &middot; branch claude/tollan-app-research-b3gqyx &middot; figures current to August 2026
+</footer>
