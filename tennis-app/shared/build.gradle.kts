@@ -1,22 +1,28 @@
 plugins {
-    kotlin("multiplatform")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
     jvmToolchain(21)
+
+    // JVM only for now. iOS and Android targets are added on a Mac runner, at which point the
+    // golden tests in :shared must run on jvm + iosSimulatorArm64 + androidTest rather than JVM
+    // alone - ADR-025 requires it, because kotlin.math transcendentals are not guaranteed
+    // bit-identical across targets and String collation differs.
     jvm()
-    // iOS / Android targets are added once the toolchain is available on a Mac runner.
-    // The domain layer is target-agnostic by construction: no expect/actual in :shared.
 
     sourceSets {
         commonMain.dependencies {
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-            implementation("com.squareup.okio:okio:3.9.1")
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.kotlinx.datetime)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.okio)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
         }
     }
 

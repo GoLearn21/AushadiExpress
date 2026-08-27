@@ -1,0 +1,803 @@
+<title>Voice Stack Decision</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F4F7F3;
+  --surface:#FFFFFF;
+  --sunk:#EAEFE9;
+  --ink:#12262A;
+  --ink-2:#3D5352;
+  --ink-3:#6E8180;
+  --rule:#D2DBD4;
+  --rule-soft:#E3E9E2;
+  --accent:#1B6E62;
+  --accent-soft:#E2EFE9;
+  --signal:#8C9A0F;
+  --signal-soft:#F0F2D8;
+  --warn:#A85B25;
+  --warn-soft:#F7EADF;
+  --crit:#96382B;
+  --shadow:0 1px 2px rgba(18,38,42,.05), 0 8px 24px -12px rgba(18,38,42,.18);
+  --measure:68ch;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D1716;
+    --surface:#14201E;
+    --sunk:#101A19;
+    --ink:#E4EDE8;
+    --ink-2:#B0C2BC;
+    --ink-3:#7D918B;
+    --rule:#273834;
+    --rule-soft:#1D2C29;
+    --accent:#57B7A3;
+    --accent-soft:#16302B;
+    --signal:#C3D24A;
+    --signal-soft:#232B12;
+    --warn:#D98B4E;
+    --warn-soft:#2E2015;
+    --crit:#D9705E;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D1716;
+  --surface:#14201E;
+  --sunk:#101A19;
+  --ink:#E4EDE8;
+  --ink-2:#B0C2BC;
+  --ink-3:#7D918B;
+  --rule:#273834;
+  --rule-soft:#1D2C29;
+  --accent:#57B7A3;
+  --accent-soft:#16302B;
+  --signal:#C3D24A;
+  --signal-soft:#232B12;
+  --warn:#D98B4E;
+  --warn-soft:#2E2015;
+  --crit:#D9705E;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Source Serif 4", Georgia, "Times New Roman", serif;
+  font-size:17px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.disp{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif;text-wrap:balance;}
+code,.mono,td.num,th.num{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px 120px;}
+.col{max-width:var(--measure);}
+.col.wide{max-width:none;}
+
+/* ---------- masthead ---------- */
+header.mast{
+  border-bottom:1px solid var(--rule);
+  padding:64px 0 34px;
+  margin-bottom:44px;
+}
+.kicker{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--accent);font-weight:600;
+}
+h1{
+  font-size:clamp(38px,6.2vw,66px);
+  line-height:1.02;letter-spacing:-.025em;font-weight:800;
+  margin:.34em 0 .3em;max-width:16ch;
+}
+.standfirst{font-size:20px;color:var(--ink-2);max-width:58ch;margin:0;}
+.mast-meta{
+  display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:30px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+}
+.mast-meta b{color:var(--ink-2);font-weight:500;}
+
+/* ---------- layout ---------- */
+.layout{display:grid;grid-template-columns:1fr;gap:0;}
+@media(min-width:1000px){
+  .layout{grid-template-columns:198px minmax(0,1fr);gap:56px;align-items:start;}
+  nav.toc{position:sticky;top:28px;}
+}
+nav.toc{font-family:"Bricolage Grotesque",sans-serif;font-size:13.5px;line-height:1.45;}
+nav.toc ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px;}
+nav.toc a{
+  display:flex;gap:9px;padding:6px 8px;border-radius:5px;
+  color:var(--ink-2);text-decoration:none;border-left:2px solid transparent;
+}
+nav.toc a:hover{background:var(--sunk);color:var(--ink);border-left-color:var(--accent);}
+nav.toc a span{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);padding-top:2px;}
+nav.toc .tocnote{
+  margin-top:20px;padding:12px;border:1px solid var(--rule-soft);border-radius:6px;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:1.55;color:var(--ink-3);
+}
+
+section{padding-top:16px;margin-bottom:66px;scroll-margin-top:24px;}
+h2{
+  font-size:clamp(26px,3.4vw,34px);letter-spacing:-.02em;font-weight:700;
+  margin:0 0 6px;padding-top:14px;border-top:2px solid var(--ink);
+  display:flex;align-items:baseline;gap:14px;
+}
+h2 .n{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;color:var(--accent);letter-spacing:0;}
+h3{font-size:19px;letter-spacing:-.01em;margin:38px 0 8px;font-weight:600;}
+h4{font-size:15px;margin:26px 0 6px;font-weight:600;color:var(--ink-2);}
+p{margin:0 0 15px;}
+ul,ol{margin:0 0 16px;padding-left:1.2em;}
+li{margin-bottom:7px;}
+a{color:var(--accent);}
+strong{font-weight:600;}
+em.term{font-style:normal;font-family:"IBM Plex Mono",monospace;font-size:.88em;background:var(--sunk);padding:1px 5px;border-radius:3px;}
+
+/* ---------- provenance chips: the organizing device ---------- */
+.src{
+  display:inline-flex;align-items:center;gap:6px;vertical-align:baseline;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.04em;
+  padding:2px 7px;border-radius:3px;white-space:nowrap;
+  border:1px solid var(--rule);color:var(--ink-3);background:var(--surface);
+  text-transform:uppercase;
+}
+.src::before{content:"";width:5px;height:5px;border-radius:1px;background:var(--ink-3);flex:none;}
+.src.p{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.src.p::before{background:var(--accent);}
+.src.s{border-color:var(--signal);color:var(--signal);background:var(--signal-soft);}
+.src.s::before{background:var(--signal);}
+.src.u{border-color:var(--warn);color:var(--warn);background:var(--warn-soft);}
+.src.u::before{background:var(--warn);transform:rotate(45deg);}
+
+.legend{
+  display:flex;flex-wrap:wrap;gap:14px 26px;padding:16px 18px;margin:0 0 8px;
+  background:var(--sunk);border:1px solid var(--rule-soft);border-radius:8px;
+}
+.legend div{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink-2);max-width:30ch;}
+
+/* ---------- tables ---------- */
+.tscroll{overflow-x:auto;margin:20px 0 10px;border:1px solid var(--rule);border-radius:8px;background:var(--surface);}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:660px;}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule-soft);vertical-align:top;}
+thead th{
+  font-family:"Bricolage Grotesque",sans-serif;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.09em;color:var(--ink-3);
+  background:var(--sunk);border-bottom:1px solid var(--rule);position:sticky;top:0;
+}
+tbody tr:last-child td{border-bottom:none;}
+td.num,th.num{font-variant-numeric:tabular-nums;text-align:right;font-size:13px;}
+td .m{font-family:"IBM Plex Mono",monospace;font-size:12.5px;}
+tr.total td{background:var(--sunk);font-weight:600;border-top:1px solid var(--rule);}
+tr.hi td{background:var(--accent-soft);}
+caption{caption-side:bottom;text-align:left;padding:11px 14px;font-size:12.5px;color:var(--ink-3);border-top:1px solid var(--rule-soft);}
+
+/* ---------- callouts ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--rule);border-radius:9px;
+  padding:20px 22px;margin:22px 0;box-shadow:var(--shadow);
+}
+.card > :last-child{margin-bottom:0;}
+.card h4{margin-top:0;}
+.flag{
+  border-left:3px solid var(--warn);background:var(--warn-soft);
+  border-radius:0 7px 7px 0;padding:14px 18px;margin:20px 0;font-size:15px;color:var(--ink-2);
+}
+.flag > :last-child{margin-bottom:0;}
+.flag b{color:var(--warn);font-family:"Bricolage Grotesque",sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;display:block;margin-bottom:4px;}
+.key{
+  border-left:3px solid var(--accent);background:var(--accent-soft);
+  border-radius:0 7px 7px 0;padding:14px 18px;margin:20px 0;font-size:15.5px;
+}
+.key > :last-child{margin-bottom:0;}
+
+/* ---------- verdict block ---------- */
+.verdict{
+  border:2px solid var(--ink);border-radius:11px;overflow:hidden;margin:0 0 40px;background:var(--surface);
+}
+.verdict-head{
+  padding:16px 24px;border-bottom:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.verdict-body{display:grid;grid-template-columns:1fr;}
+@media(min-width:760px){.verdict-body{grid-template-columns:repeat(3,1fr);}}
+.vcell{padding:22px 24px;border-top:1px solid var(--rule-soft);}
+@media(min-width:760px){
+  .vcell{border-top:none;border-left:1px solid var(--rule-soft);}
+  .vcell:first-child{border-left:none;}
+}
+.vcell .lab{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.vcell .pick{font-family:"Bricolage Grotesque",sans-serif;font-size:20px;font-weight:700;line-height:1.2;letter-spacing:-.015em;margin-bottom:8px;}
+.vcell p{font-size:14.5px;color:var(--ink-2);margin:0;}
+
+/* ---------- latency ladder ---------- */
+.ladder{display:flex;flex-direction:column;gap:5px;margin:24px 0;}
+.rung{display:grid;grid-template-columns:132px minmax(0,1fr);gap:14px;align-items:center;font-size:13.5px;}
+.rung .lbl{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2);text-align:right;font-variant-numeric:tabular-nums;}
+.bar{height:26px;border-radius:3px;display:flex;align-items:center;padding:0 9px;font-family:"Bricolage Grotesque",sans-serif;font-size:11.5px;font-weight:600;color:var(--paper);white-space:nowrap;overflow:hidden;}
+.bar.good{background:var(--accent);}
+.bar.mid{background:var(--signal);color:#141F05;}
+.bar.bad{background:var(--warn);}
+.bar.worst{background:var(--crit);}
+.threshold{
+  border-top:1px dashed var(--ink-3);margin:14px 0 4px;padding-top:8px;
+  font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-3);
+}
+
+pre{
+  background:var(--sunk);border:1px solid var(--rule-soft);border-radius:8px;
+  padding:16px 18px;overflow-x:auto;font-size:12.5px;line-height:1.6;margin:18px 0;
+  font-family:"IBM Plex Mono",monospace;color:var(--ink);
+}
+pre .c{color:var(--ink-3);font-style:italic;}
+pre .k{color:var(--accent);font-weight:500;}
+
+footer{border-top:1px solid var(--rule);padding-top:24px;font-size:13px;color:var(--ink-3);}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px;}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">Build decision memo &middot; Realtime voice</div>
+  <h1>Talking to the court</h1>
+  <p class="standfirst">What it actually costs, and actually takes, to put a hands-free conversational agent that drives the UI into a Kotlin Multiplatform tennis app — and how to build it so the vendor is disposable.</p>
+  <div class="mast-meta">
+    <span>Compiled <b>27 Aug 2026</b></span>
+    <span>Target <b>KMP / Compose MP &middot; iOS + Android &middot; Ktor</b></span>
+    <span>Scale <b>100 pilot users &rarr; 10,000</b></span>
+    <span>Research channel <b>web search only</b></span>
+  </div>
+</header>
+
+<div class="layout">
+
+<nav class="toc" aria-label="Contents">
+  <ol>
+    <li><a href="#verdict"><span>00</span>Verdict</a></li>
+    <li><a href="#latency"><span>01</span>Latency budget</a></li>
+    <li><a href="#s2s"><span>02</span>Speech-to-speech</a></li>
+    <li><a href="#pipeline"><span>03</span>Pipeline</a></li>
+    <li><a href="#cost"><span>04</span>Cost model</a></li>
+    <li><a href="#kmp"><span>05</span>KMP reality</a></li>
+    <li><a href="#ui"><span>06</span>UI-driving</a></li>
+    <li><a href="#rules"><span>07</span>Stores &amp; law</a></li>
+    <li><a href="#adapter"><span>08</span>The adapter</a></li>
+    <li><a href="#ledger"><span>09</span>Source ledger</a></li>
+  </ol>
+  <div class="tocnote">Every price on this page carries a provenance chip. Read the chip before you build a budget on the number.</div>
+</nav>
+
+<main>
+
+<!-- =================== VERDICT =================== -->
+<section id="verdict">
+  <h2><span class="n">00</span>Verdict</h2>
+  <div class="col"><p>At 100 users the entire monthly voice bill for every option on this page lands between roughly <strong>$14 and $165</strong>. Price is not the pilot decision. The pilot decision is <em class="term">which vendor hands you the most working audio plumbing for free</em>, because on mobile the plumbing — echo cancellation, jitter buffering, Bluetooth routing, reconnect — is where the weeks go.</p></div>
+
+  <div class="verdict">
+    <div class="verdict-head">
+      <span>Recommendation</span>
+      <span>Reassess at ~1,500 users / 30k min per month</span>
+    </div>
+    <div class="verdict-body">
+      <div class="vcell">
+        <div class="lab">a &middot; Pilot, 100 users</div>
+        <div class="pick">OpenAI <span class="mono" style="font-size:15px">gpt-realtime-2.1-mini</span> over WebRTC</div>
+        <p>Not because it is cheapest — Gemini Live is cheaper. Because WebRTC is the only transport that gives you AEC, adaptive bitrate, packet-loss concealment and mid-utterance network recovery without writing them. Ephemeral client secrets let the phone connect directly; your Ktor backend only mints tokens. Roughly <b class="mono">$26&ndash;100/mo</b>.</p>
+      </div>
+      <div class="vcell">
+        <div class="lab">b &middot; At scale</div>
+        <div class="pick">Gemini Live, or self-orchestrated pipeline on Pipecat / LiveKit</div>
+        <p>The switch trigger is not per-minute price — the spread is under 2&times; across sane options. It is <b>control</b>: turn-taking tuning, context-cost containment, and not re-paying audio-token rates to re-send conversation history every turn.</p>
+      </div>
+      <div class="vcell">
+        <div class="lab">c &middot; Adapter</div>
+        <div class="pick">Abstract the session, not the socket</div>
+        <p>Nine surfaces, listed in &sect;08. If you abstract at the "send bytes / get bytes" level you will re-write the app when you switch. Abstract at "start a conversation, get events, answer tool calls".</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="key"><p><strong>The finding that changes the arithmetic:</strong> speech-to-speech APIs bill <em class="term">audio tokens actually sent</em>, while streaming STT vendors bill <em class="term">connection wall-clock</em>. Client-side mic gating therefore cuts a realtime API's bill by 60&ndash;70% and cuts a Deepgram or AssemblyAI bill by exactly nothing. This inverts the usual "pipelines are cheaper" advice at conversational duty cycles. See &sect;04.</p></div>
+  </div>
+</section>
+
+<!-- =================== LATENCY =================== -->
+<section id="latency">
+  <h2><span class="n">01</span>The latency budget</h2>
+  <div class="col">
+    <p>Your instinct of 300&ndash;500&nbsp;ms is close but the published research is tighter and more specific than that, and it is worth knowing precisely because it tells you which components you can afford.</p>
+    <p>The canonical source is Stivers et&nbsp;al., <em>"Universals and cultural variation in turn-taking in conversation,"</em> <strong>PNAS</strong> 106(26), 2009. Across ten typologically unrelated languages they measured the gap between a yes/no question and its answer and found a <strong>modal offset of 0&ndash;200&nbsp;ms</strong>, with median gaps by language falling between roughly 0 and 300&nbsp;ms. <span class="src p">pnas.org &middot; primary</span></p>
+    <p>The second, less-cited half matters more for product design: gaps beyond roughly <strong>700&nbsp;ms</strong> are systematically read as <em>dispreferred</em> — cross-culturally, a long pause before an answer signals reluctance, disagreement, or trouble. <span class="src s">secondary summary of Stivers</span> So a slow agent does not merely feel slow. It reads as evasive.</p>
+  </div>
+
+  <h3>Practical thresholds</h3>
+  <div class="col">
+  <ul>
+    <li><strong>&lt;300&nbsp;ms</strong> mouth-to-ear — indistinguishable from an attentive human. Currently unreachable over a mobile network to a cloud model.</li>
+    <li><strong>300&ndash;600&nbsp;ms</strong> — the realistic target. Feels like a slightly deliberate person. This is the band to design for.</li>
+    <li><strong>600&ndash;900&nbsp;ms</strong> — users start talking over the agent, which is why barge-in quality matters more than raw speed in this band.</li>
+    <li><strong>&gt;900&nbsp;ms</strong> — the conversation collapses into walkie-talkie turn-taking and people revert to tapping.</li>
+  </ul>
+  </div>
+
+  <h3>Where the budget goes</h3>
+  <div class="ladder">
+    <div class="rung"><div class="lbl">Mic capture + buffer</div><div class="bar good" style="width:9%">20&ndash;40 ms</div></div>
+    <div class="rung"><div class="lbl">Network to region</div><div class="bar good" style="width:16%">30&ndash;80 ms (mobile: 40&ndash;150)</div></div>
+    <div class="rung"><div class="lbl">End-of-turn detect</div><div class="bar mid" style="width:34%">150&ndash;500 ms &mdash; the real cost centre</div></div>
+    <div class="rung"><div class="lbl">Model first token</div><div class="bar mid" style="width:26%">150&ndash;400 ms</div></div>
+    <div class="rung"><div class="lbl">First audio out</div><div class="bar good" style="width:12%">40&ndash;200 ms</div></div>
+    <div class="rung"><div class="lbl">Playback + jitter</div><div class="bar good" style="width:8%">20&ndash;60 ms</div></div>
+    <div class="threshold">Speech-to-speech realistic p50: <strong>~500&ndash;800 ms</strong> &middot; STT&rarr;LLM&rarr;TTS pipeline: <strong>+100&ndash;200 ms</strong> on top <span class="src s">vendor comparison writeups, 2026</span></div>
+  </div>
+
+  <div class="col">
+    <div class="flag"><b>The dominant term is not the model</b><p>End-of-turn detection is the largest and most controllable slice. A naive silence-threshold VAD set to 500&nbsp;ms silence <em>guarantees</em> you cannot beat 500&nbsp;ms. OpenAI's semantic VAD and Deepgram Flux's model-integrated end-of-turn detection both attack exactly this, by predicting turn-end from content rather than waiting out a timer. If you optimise one thing, optimise this — not your TTS vendor.</p></div>
+    <p>OpenAI reported a <strong>p95 latency reduction of at least 25%</strong> across realtime voice models in July 2026, delivered through improved prompt caching rather than a faster model. <span class="src s">trade press, Jul 2026</span> That is a useful hint about where the time actually sits: re-processing conversation history, not generating.</p>
+  </div>
+</section>
+
+<!-- =================== S2S =================== -->
+<section id="s2s">
+  <h2><span class="n">02</span>Realtime speech-to-speech providers</h2>
+
+  <div class="legend">
+    <div><span class="src p">primary</span><span>Vendor's own docs or announcement surfaced in search results.</span></div>
+    <div><span class="src s">secondary</span><span>Reputable third party or vendor page summarised, not read end-to-end.</span></div>
+    <div><span class="src u">unverified</span><span>Could not confirm. Treat as a hypothesis, re-check before committing.</span></div>
+  </div>
+  <p class="col" style="font-size:14px;color:var(--ink-3);margin-top:14px;"><strong>Access caveat, stated plainly:</strong> this environment's egress proxy blocked direct page fetches to <span class="mono">platform.openai.com</span>, <span class="mono">developers.openai.com</span>, <span class="mono">ai.google.dev</span>, <span class="mono">docs.livekit.io</span>, <span class="mono">docs.aws.amazon.com</span> and every other vendor domain tried. All figures below come from search-result extraction over those primary domains, not from reading the pages. Chips marked <span class="src p">primary</span> mean the snippet was drawn from the vendor's own domain; none were opened directly.</p>
+
+  <h3>Capability matrix</h3>
+  <div class="tscroll">
+  <table>
+    <thead><tr>
+      <th>Provider / model</th><th>Status</th><th>Transport</th><th>Audio</th><th>Tools</th><th>Turn-taking</th>
+    </tr></thead>
+    <tbody>
+      <tr class="hi">
+        <td><b>OpenAI</b><br><span class="m">gpt-realtime-2.1<br>gpt-realtime-2.1-mini</span></td>
+        <td>GA. <span class="m">gpt-realtime</span> was OpenAI's first GA realtime model; the 2.1 pair shipped Jul 2026 <span class="src s">secondary</span></td>
+        <td><b>WebRTC</b>, WebSocket, SIP. WebRTC explicitly recommended for browser <em>and mobile</em> clients <span class="src p">primary</span></td>
+        <td>PCM16 mono LE, <b>24&nbsp;kHz only</b>, base64 over WS <span class="src p">primary</span></td>
+        <td>Yes, mid-conversation function calling; 2.1-mini adds reasoning <span class="src p">primary</span></td>
+        <td>Server VAD (energy) or <b>semantic VAD</b> (turn-end prediction model, dynamic timeout). Barge-in native. <span class="src p">primary</span></td>
+      </tr>
+      <tr>
+        <td><b>Google</b><br><span class="m">gemini-3.1-flash-live-preview</span><br><span class="m">gemini-2.5-flash native audio</span></td>
+        <td><b>Preview</b> for 3.1 Flash Live (shipped ~Mar 2026). 2.5 native audio is the stable fallback. <span class="src s">secondary</span></td>
+        <td><b>WebSocket only</b> on the Developer API. No first-party WebRTC. <span class="src p">primary</span></td>
+        <td>PCM16; 16&nbsp;kHz in / 24&nbsp;kHz out is the widely-used config <span class="src u">not confirmed on the doc page</span></td>
+        <td>Yes — tools declared once in <span class="m">LiveConnectConfig</span> at setup; also Google Search, code exec <span class="src p">primary</span></td>
+        <td>Automatic server VAD via <span class="m">RealtimeInputConfig.AutomaticActivityDetection</span>; "proactive audio" lets the model choose to stay silent <span class="src p">primary</span></td>
+      </tr>
+      <tr>
+        <td><b>xAI</b><br><span class="m">grok-voice-think-fast-2.0</span></td>
+        <td>Public API. Voice Agent API launched Dec 2025; custom voices May 2026; 21 voices Jul 2026 <span class="src s">secondary</span></td>
+        <td>WebSocket at <span class="m">wss://api.x.ai/v1/realtime</span> — <b>OpenAI-Realtime wire-compatible</b> <span class="src p">primary</span></td>
+        <td>Not confirmed; assume OpenAI-compatible PCM16 given the wire compatibility <span class="src u">unverified</span></td>
+        <td>Yes — function calling, web/X search, remote MCP tools <span class="src p">primary</span></td>
+        <td>Full-duplex model, sub-second latency claimed <span class="src s">vendor claim</span></td>
+      </tr>
+      <tr>
+        <td><b>Amazon</b><br><span class="m">Nova 2 Sonic</span></td>
+        <td>GA on Bedrock. Nova Sonic Mar/Apr 2025; Nova 2 Sonic 2 Dec 2025 <span class="src s">secondary</span></td>
+        <td><span class="m">InvokeModelWithBidirectionalStream</span> over <b>HTTP/2</b>, event-driven <span class="src p">primary</span></td>
+        <td>Resampled to <b>16&nbsp;kHz</b> in; higher rate out <span class="src p">primary</span></td>
+        <td>Yes — async tool calling, MCP servers, Strands agents, RAG <span class="src p">primary</span></td>
+        <td>Native barge-in: stops generating, switches to listening, emits an interruption notification <span class="src p">primary</span></td>
+      </tr>
+      <tr>
+        <td><b>Deepgram</b><br>Voice Agent API</td>
+        <td>GA. Not a single S2S model — an orchestrated STT+LLM+TTS behind one socket, with Flux for turn detection <span class="src p">primary</span></td>
+        <td>WebSocket</td>
+        <td>Flexible; you pick codecs</td>
+        <td>Yes — function calling and mid-session control <span class="src p">primary</span></td>
+        <td>Flux: model-integrated end-of-turn detection, configurable turn-taking, built-in barge-in <span class="src p">primary</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <caption>Compiled 27 Aug 2026. Sample rates are the single most commonly wrong assumption — verify against the vendor doc before writing your resampler.</caption>
+  </div>
+
+  <h3>Pricing</h3>
+  <div class="col"><p>None of these bill per minute except xAI. They bill audio tokens, and the token-per-second rate differs per vendor, which is why headline comparisons are usually wrong.</p></div>
+  <div class="tscroll">
+  <table>
+    <thead><tr>
+      <th>Model</th><th class="num">Audio in<br>$/1M tok</th><th class="num">Audio out<br>$/1M tok</th><th class="num">Tokens<br>per sec</th><th class="num">$ / min<br>heard</th><th class="num">$ / min<br>spoken</th><th>Source</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>gpt-realtime-2.1</td><td class="num">32.00</td><td class="num">64.00</td><td class="num">10 in / 20 out</td><td class="num">0.0192</td><td class="num">0.0768</td><td><span class="src p">openai.com models pages</span></td></tr>
+      <tr class="hi"><td>gpt-realtime-2.1-mini</td><td class="num">10.00</td><td class="num">20.00</td><td class="num">10 in / 20 out</td><td class="num">0.0060</td><td class="num">0.0240</td><td><span class="src p">openai.com models pages</span></td></tr>
+      <tr><td>&nbsp;&nbsp;&nbsp;&#8627; cached audio in (mini)</td><td class="num">0.30</td><td class="num">&mdash;</td><td class="num">10</td><td class="num">0.00018</td><td class="num">&mdash;</td><td><span class="src s">secondary</span></td></tr>
+      <tr><td>Gemini Live native audio</td><td class="num">3.00</td><td class="num">12.00</td><td class="num">25 both</td><td class="num">0.0045</td><td class="num">0.0180</td><td><span class="src p">rates &amp; 25 tok/s from Google domains</span></td></tr>
+      <tr><td>Nova 2 Sonic</td><td class="num">3.00</td><td class="num">12.00</td><td class="num" style="color:var(--warn)">unknown</td><td class="num" style="color:var(--warn)">&mdash;</td><td class="num" style="color:var(--warn)">&mdash;</td><td><span class="src u">rate/sec not found</span></td></tr>
+      <tr><td>Grok Voice Agent</td><td class="num" colspan="4" style="text-align:left">$0.08 / min of audio &nbsp;($4.80/hr), flat</td><td class="num">+$0.004 per client <span class="m">conversation.item.create</span></td><td><span class="src p">docs.x.ai</span></td></tr>
+      <tr><td>Deepgram Voice Agent</td><td class="num" colspan="5" style="text-align:left">$4.50/hr flat = $0.075/min &middot; Growth tier from $0.050/min &middot; billed on connection time, not tokens</td><td><span class="src p">deepgram.com/pricing</span></td></tr>
+    </tbody>
+  </table>
+  <caption>All rates as of Aug 2026. OpenAI token rates (10/sec input, 20/sec output) are consistent with historical gpt-4o-realtime pricing and were cross-checked against two independent secondary analyses, but the per-second figure itself was <b>not</b> read off an OpenAI page. Nova 2 Sonic's $/min cannot be computed without its token rate.</caption>
+  </div>
+
+  <div class="col">
+  <div class="flag"><b>The hidden cost every table omits</b>
+  <p>Both OpenAI and Gemini re-bill conversation context on every turn. A Google developer forum thread specifically reports Gemini Live native-audio cost scaling with <em>turn count</em> rather than call duration, because each turn re-charges the accumulated audio context. <span class="src p">discuss.ai.google.dev</span> At audio-token rates this compounds fast. OpenAI's mitigation is prompt caching at $0.30/1M for cached audio input on mini — a 33&times; discount, and the reason their p95 improved 25%. Google's mitigation is <span class="m">contextWindowCompression</span>, a server-side sliding window. <b>Turn both on, day one.</b> Budget 1.5&ndash;3&times; the naive audio-only figure if you do not.</p></div>
+  </div>
+
+  <h3>Session lifetime and network loss</h3>
+  <div class="col">
+  <ul>
+    <li><strong>OpenAI</strong> — sessions now run up to <b>60 minutes</b> (raised from 30). Ephemeral client secrets minted via <span class="m">POST /v1/realtime/client_secrets</span> have a default TTL of about one minute, but that TTL governs the <em>handshake</em>: a session started with the secret continues past its expiry, and one secret can open multiple sessions until it expires. <span class="src p">developers.openai.com</span></li>
+    <li><strong>Gemini</strong> — this is where Google is genuinely better engineered. Connection lifetime is capped around 10 minutes, but the API ships explicit <b>session resumption</b>: the server streams <span class="m">SessionResumptionUpdate</span> handles, valid <b>2 hours</b> after termination, and sends a <span class="m">GoAway</span> message with a <span class="m">timeLeft</span> field before closing. Wi-Fi&ndash;to&ndash;5G handoff is a first-class supported case. <span class="src p">ai.google.dev</span> Without compression, audio-only sessions cap at 15 minutes.</li>
+    <li><strong>Everyone</strong> — a dropped WebSocket loses in-flight audio. WebRTC does not: packet-loss concealment, adaptive bitrate and ICE restart all degrade gracefully. This is the single strongest technical argument for the WebRTC transport on a phone.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- =================== PIPELINE =================== -->
+<section id="pipeline">
+  <h2><span class="n">03</span>The composable pipeline</h2>
+  <div class="col"><p>STT &rarr; LLM &rarr; TTS. More moving parts, more control, and — as &sect;04 shows — <em>not reliably cheaper</em> in 2026 at conversational duty cycles.</p></div>
+
+  <h3>Streaming speech-to-text</h3>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Service</th><th class="num">Price</th><th class="num">$/min</th><th>Latency</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr class="hi"><td>AssemblyAI Universal-Streaming</td><td class="num">$0.15 / hr</td><td class="num">0.0025</td><td>~300&nbsp;ms to immutable transcript</td><td><b>Immutable</b> output — emitted text never rewrites, which removes a whole class of UI flicker. Billed on <b>session duration</b>. <span class="src p">assemblyai.com</span></td></tr>
+      <tr><td>Deepgram Nova-3 streaming</td><td class="num">$0.0077 / min</td><td class="num">0.0077</td><td>sub-300&nbsp;ms; 150&ndash;300&nbsp;ms server-side</td><td>Deepgram publishes no fixed ms spec. Partial/variable transcripts. <span class="src p">deepgram.com</span></td></tr>
+      <tr><td>Deepgram Flux</td><td class="num" colspan="2">see Voice Agent pricing</td><td>optimised for agents</td><td>Only STT model with <b>model-integrated end-of-turn detection</b> — attacks the biggest latency term directly. <span class="src p">deepgram.com</span></td></tr>
+      <tr><td>Groq Whisper large-v3-turbo</td><td class="num">~$0.03&ndash;0.04 / hr</td><td class="num">~0.0006</td><td>up to 300&times; realtime</td><td><b>Batch, not streaming.</b> Astonishing throughput, wrong shape for a live conversation — you would chunk and stitch, adding turn latency. <span class="src p">groq.com</span> / price <span class="src u">2024 figure, unconfirmed for 2026</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Streaming text-to-speech</h3>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Service</th><th class="num">$ / 1k chars</th><th class="num">~$/min spoken</th><th>Time to first audio</th><th>Source</th></tr></thead>
+    <tbody>
+      <tr class="hi"><td>Deepgram Aura-2</td><td class="num">0.030</td><td class="num">~0.0225</td><td>~90&nbsp;ms steady-state, p95 &lt;200&nbsp;ms</td><td><span class="src p">deepgram.com</span></td></tr>
+      <tr><td>Rime Mist / Arcana</td><td class="num">0.030&ndash;0.050</td><td class="num">~0.030 (billed per audio-min)</td><td>~225&nbsp;ms p50 (Mist v2); ~37&nbsp;ms p50 claimed for Mist v3 on H100</td><td><span class="src s">rime.ai + Together AI</span></td></tr>
+      <tr><td>Cartesia Sonic 3.x</td><td class="num">~0.015&ndash;0.024 PAYG</td><td class="num">~0.015</td><td>sub-90&nbsp;ms claimed; ~199&nbsp;ms TTFA measured</td><td><span class="src s">cartesia.ai; PAYG range $15&ndash;24/M chars</span></td></tr>
+      <tr><td>ElevenLabs Flash v2.5</td><td class="num">0.050</td><td class="num">~0.0375</td><td>~75&nbsp;ms</td><td><span class="src p">elevenlabs.io</span></td></tr>
+      <tr><td>Deepgram Flux TTS</td><td class="num">0.045</td><td class="num">~0.034</td><td>conversation-aware</td><td>Free to ~45 concurrent streams through 12 Sep 2026 <span class="src p">deepgram.com</span></td></tr>
+    </tbody>
+  </table>
+  <caption>Minute conversion assumes ~150&nbsp;wpm &asymp; 12.5 characters per second &asymp; 750 chars/min of speech. Vendors quoting "latency" rarely say whether they mean TTFA, TTFB or a p50 on their own hardware; treat sub-100&nbsp;ms claims as best-case.</caption>
+  </div>
+
+  <h3>Orchestration</h3>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Framework</th><th>Model</th><th>Cost</th><th>Fit for this app</th></tr></thead>
+    <tbody>
+      <tr><td><b>Pipecat</b></td><td>Open source, Python. Pipecat Cloud reached GA in 2026 after a 1,000+ team beta.</td><td>Framework free; you pay providers + compute. Cloud is managed.</td><td>Best provider portability — Deepgram, AssemblyAI, OpenAI, Gemini, Cartesia, ElevenLabs are pre-wired and a TTS swap is a one-line change. Strongest fit for "vendor must be disposable."</td></tr>
+      <tr><td><b>LiveKit Agents</b></td><td>Open source agents framework on top of a WebRTC media server. Managed LiveKit Cloud available.</td><td>Framework free; Cloud metered.</td><td>You get session state, reconnection, barge-in and low-latency transport from the RTC layer rather than retrofitting them. If you later want your own WebRTC infrastructure, this is the path.</td></tr>
+      <tr><td>Vapi</td><td>Hosted platform</td><td>$0.05/min platform fee; all-in typically $0.10&ndash;0.30/min</td><td>Telephony-shaped. You are not making phone calls. Skip.</td></tr>
+      <tr><td>Retell AI</td><td>Hosted platform</td><td>From $0.07/min, no separate platform fee; all-in $0.13&ndash;0.31/min</td><td>Same. 5&ndash;10&times; your direct-API cost to solve a problem you do not have.</td></tr>
+    </tbody>
+  </table>
+  <caption>Vapi/Retell figures <span class="src s">secondary comparison articles, 2026</span>. Both are built around outbound/inbound telephony; for an in-app assistant they add a per-minute tax and a hop.</caption>
+  </div>
+</section>
+
+<!-- =================== COST =================== -->
+<section id="cost">
+  <h2><span class="n">04</span>Cost model, with the arithmetic shown</h2>
+
+  <div class="col">
+  <h4>Assumptions, stated so you can argue with them</h4>
+  <ul>
+    <li>5 minutes per session, 4 sessions per user per month.</li>
+    <li><b>100 users</b> &rarr; 100 &times; 4 &times; 5 = <b>2,000 minutes/month</b>. <b>10,000 users</b> &rarr; <b>200,000 minutes/month</b>.</li>
+    <li>Per session: microphone open the full <b>300&nbsp;s</b>; agent speaks <b>90&nbsp;s</b> (30% duty cycle — a UI-driving assistant speaks in short confirmations, not monologues).</li>
+    <li>~15 conversational turns; system prompt + tool schemas ~1,200 text tokens.</li>
+    <li>Naive figures exclude context re-billing. The "realistic" column applies the multiplier from &sect;02.</li>
+  </ul>
+  </div>
+
+  <h3>Per-session arithmetic</h3>
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Approach</th><th>Working</th><th class="num">$/session</th><th class="num">$/min</th></tr></thead>
+    <tbody>
+      <tr><td><b>OpenAI gpt-realtime-2.1</b></td><td class="m">in 300s&times;10 = 3,000 tok &times; $32/1M = $0.0960<br>out 90s&times;20 = 1,800 tok &times; $64/1M = $0.1152</td><td class="num">0.2112</td><td class="num">0.0422</td></tr>
+      <tr class="hi"><td><b>OpenAI gpt-realtime-2.1-mini</b></td><td class="m">in 3,000 tok &times; $10/1M = $0.0300<br>out 1,800 tok &times; $20/1M = $0.0360</td><td class="num">0.0660</td><td class="num">0.0132</td></tr>
+      <tr><td><b>Gemini Live native audio</b></td><td class="m">in 300s&times;25 = 7,500 tok &times; $3/1M = $0.0225<br>out 90s&times;25 = 2,250 tok &times; $12/1M = $0.0270</td><td class="num">0.0495</td><td class="num">0.0099</td></tr>
+      <tr><td><b>Grok Voice Agent</b></td><td class="m">5 min &times; $0.08 = $0.4000<br>+ 2 client text items &times; $0.004 = $0.008</td><td class="num">0.4080</td><td class="num">0.0816</td></tr>
+      <tr><td><b>Pipeline A</b><br><span class="m">AssemblyAI + Gemini 3 Flash + Aura-2</span></td><td class="m">STT 5 min &times; $0.0025 = $0.0125<br>LLM in ~24,750 tok &times; $0.50/1M = $0.0124<br>LLM out ~900 tok &times; $3/1M = $0.0027<br>TTS 90s &asymp; 1,125 ch &times; $0.030/1k = $0.0338</td><td class="num">0.0614</td><td class="num">0.0123</td></tr>
+      <tr><td><b>Pipeline B</b><br><span class="m">Deepgram Nova-3 + Gemini 3 Flash + Aura-2</span></td><td class="m">STT 5 min &times; $0.0077 = $0.0385<br>LLM $0.0151 &middot; TTS $0.0338</td><td class="num">0.0874</td><td class="num">0.0175</td></tr>
+      <tr><td><b>Deepgram Voice Agent</b> (managed)</td><td class="m">5 min &times; $0.050 (Growth) = $0.2500</td><td class="num">0.2500</td><td class="num">0.0500</td></tr>
+    </tbody>
+  </table>
+  <caption>Gemini 3 Flash text rates used for the pipeline LLM: $0.50/1M in, $3.00/1M out <span class="src s">secondary</span>. LLM input token count is the sum across 15 turns of a growing transcript plus a fixed 1,200-token prompt.</caption>
+  </div>
+
+  <h3>Monthly totals</h3>
+  <div class="tscroll">
+  <table>
+    <thead><tr>
+      <th>Approach</th>
+      <th class="num">100 users<br>naive</th><th class="num">100 users<br>realistic</th>
+      <th class="num">10,000 users<br>naive</th><th class="num">10,000 users<br>realistic</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>gpt-realtime-2.1</td><td class="num">$84</td><td class="num">$120&ndash;220</td><td class="num">$8,448</td><td class="num">$12,000&ndash;22,000</td></tr>
+      <tr class="hi"><td>gpt-realtime-2.1-mini</td><td class="num">$26</td><td class="num">$40&ndash;100</td><td class="num">$2,640</td><td class="num">$4,000&ndash;10,000</td></tr>
+      <tr><td>Gemini Live</td><td class="num">$20</td><td class="num">$40&ndash;80</td><td class="num">$1,980</td><td class="num">$4,000&ndash;8,000</td></tr>
+      <tr><td>Pipeline A (AssemblyAI/Gemini/Aura-2)</td><td class="num">$25</td><td class="num">$25&ndash;30</td><td class="num">$2,456</td><td class="num">$2,500&ndash;3,000</td></tr>
+      <tr><td>Pipeline B (Deepgram/Gemini/Aura-2)</td><td class="num">$35</td><td class="num">$35&ndash;42</td><td class="num">$3,496</td><td class="num">$3,500&ndash;4,200</td></tr>
+      <tr><td>Deepgram Voice Agent (managed)</td><td class="num">$100</td><td class="num">$100</td><td class="num">$10,000</td><td class="num">$10,000</td></tr>
+      <tr><td>Grok Voice Agent</td><td class="num">$163</td><td class="num">$163</td><td class="num">$16,320</td><td class="num">$16,320</td></tr>
+      <tr><td>Vapi / Retell (all-in)</td><td class="num">$200&ndash;660</td><td class="num">&mdash;</td><td class="num">$20,000&ndash;66,000</td><td class="num">&mdash;</td></tr>
+    </tbody>
+  </table>
+  <caption>"Realistic" applies context re-billing multipliers to the token-billed APIs. Flat per-minute vendors have no such multiplier — that predictability is the thing you are buying from them.</caption>
+  </div>
+
+  <h3>Does the ranking change at scale? Yes — and the reason is not what you expect</h3>
+  <div class="col">
+    <p>On <em>naive</em> numbers the ranking barely moves: Gemini Live is cheapest at both scales, the pipeline is second, OpenAI mini third. Everything within about 1.8&times;.</p>
+    <p>On <em>realistic</em> numbers the ranking inverts at scale. The pipeline is the only approach whose cost does not inflate with context re-billing, because its context is <b>text tokens at $0.50/1M</b> rather than <b>audio tokens at $3&ndash;32/1M</b>. At 10,000 users Pipeline A becomes the cheapest realistic option by a factor of roughly 1.6&ndash;3&times;.</p>
+
+    <div class="key"><p><strong>Mic gating is worth more than vendor choice.</strong> Stream audio only while the user is actually speaking (client-side VAD gate) and the input side collapses. Say 100&nbsp;s of real speech instead of 300&nbsp;s of open mic:</p>
+    <ul style="margin-top:10px;margin-bottom:0">
+      <li>gpt-realtime-2.1-mini: input $0.0300 &rarr; <b>$0.0100</b>; session $0.0660 &rarr; <b>$0.0460</b> &rarr; <b>$18/mo</b> at 100 users, <b>$1,840/mo</b> at 10,000.</li>
+      <li>Gemini Live: input $0.0225 &rarr; <b>$0.0075</b>; session $0.0495 &rarr; <b>$0.0345</b> &rarr; <b>$14/mo</b> / <b>$1,380/mo</b>.</li>
+      <li>Pipeline A: <b>no change at all.</b> AssemblyAI bills session duration and Deepgram streaming bills connection time. Gating the mic saves you nothing there.</li>
+    </ul></div>
+
+    <p>So the honest summary is: <strong>at 100 users nothing matters</strong> — the spread is $14 to $165 a month and your time is worth more than the whole line item. <strong>At 10,000 users</strong> the choice is between a gated speech-to-speech API at roughly $1,400&ndash;1,900/mo naive (but exposed to context-cost inflation you must actively manage) and a pipeline at roughly $2,500/mo that is flat, predictable and tunable. Both are fine. Neither is a business risk against 10,000 users. Pick on <em>control</em>, not price.</p>
+  </div>
+</section>
+
+<!-- =================== KMP =================== -->
+<section id="kmp">
+  <h2><span class="n">05</span>KMP and mobile: where the real work is</h2>
+  <div class="col"><p>This is the under-documented part and it is where a solo founder loses a month. Concretely, here is the state of it.</p></div>
+
+  <h3>Is there a WebRTC option for KMP? Yes, two — and one is from JetBrains</h3>
+  <div class="col">
+  <ul>
+    <li><strong>Ktor WebRTC client</strong> — Ktor <b>3.3.0</b> shipped an experimental multiplatform WebRTC client. Supported targets: JS/Wasm, <b>Android, iOS</b>. Android delegates to Stream's precompiled WebRTC library plus Android media APIs; iOS delegates to the WebRTC SDK for iOS plus AVFoundation. It handles peer connections, data channels and <b>media tracks</b>, including audio tracks from the microphone <b>with configurable echo-cancellation constraints</b>. Signaling is <em>not</em> included — you implement it yourself, and Ktor WebSockets to your existing Ktor backend is the obvious answer. <span class="src p">ktor.io</span></li>
+    <li><strong>webrtc-kmp</strong> (shepeliev) — mature community SDK on Maven Central, revision M125, Android/iOS/JS. Caveat: on iOS the WebRTC SDK is <b>not</b> a transitive dependency, so you add it to the iOS project manually via CocoaPods or SPM. <span class="src p">github.com/shepeliev/webrtc-kmp</span></li>
+  </ul>
+  <p>Given you are already a Ktor shop, the Ktor client is the natural first attempt, with webrtc-kmp as the fallback if the experimental API is too thin. <b>WebSocket + raw PCM remains the pragmatic path only if you go with Gemini Live</b>, which offers no WebRTC transport on the Developer API — and then you are hand-building everything WebRTC would have given you.</p>
+  </div>
+
+  <h3>Capturing and playing PCM behind expect/actual</h3>
+  <div class="col">
+  <p>There are KMP audio libraries (<span class="m">kmp-audio-recorder-player</span>, <span class="m">kmp-record</span>) but they are built for <em>file-based record-then-play</em>, not for streaming raw PCM frames with low latency. <span class="src s">klibs.io, GitHub</span> For a voice agent you will write the expect/actual yourself. It is perhaps 400 lines per platform. The gotchas:</p>
+
+  <h4>Sample-rate conversion — the number-one time sink</h4>
+  <ul>
+    <li>OpenAI demands <b>24&nbsp;kHz</b> PCM16 mono little-endian and nothing else. Gemini wants 16&nbsp;kHz in / 24&nbsp;kHz out. Nova Sonic resamples to 16&nbsp;kHz. Device hardware runs at 44.1 or 48&nbsp;kHz.</li>
+    <li>On iOS, <span class="m">AVAudioSession.setPreferredSampleRate()</span> is a <em>request</em>. The system may ignore it. Always read <span class="m">AVAudioEngine.inputNode.inputFormat(forBus:)</span> at runtime and convert with <span class="m">AVAudioConverter</span> — never hardcode.</li>
+    <li>Connecting a Bluetooth headset can force the session to 8 or 16&nbsp;kHz mid-conversation and fire a route-change notification. Your resampler must be reconfigurable at runtime, not set up once at session start.</li>
+    <li>On Android, <span class="m">AudioRecord</span> at exactly 16 or 24&nbsp;kHz is not guaranteed on all devices; query <span class="m">getMinBufferSize</span> and be prepared to capture at 48&nbsp;kHz and downsample yourself.</li>
+  </ul>
+
+  <h4>Audio session configuration</h4>
+  <ul>
+    <li><b>iOS:</b> category <span class="m">.playAndRecord</span>, mode <span class="m">.voiceChat</span>, options <span class="m">.allowBluetooth</span> + <span class="m">.defaultToSpeaker</span>. Setting <span class="m">.voiceChat</span> engages Apple's Voice Processing I/O unit, which gives you AEC, automatic gain control and noise suppression for free. Alternatively, from iOS&nbsp;13, <span class="m">setVoiceProcessingEnabled(true)</span> on the engine's input and output nodes. <span class="src s">secondary</span></li>
+    <li><b>Android:</b> capture with <span class="m">MediaRecorder.AudioSource.VOICE_COMMUNICATION</span>, which routes you through the OEM's voice pre-processing chain, and set <span class="m">AudioManager.MODE_IN_COMMUNICATION</span>. Play back with an <span class="m">AudioTrack</span> whose usage is <span class="m">USAGE_VOICE_COMMUNICATION</span>. Request audio focus; release it properly or you break the user's music.</li>
+  </ul>
+  </div>
+
+  <h3>Acoustic echo cancellation: who provides it, and what breaks without it</h3>
+  <div class="col">
+    <p><strong>What breaks:</strong> without AEC the microphone picks up the agent's own speech from the loudspeaker. Server-side VAD then fires on the agent's own voice, which the model interprets as the user barging in. It stops speaking, listens to itself, transcribes its own output as user input, and responds to it. The failure mode is not degraded audio — it is a <b>self-interruption loop</b> that makes the feature unusable on speakerphone. On headphones it never reproduces, which is exactly why it survives to production.</p>
+    <p><strong>Who provides it:</strong></p>
+    <ul>
+      <li><b>iOS</b> — the OS does it well. <span class="m">.voiceChat</span> mode engages the system AEC and it is reliably good across devices. <span class="src s">secondary</span></li>
+      <li><b>Android</b> — <span class="m">android.media.audiofx.AcousticEchoCanceler</span> is a thin wrapper over the OEM's implementation, and its quality varies enormously by device and Android version. <span class="m">isAvailable()</span> returning true tells you very little. Because of this, most production voice apps <b>bypass the platform AEC and run WebRTC AEC3 directly</b> (or via an SDK), accepting higher CPU for consistent behaviour across the fragmented device fleet. <span class="src s">secondary, multiple</span></li>
+      <li><b>The SDK</b> — if you take the WebRTC transport (Ktor or webrtc-kmp), AEC3 comes with the media stack and this problem is largely solved for you on both platforms. That is the strongest practical argument for WebRTC over raw WebSocket PCM on mobile.</li>
+    </ul>
+    <div class="flag"><b>Fallback if AEC is unavailable</b><p>Half-duplex gating: mute the mic while the agent is speaking. It works, and it kills barge-in — the single behaviour that makes voice feel alive. Treat it as a device-specific degradation, detected at runtime, not as a design.</p></div>
+  </div>
+
+  <h3>Bluetooth and speakerphone</h3>
+  <div class="col">
+  <ul>
+    <li><b>Android 17+</b> changed this: the audio framework now manages SCO routing rather than the Bluetooth stack, and the stack requests SCO via <span class="m">AudioManager.setCommunicationDevice(AudioDeviceInfo)</span>. <span class="src p">source.android.com</span> Older code that called <span class="m">startBluetoothSco()</span> needs revisiting.</li>
+    <li>SCO link establishment can take 5&ndash;8 seconds on some OEM devices (Xiaomi, OPPO are named), which users read as your app being broken. <b>Fall back to the built-in speaker after ~8 seconds.</b> <span class="src s">secondary</span></li>
+    <li>Missing <span class="m">BLUETOOTH_CONNECT</span> is a silent, OEM-dependent failure. Gate Bluetooth UI on the grant and re-enumerate devices after it is accepted.</li>
+    <li>Keeping <span class="m">AudioManager</span> state and the WebRTC AudioDeviceModule state in two places produces ghost echo and half-muted audio. Keep one source of truth and propagate it to both.</li>
+    <li><b>iOS</b> — subscribe to <span class="m">AVAudioSession.routeChangeNotification</span>. Headphone unplug, AirPods connect and a call arriving all change the route mid-utterance and may change the sample rate with it.</li>
+  </ul>
+  </div>
+
+  <h3>Network loss mid-utterance</h3>
+  <div class="col">
+  <ul>
+    <li><b>WebSocket + PCM:</b> in-flight audio is simply lost. The user finishes a sentence into the void. You must detect the close, reconnect, replay context, and tell the user something happened.</li>
+    <li><b>WebRTC:</b> packet-loss concealment and adaptive bitrate absorb short drops; ICE restart handles interface changes. Degrades rather than dies.</li>
+    <li><b>Gemini Live:</b> explicit session resumption with 2-hour handles and a <span class="m">GoAway</span> warning — the best-specified recovery story of any provider, and it partly compensates for the missing WebRTC transport.</li>
+    <li><b>Product rule regardless of transport:</b> keep the last N seconds of captured audio in a client ring buffer, and on reconnect either replay it or surface "I didn't catch that — say it again." Silence is the worst outcome. The one thing never to do is let a tool call fire from a partially-received utterance.</li>
+  </ul>
+  </div>
+</section>
+
+<!-- =================== UI =================== -->
+<section id="ui">
+  <h2><span class="n">06</span>The UI-driving pattern</h2>
+  <div class="col">
+    <p>The Zillow behaviour is real but under-documented as engineering. What is confirmed: Zillow's listing-filter functionality was showcased with the Realtime API handling multi-step requests like narrowing listings by lifestyle needs, and OpenAI's <span class="m">openai-realtime-agents</span> open-source demo shows the production-shaped version — tool calls plus control handoff between specialist agents. <span class="src s">secondary; OpenAI announcement + coverage</span> I found <b>no</b> detailed public engineering write-up of the Zillow implementation itself. <span class="src u">searched, not found</span></p>
+
+    <h4>The mechanism, stated plainly</h4>
+    <p>There is no special API. The model emits an ordinary function call mid-conversation; your client executes it as a <em>UI mutation</em> rather than a data fetch, returns a compact result, and the model keeps talking. The whole trick is that <b>the tool's side effect is navigation</b>.</p>
+  </div>
+
+  <pre><span class="c">// Tools are the app's verbs, expressed for a stranger.</span>
+<span class="k">tool</span> "show_matches"      { skill: "3.0-3.5", radius_km: 10, when: "weeknight_evenings" }
+<span class="k">tool</span> "open_player"       { player_id: "..." }
+<span class="k">tool</span> "propose_match"     { player_id: "...", court_id: "...", start: "2026-09-02T18:30" }
+<span class="k">tool</span> "refine_filter"     { patch: { radius_km: 25 } }   <span class="c">// patch, never full replace</span>
+<span class="k">tool</span> "undo_last_action"  { }                            <span class="c">// non-negotiable, see below</span>
+
+<span class="c">// Result payloads stay tiny. The model narrates; it does not read the list aloud.</span>
+&rarr; { count: 7, top: ["Priya 3.5", "Marcus 3.0"], applied: { radius_km: 25 } }</pre>
+
+  <div class="col">
+    <h4>The four known design problems, and what to do</h4>
+
+    <h4 style="color:var(--ink)">1. Latency between speech and UI update</h4>
+    <p>The UI update lands after end-of-turn detection plus model round-trip — 500&ndash;800&nbsp;ms after the user stops speaking. That is fine for a screen change but wrong for a filter slider, which the user expects to move <em>as</em> they speak. Mitigation: render an <b>optimistic pending state</b> the moment a tool call begins streaming (a shimmer on the affected filter chip), and commit on the result. Never animate a full re-layout on speculation.</p>
+
+    <h4 style="color:var(--ink)">2. Showing what the model heard</h4>
+    <p>Non-negotiable, and the most common omission. Users cannot debug a voice interface they cannot see. Show the live input transcript — this is where AssemblyAI's <b>immutable</b> transcripts pay for themselves, because mutable partials visibly rewrite themselves on screen and read as the app being confused. If your provider only emits mutable partials, render them at reduced opacity until finalised so the rewriting reads as intentional.</p>
+
+    <h4 style="color:var(--ink)">3. UI thrashing on every utterance</h4>
+    <p>Three defences. <b>(a)</b> Make tools <em>patches</em>, not full-state replacements, so "actually make it 25&nbsp;km" adjusts one field instead of rebuilding the query. <b>(b)</b> Debounce commits — hold a tool call ~150&nbsp;ms and coalesce if another arrives, since the model often emits two in quick succession. <b>(c)</b> Separate <em>filter</em> tools (cheap, animate freely) from <em>navigation</em> tools (expensive, require a settled turn). Never let a navigation tool fire from a partial transcript.</p>
+
+    <h4 style="color:var(--ink)">4. The user verbally contradicts a tool call</h4>
+    <p>"Show me players near Kensington — no wait, Hackney." The Kensington call has already fired. Three things make this survivable:</p>
+    <ul>
+      <li>A first-class <span class="m">undo_last_action</span> tool, and a client action stack the model can actually reach. Without it the model will apologise and issue a <em>new</em> filter, leaving stale state underneath.</li>
+      <li>Every UI-mutating tool must be <b>idempotent and reversible</b>. Design the app state as a reducer over an action log, which Compose Multiplatform suits well.</li>
+      <li>Semantic VAD helps materially here — it waits through "no wait" instead of treating the pause as end-of-turn, so the contradicting call often never fires.</li>
+    </ul>
+
+    <h4 style="color:var(--ink)">Prior art worth reading</h4>
+    <p><b>AG-UI</b> (Agent User Interaction Protocol) is the only serious attempt at standardising this: an event and state protocol defining how UI updates, agent state and user interactions flow while the agent is working. <span class="src s">docs.ag-ui.com</span> You almost certainly should not adopt it for one app, but its event taxonomy is the best available checklist of the cases you will hit. The recurring theme across the generative-UI literature is the same one: agents emit <em>two</em> data streams at once — structured (tool calls, state deltas) and unstructured (speech, text) — and interfaces designed for request/response have no pattern for showing an <em>unsolicited</em> action or explaining why it happened.</p>
+  </div>
+</section>
+
+<!-- =================== RULES =================== -->
+<section id="rules">
+  <h2><span class="n">07</span>Store review, privacy and recording law</h2>
+
+  <h3>Always-listening and background audio</h3>
+  <div class="col">
+  <ul>
+    <li><b>A foreground, user-initiated, visibly-indicated voice session is unremarkable to both stores.</b> Nothing here is a review risk if the mic runs only while a session is on screen with a visible active-listening indicator. Do that and skip most of this section.</li>
+    <li><b>iOS background audio is where apps get rejected.</b> Apple rejects apps that declare <span class="m">audio</span> in <span class="m">UIBackgroundModes</span> but cannot play audible content in the background; the capability is expected to correspond to a real, user-visible audio feature reachable from main navigation. Apps recording in the background have been rejected on appeal when the use case did not justify it. <span class="src s">developer forums + rejection guides</span> A tennis matchmaking app almost certainly cannot justify background mic. <b>Do not ask for it.</b></li>
+    <li><b>Android</b> requires a foreground service with <span class="m">foregroundServiceType="microphone"</span> and, since Android 14, that type declared and permitted or <span class="m">startForeground</span> throws. Plus a persistent notification.</li>
+    <li><b>Permissions:</b> iOS <span class="m">NSMicrophoneUsageDescription</span> is mandatory and its wording is read by reviewers — say the audio is sent to an AI service to run the conversation. Android needs runtime <span class="m">RECORD_AUDIO</span>, plus <span class="m">BLUETOOTH_CONNECT</span> for headsets.</li>
+    <li><b>Wake words are a different product.</b> A hotword detector implies a genuinely always-on mic and invites scrutiny on both stores. Use a button.</li>
+  </ul>
+  </div>
+
+  <h3>Privacy disclosure</h3>
+  <div class="col">
+  <ul>
+    <li><b>Google Play Data Safety:</b> "Audio files" explicitly covers voice or sound recordings. You must declare collection <em>and sharing</em>, and Google is explicit that data handled by <b>third-party SDKs and backends counts as yours to declare</b> — streaming audio to OpenAI or Google is <b>sharing</b>, not merely collection. <span class="src p">developer.android.com, support.google.com</span></li>
+    <li><b>Apple App Privacy label:</b> declare Audio Data, and declare it as linked to the user if sessions are tied to an account (they will be, for matchmaking). If any transcript feeds ranking or recommendations, that is a second disclosure.</li>
+    <li>Your privacy policy must name the processor. "A third-party AI provider" is not sufficient under GDPR if you have any EU pilot users.</li>
+  </ul>
+  </div>
+
+  <h3>Two-party consent — take this seriously</h3>
+  <div class="col">
+    <p>This is a live and rapidly worsening area of US litigation, not a theoretical risk.</p>
+    <ul>
+      <li>California's Invasion of Privacy Act (CIPA) generally requires <b>all-party</b> consent and carries a private right of action with statutory damages up to <b>$5,000 per violation</b>. CIPA &sect;631 (anti-wiretap) is being applied to cloud AI that processes audio in real time <em>during transmission</em> — which is precisely what a realtime voice API does. <span class="src s">law-firm client alerts, 2025&ndash;2026</span></li>
+      <li>The doctrine that should change your vendor contract: courts have found at the pleading stage that if a vendor <b>could</b> use the content to train or improve its own platform, that capability alone supports a CIPA claim — <em>whether or not it did</em>. <span class="src s">Goodwin, Fisher Phillips, IAPP, 2025&ndash;2026</span></li>
+      <li>Active matters cited include four class actions against Otter.ai over consent (as of Apr 2026), Cruz v. Fireflies.AI (Illinois BIPA, Dec 2025), Galanter v. Cresta (CIPA, Jun 2025) and Lisota v. Heartland Dental (federal wiretap, Jul 2025). <span class="src s">secondary legal press</span></li>
+    </ul>
+    <div class="key"><p><strong>Your actual exposure is lower than a meeting recorder's, and here is why — protect it.</strong> One user talks to a bot about their own tennis availability. There is no second party whose communication is being intercepted. The risk appears the moment a second person's voice can be captured, so: <b>(1)</b> never build a feature where two players talk to the agent together; <b>(2)</b> get explicit in-app consent naming the AI provider before the first session, and log it; <b>(3)</b> negotiate a zero-retention, no-training term with your provider and keep the paper — under the capability doctrine, the contract is the defence; <b>(4)</b> do not persist raw audio, only the transcript you need, and say so.</p></div>
+  </div>
+
+  <h3>Accessibility</h3>
+  <div class="col">
+    <p>Voice is an accessibility <em>win</em> for motor-impaired users and an accessibility <em>barrier</em> for Deaf and hard-of-hearing users. Every voice-driven path must have an equivalent tap path — which the tool-call architecture gives you almost free, since the tools <em>are</em> the app's actions. Live captions of the agent's speech are the other half, and they cost nothing when the provider already emits output transcription.</p>
+  </div>
+</section>
+
+<!-- =================== ADAPTER =================== -->
+<section id="adapter">
+  <h2><span class="n">08</span>What the adapter must abstract</h2>
+  <div class="col"><p>Abstracting at the byte level is the trap. Every provider differs in sample rate, framing, event names and turn semantics, and a byte-level adapter leaks all of it. Abstract at the level of <b>a conversation that emits events and asks for tools</b>. Nine surfaces:</p></div>
+
+  <pre><span class="c">// commonMain — the entire contract the app is allowed to know about.</span>
+
+<span class="k">interface</span> VoiceSession {
+    <span class="k">val</span> events: Flow&lt;VoiceEvent&gt;
+    <span class="k">suspend fun</span> start(config: VoiceConfig)
+    <span class="k">suspend fun</span> sendToolResult(callId: String, json: String)
+    <span class="k">suspend fun</span> injectContext(text: String)   <span class="c">// 1. out-of-band steering</span>
+    <span class="k">suspend fun</span> interrupt()                    <span class="c">// 2. user tapped stop</span>
+    <span class="k">suspend fun</span> setMicGate(open: Boolean)      <span class="c">// 3. cost + privacy control</span>
+    <span class="k">suspend fun</span> close()
+}
+
+<span class="k">sealed interface</span> VoiceEvent {
+    <span class="c">// 4. TWO transcripts, always distinguished, always surfaced</span>
+    data class UserTranscript(<span class="k">val</span> text: String, <span class="k">val</span> final: Boolean) : VoiceEvent
+    data class AgentTranscript(<span class="k">val</span> text: String, <span class="k">val</span> final: Boolean) : VoiceEvent
+
+    <span class="c">// 5. turn state — drives every affordance in the UI</span>
+    data class Turn(<span class="k">val</span> who: Speaker, <span class="k">val</span> phase: Phase) : VoiceEvent
+
+    <span class="c">// 6. tool calls: the UI-driving channel</span>
+    data class ToolCall(<span class="k">val</span> callId: String, <span class="k">val</span> name: String, <span class="k">val</span> args: String) : VoiceEvent
+
+    <span class="c">// 7. barge-in as an event, not an inference</span>
+    object Interrupted : VoiceEvent
+
+    <span class="c">// 8. connection state incl. resumable-vs-fatal distinction</span>
+    data class Connection(<span class="k">val</span> state: ConnState, <span class="k">val</span> resumable: Boolean) : VoiceEvent
+
+    <span class="c">// 9. usage, normalised to seconds — never expose vendor token units</span>
+    data class Usage(<span class="k">val</span> heardSec: Double, <span class="k">val</span> spokenSec: Double) : VoiceEvent
+}</pre>
+
+  <div class="col">
+  <h4>What must live <em>inside</em> the adapter and never leak out</h4>
+  <ul>
+    <li><b>Sample rate and framing.</b> The app hands over device-native PCM; the adapter resamples to whatever the provider wants. Nothing above the adapter knows 24&nbsp;kHz exists.</li>
+    <li><b>Transport.</b> WebRTC for OpenAI, WebSocket for Gemini, HTTP/2 for Nova. The app sees a session, not a socket.</li>
+    <li><b>Turn-detection strategy.</b> Server VAD, semantic VAD, Flux end-of-turn — all collapse into <span class="m">Turn</span> events.</li>
+    <li><b>Tool schema translation.</b> Define tools once in a provider-neutral form; the adapter emits OpenAI-shaped, Gemini-shaped or Bedrock-shaped declarations.</li>
+    <li><b>Credentials.</b> The adapter asks your Ktor backend for a short-lived token. No provider key ever ships in the app, and swapping providers is a backend change.</li>
+    <li><b>Reconnection and context replay.</b> Gemini gives you resumption handles; OpenAI does not. The adapter hides the difference behind <span class="m">Connection(resumable=)</span>.</li>
+    <li><b>Session-length caps.</b> 10-minute connections, 15-minute uncompressed audio sessions, 60-minute session ceilings. The app must never see these.</li>
+  </ul>
+
+  <h4>What deliberately stays outside</h4>
+  <p>The <b>tool implementations</b> and the <b>action stack</b> are app code, not adapter code. They are your product. If they end up inside the adapter you have built a framework instead of a swap.</p>
+
+  <div class="key"><p><strong>Build the second adapter before you need it.</strong> Implement OpenAI first, then implement Gemini Live as a stub that runs your integration tests. It will take a day and it is the only way to know the interface is actually provider-neutral rather than an OpenAI wrapper with different names. Every abstraction written against one implementation is a wrapper.</p></div>
+  </div>
+</section>
+
+<!-- =================== LEDGER =================== -->
+<section id="ledger">
+  <h2><span class="n">09</span>Source ledger and what could not be verified</h2>
+  <div class="col">
+    <p><strong>Method:</strong> this environment's egress proxy returned 403 on direct fetches to every vendor domain attempted — <span class="m">platform.openai.com</span>, <span class="m">developers.openai.com</span>, <span class="m">ai.google.dev</span>, <span class="m">docs.livekit.io</span>, <span class="m">docs.aws.amazon.com</span>, <span class="m">hackernoon.com</span>, and even <span class="m">en.wikipedia.org</span>. Web <em>search</em> was available. Every figure here therefore comes from search-result extraction, in several cases restricted to the vendor's own domain. <b>No primary page was opened and read.</b> Chips marked "primary" mean the snippet originated on the vendor's domain — a meaningfully stronger signal than a blog, but not the same as reading the pricing page.</p>
+
+    <h4>Verify these before committing money or architecture</h4>
+    <ul>
+      <li><b>OpenAI's audio tokens-per-second (10 in / 20 out).</b> Cross-checked against two independent secondary analyses and consistent with historical gpt-4o-realtime rates, but not read off an OpenAI page. Every OpenAI $/min figure here depends on it.</li>
+      <li><b>Gemini Live audio rates on <span class="m">gemini-3.1-flash-live-preview</span> specifically.</b> $3/$12 per 1M is confirmed for 2.5 Flash Live; sources conflict on the 3.1 preview, with one claiming $1/1M audio input and 32 tokens/sec rather than 25. The $0.0045/$0.0180 per-minute figures reconcile cleanly with $3/$12 at 25 tok/s, which is why I used them — but the preview model may price differently.</li>
+      <li><b>Nova 2 Sonic's tokens-per-second.</b> Not found. Its $/min is genuinely unknown.</li>
+      <li><b>Gemini Live audio sample rates (16&nbsp;kHz in / 24&nbsp;kHz out).</b> Widely used in practice; not confirmed on a Google page in this research.</li>
+      <li><b>Groq Whisper pricing.</b> The $0.03/hr figure traces to June 2024. Almost certainly stale. Moot anyway — it is batch, not streaming.</li>
+      <li><b>Cartesia pricing.</b> Ranges from $15&ndash;24/M chars (PAYG) to "$5&ndash;37/M depending on plan" across sources. Wide spread; verify directly.</li>
+      <li><b>Zillow's implementation.</b> The demo and OpenAI's <span class="m">openai-realtime-agents</span> reference implementation are confirmed; a detailed Zillow engineering write-up does not appear to exist publicly. &sect;06 is synthesis, and marked as such.</li>
+      <li><b>Apple's current App Review Guidelines text.</b> The background-audio findings come from developer-forum threads and rejection guides, not from Apple's guidelines page.</li>
+    </ul>
+
+    <h4>Verified with reasonable confidence</h4>
+    <p>gpt-realtime GA status and WebRTC/WebSocket/SIP transports; 24&nbsp;kHz PCM16 constraint; server vs semantic VAD; OpenAI $32/$64 and $10/$20 per 1M; the 60-minute session ceiling and ephemeral client-secret model; Gemini Live WebSocket-only transport, VAD config field, session resumption with 2-hour handles, GoAway, 15-minute uncompressed cap, context window compression; Nova 2 Sonic bidirectional HTTP/2 API, 16&nbsp;kHz resampling, native barge-in and async tool calling; Grok $0.08/min and OpenAI-Realtime wire compatibility; Deepgram Nova-3 $0.0077/min, Aura-2 $0.030/1k chars and ~90&nbsp;ms TTFB, Voice Agent $4.50/hr, Flux end-of-turn detection; AssemblyAI $0.15/hr and ~300&nbsp;ms immutable transcripts; ElevenLabs Flash v2.5 ~75&nbsp;ms and $0.05/1k; Stivers et&nbsp;al. PNAS 2009 turn-taking figures; Ktor 3.3.0 experimental WebRTC client and its platform engines; webrtc-kmp M125; Android 17 SCO re-architecture; Google Play "Audio files" and third-party-SDK disclosure duty.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Compiled 27 August 2026 for a KMP tennis matchmaking pilot. Prices in this document are volatile — treat anything older than 30 days as a hypothesis. Re-verify the three OpenAI and Gemini figures flagged above before they enter a financial model.</p>
+</footer>
+
+</main>
+</div>
+</div>
