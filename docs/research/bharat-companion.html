@@ -1,0 +1,683 @@
+<title>Tolan for Bharat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500&family=Noto+Sans+Telugu:wght@400;500&family=Noto+Sans+Tamil:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#EBEEF4;
+  --surface:#FFFFFF;
+  --surface-2:#DFE4EE;
+  --ink:#151A2C;
+  --ink-2:#3E4763;
+  --ink-3:#6B7490;
+  --line:#CDD4E2;
+  --line-2:#A9B3C9;
+  --indigo:#2C3B7A;
+  --indigo-soft:#DEE3F3;
+  --hue:#B5342A;
+  --hue-soft:#F6E0DC;
+  --ok:#2C6A4E;
+  --ok-soft:#DDECE3;
+  --warn:#8A6410;
+  --warn-soft:#F3EAD3;
+  --shadow:0 1px 2px rgba(21,26,44,.05), 0 10px 26px -18px rgba(21,26,44,.35);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Spectral",Georgia,"Times New Roman",serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --deva:"Noto Sans Devanagari",var(--body);
+  --telu:"Noto Sans Telugu",var(--body);
+  --tam:"Noto Sans Tamil",var(--body);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#11141E;
+    --surface:#191D2A;
+    --surface-2:#222738;
+    --ink:#E7EAF3;
+    --ink-2:#A6AEC5;
+    --ink-3:#79829B;
+    --line:#2A3043;
+    --line-2:#3D4560;
+    --indigo:#8C9BDC;
+    --indigo-soft:#1D2440;
+    --hue:#DD6450;
+    --hue-soft:#331C18;
+    --ok:#6FC49A;
+    --ok-soft:#16301F;
+    --warn:#D9B45E;
+    --warn-soft:#2E2716;
+    --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 30px -20px rgba(0,0,0,.95);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#11141E;
+  --surface:#191D2A;
+  --surface-2:#222738;
+  --ink:#E7EAF3;
+  --ink-2:#A6AEC5;
+  --ink-3:#79829B;
+  --line:#2A3043;
+  --line-2:#3D4560;
+  --indigo:#8C9BDC;
+  --indigo-soft:#1D2440;
+  --hue:#DD6450;
+  --hue-soft:#331C18;
+  --ok:#6FC49A;
+  --ok-soft:#16301F;
+  --warn:#D9B45E;
+  --warn-soft:#2E2716;
+  --shadow:0 1px 2px rgba(0,0,0,.45), 0 10px 30px -20px rgba(0,0,0,.95);
+}
+
+*{box-sizing:border-box;}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.62;-webkit-font-smoothing:antialiased;}
+::selection{background:var(--indigo-soft);color:var(--ink);}
+a{color:var(--indigo);text-underline-offset:3px;text-decoration-thickness:1px;}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--hue);outline-offset:3px;border-radius:2px;}
+
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:clamp(1.15rem,4vw,3rem);}
+.band{border-top:1px solid var(--line);}
+.band-pad{padding-block:clamp(2.6rem,5.5vw,4.25rem);}
+.layout{display:grid;grid-template-columns:9.5rem minmax(0,1fr);gap:clamp(1.25rem,3.5vw,3rem);align-items:start;}
+@media (max-width:900px){.layout{grid-template-columns:1fr;gap:.8rem;}}
+.rail{position:sticky;top:1.5rem;}
+@media (max-width:900px){.rail{position:static;}}
+.rail-label{font-family:var(--mono);font-size:.66rem;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);display:block;line-height:1.6;}
+
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;text-wrap:balance;margin:0;line-height:1.14;letter-spacing:-.014em;}
+h2{font-size:clamp(1.5rem,3vw,2.05rem);margin-bottom:1rem;}
+h3{font-size:clamp(1.1rem,1.9vw,1.28rem);line-height:1.28;}
+h4{font-size:.97rem;}
+p{margin:0 0 1.05rem;max-width:66ch;}
+p:last-child{margin-bottom:0;}
+.lede{font-size:clamp(1.05rem,1.6vw,1.18rem);color:var(--ink-2);}
+strong{font-weight:600;color:var(--ink);}
+
+/* masthead */
+.masthead{padding-block:clamp(2.4rem,6.5vw,4.5rem) clamp(1.9rem,4.5vw,3rem);}
+.brandline{display:flex;align-items:center;gap:.8rem;margin-bottom:clamp(1.6rem,4vw,2.5rem);flex-wrap:wrap;}
+.mark{flex:none;display:block;}
+.mark .ring{fill:none;stroke:var(--line-2);stroke-width:1;}
+.mark .wave{fill:none;stroke:var(--hue);stroke-width:1.6;stroke-linecap:round;}
+.mark .dot{fill:var(--indigo);}
+.kicker{font-family:var(--mono);font-size:.67rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);}
+.kicker b{color:var(--hue);font-weight:500;}
+h1{font-size:clamp(2.3rem,6.8vw,4.1rem);line-height:1.03;letter-spacing:-.028em;font-weight:700;max-width:15ch;}
+.subhead{font-size:clamp(1.08rem,2vw,1.3rem);color:var(--ink-2);max-width:58ch;margin-top:1.3rem;line-height:1.5;}
+
+/* verdict cards */
+.verdicts{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-top:clamp(2rem,4.5vw,3rem);grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr));}
+.verdict{background:var(--surface);padding:1.2rem 1.3rem;}
+.verdict .vh{font-family:var(--mono);font-size:.62rem;letter-spacing:.13em;text-transform:uppercase;color:var(--hue);display:block;margin-bottom:.55rem;}
+.verdict h3{margin-bottom:.45rem;font-size:1.05rem;}
+.verdict p{font-size:.9rem;color:var(--ink-2);margin:0;}
+
+/* panels & tables */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow);overflow:hidden;}
+.panel-head{padding:.7rem 1rem;border-bottom:1px solid var(--line);background:var(--surface-2);font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+.scroll{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;font-size:.89rem;min-width:600px;}
+th,td{text-align:left;padding:.62rem .95rem;border-bottom:1px solid var(--line);vertical-align:top;}
+thead th{font-family:var(--mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:500;}
+tbody tr:last-child td{border-bottom:0;}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap;}
+td.seg{font-family:var(--display);font-weight:600;font-size:.95rem;line-height:1.3;}
+td.seg small{display:block;font-family:var(--body);font-weight:400;font-size:.8rem;color:var(--ink-3);margin-top:.2rem;}
+.rank{font-family:var(--mono);font-size:.72rem;color:var(--ink-3);}
+
+.chip{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.09em;text-transform:uppercase;padding:.16rem .42rem;border-radius:2px;white-space:nowrap;line-height:1.45;}
+.c-ok{background:var(--ok-soft);color:var(--ok);}
+.c-warn{background:var(--warn-soft);color:var(--warn);}
+.c-hot{background:var(--hue-soft);color:var(--hue);}
+.c-flat{border:1px solid var(--line-2);color:var(--ink-3);}
+
+/* chart */
+.figure{background:var(--surface);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow);padding:1.3rem 1.4rem 1.5rem;margin-block:1.6rem;}
+.fig-title{font-family:var(--display);font-weight:600;font-size:1.02rem;line-height:1.3;margin-bottom:.25rem;}
+.fig-sub{font-size:.84rem;color:var(--ink-3);margin-bottom:1.35rem;max-width:60ch;}
+.chart{display:grid;gap:.55rem;position:relative;}
+.crow{display:grid;grid-template-columns:minmax(6.5rem,10rem) minmax(0,1fr) 5.6rem;gap:.7rem;align-items:center;}
+@media (max-width:640px){.crow{grid-template-columns:minmax(5rem,7rem) minmax(0,1fr) 4.6rem;gap:.5rem;}}
+.clabel{font-size:.83rem;color:var(--ink-2);line-height:1.35;}
+.ctrack{position:relative;height:18px;background:var(--surface-2);border-radius:2px;}
+.cbar{position:absolute;left:0;top:0;bottom:0;background:var(--hue);border-radius:0 4px 4px 0;}
+.cval{font-family:var(--mono);font-size:.8rem;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);}
+.cref{position:absolute;top:-4px;bottom:-4px;width:0;border-left:2px dashed var(--indigo);z-index:2;}
+.cref-note{margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--line);font-size:.82rem;color:var(--ink-2);display:flex;gap:.55rem;align-items:flex-start;}
+.cref-key{flex:none;width:1.4rem;border-top:2px dashed var(--indigo);margin-top:.62rem;}
+.cfoot{margin-top:.9rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.04em;color:var(--ink-3);}
+@media (prefers-reduced-motion:no-preference){.cbar{transition:filter .15s ease;}}
+.crow:hover .cbar,.crow:focus-within .cbar{filter:brightness(.9);}
+
+/* dialogue */
+.dlg{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:3px;overflow:hidden;margin-block:1.4rem;}
+.dlg-row{background:var(--surface);padding:1rem 1.2rem;display:grid;grid-template-columns:5.5rem minmax(0,1fr);gap:1rem;}
+@media (max-width:620px){.dlg-row{grid-template-columns:1fr;gap:.35rem;}}
+.dlg-lang{font-family:var(--mono);font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);padding-top:.35rem;}
+.dlg-line{font-size:1.02rem;line-height:1.65;color:var(--ink);}
+.dlg-line.deva{font-family:var(--deva);}
+.dlg-line.telu{font-family:var(--telu);}
+.dlg-line.tam{font-family:var(--tam);}
+.dlg-gloss{font-size:.83rem;color:var(--ink-3);font-style:italic;margin-top:.25rem;}
+
+/* callouts */
+.callout{border:1px solid var(--line);border-left:3px solid var(--indigo);background:var(--surface);padding:1.1rem 1.3rem;border-radius:2px;margin:1.5rem 0;}
+.callout.hot{border-left-color:var(--hue);}
+.callout p{font-size:.93rem;margin-bottom:.7rem;}
+.callout p:last-child{margin-bottom:0;}
+.callout .h{font-family:var(--mono);font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:.55rem;}
+.callout.hot .h{color:var(--hue);}
+
+/* phases */
+.phase{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.1rem;padding:1.15rem 0;border-top:1px solid var(--line);}
+.phase:first-of-type{border-top:0;padding-top:0;}
+.phase-n{font-family:var(--mono);font-size:.67rem;letter-spacing:.05em;color:var(--ink-3);border:1px solid var(--line-2);border-radius:2px;padding:.28rem .5rem;height:max-content;white-space:nowrap;}
+.phase h3{margin-bottom:.4rem;}
+.phase p{font-size:.92rem;color:var(--ink-2);margin-bottom:.55rem;}
+.gate{font-family:var(--mono);font-size:.71rem;color:var(--hue);}
+
+ul.tight{margin:.2rem 0 0;padding-left:1.05rem;font-size:.92rem;color:var(--ink-2);max-width:68ch;}
+ul.tight li{margin-bottom:.44rem;}
+ul.tight li::marker{color:var(--hue);}
+ul.tight b{color:var(--ink);}
+
+.cards{display:grid;gap:1.05rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:1.25rem 1.3rem;box-shadow:var(--shadow);}
+.card-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--hue);margin-bottom:.5rem;}
+.card h3{margin-bottom:.6rem;}
+.card p{font-size:.9rem;color:var(--ink-2);}
+
+.sources{columns:2;column-gap:2.5rem;font-size:.82rem;line-height:1.55;}
+@media (max-width:700px){.sources{columns:1;}}
+.sources li{break-inside:avoid;margin-bottom:.6rem;color:var(--ink-2);}
+.sources a{word-break:break-word;}
+footer.foot{padding-block:2.4rem 3.4rem;font-family:var(--mono);font-size:.67rem;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase;}
+</style>
+
+<header class="wrap masthead">
+  <div class="brandline">
+    <svg class="mark" width="42" height="42" viewBox="0 0 42 42" aria-hidden="true">
+      <circle class="ring" cx="21" cy="21" r="19"/>
+      <path class="wave" d="M9 21 q3 -8 6 0 t6 0 t6 0 t6 0"/>
+      <circle class="dot" cx="21" cy="21" r="2.4"/>
+    </svg>
+    <span class="kicker">Strategy brief &middot; <b>Voice companion for India</b> &middot; Aug 2026</span>
+  </div>
+
+  <h1>Tolan for Bharat</h1>
+
+  <p class="subhead">Tolan&rsquo;s model does transfer to India &mdash; but three of its core choices break on contact. Star voices are the fastest route to a Delhi High Court injunction, monthly subscriptions leak through UPI, and a 35-minute daily voice session costs more per user than an Indian subscriber spends in five years.</p>
+
+  <div class="verdicts">
+    <div class="verdict">
+      <span class="vh">Verdict 1 &middot; The voices</span>
+      <h3>Don&rsquo;t clone the heroes. Cast the archetypes.</h3>
+      <p>Indian courts have protected voice as a personality right in case after case since 2023. Licensed dubbing artists playing film archetypes give you ~80% of the emotional pull at zero legal exposure &mdash; and India has roughly 20,000 of them actively seeking these deals.</p>
+    </div>
+    <div class="verdict">
+      <span class="vh">Verdict 2 &middot; The audience</span>
+      <h3>Women 28&ndash;45 in tier-2/3, in their own language.</h3>
+      <p>Adults, so no child-consent regime. Non-romantic, so no obscenity exposure. Already proven to pay for exactly this &mdash; someone to talk to about their life &mdash; through astrology apps. The highest-demand segment (young men) is the highest-risk one.</p>
+    </div>
+    <div class="verdict">
+      <span class="vh">Verdict 3 &middot; The shape</span>
+      <h3>A five-minute daily ritual, sold in coins.</h3>
+      <p>Live voice costs roughly &#8377;3 a minute in Indic languages. At a realistic Indian ARPU you can afford about seven minutes of it per user per month. That single number determines the entire architecture.</p>
+    </div>
+  </div>
+</header>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">The voices</span></div>
+    <div>
+      <h2>Why the star-voice idea has to change &mdash; and what replaces it</h2>
+      <p class="lede">This is the part of the plan that would end the company, so it goes first. India is currently the most aggressive jurisdiction on earth for celebrity personality rights, and voice is explicitly covered.</p>
+
+      <div class="panel" style="margin-top:1.6rem;">
+        <div class="panel-head"><span>The case law you would be walking into</span><span>Delhi HC &amp; Bombay HC, 2023&ndash;2026</span></div>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Case</th><th>What was protected</th><th>Why it matters to you</th></tr></thead>
+          <tbody>
+            <tr><td class="seg">Anil Kapoor<small>Delhi HC, 2023</small></td><td>Name, image, <strong>voice</strong>, and the catchphrase &ldquo;jhakaas&rdquo;</td><td>Protection extends to <em>indicia</em> of identity, not just literal copies. &ldquo;Sounds like him&rdquo; is enough.</td></tr>
+            <tr><td class="seg">Arijit Singh<small>Bombay HC</small></td><td>Name, <strong>voice</strong>, photograph, likeness</td><td>India&rsquo;s first AI voice-cloning infringement decision. Voice is a protectable personality attribute, full stop.</td></tr>
+            <tr><td class="seg">Aishwarya Rai Bachchan<small>Delhi HC, 2025</small></td><td>Name, image, likeness, voice vs. generative-AI deepfakes</td><td>Ex parte injunction. You will not get a hearing before you are shut down.</td></tr>
+            <tr><td class="seg">Nagarjuna Akkineni<small>Delhi HC, 2025</small></td><td>Name, image, likeness incl. AI-generated material</td><td>This is not a Bollywood-only doctrine. Telugu cinema is equally protected.</td></tr>
+            <tr><td class="seg">Amitabh &amp; Abhishek Bachchan<small>Delhi HC</small></td><td>Persona, merchandise, AI-generated video</td><td>Families litigate as a bloc. One product, three suits.</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <div class="callout hot">
+        <span class="h">And the labelling rule closes the back door</span>
+        <p>India&rsquo;s amended IT Rules took effect <strong>20 February 2026</strong>. Any audio that realistically simulates a real person is &ldquo;Synthetically Generated Information&rdquo; &mdash; it must carry an <strong>audible disclosure</strong>, embed permanent provenance metadata that you may not allow anyone to strip, and be removable within roughly <strong>three hours</strong> of a court or government notice. So even a technically legal soundalike has to announce itself, which destroys the illusion you were buying it for.</p>
+      </div>
+
+      <h3 style="margin-top:2.2rem;">What to build instead</h3>
+      <p>The emotional pull you saw in that video is not really coming from a specific actor. It is coming from a <strong>recognisable relational archetype</strong> delivered in a familiar regional cadence &mdash; the teasing elder sibling, the unshockable best friend, the grandmother who asks whether you have eaten. Indian cinema built those archetypes; no one owns them.</p>
+      <ul class="tight">
+        <li><strong>Cast real voice artists, on paper.</strong> India has roughly 20,000 dubbing freelancers, and the Association of Voice Artists is actively campaigning for consent, credit and fair pay on exactly these deals. You are the buyer they have been asking for.</li>
+        <li><strong>Get explicit synthetic-voice consent</strong> in the contract &mdash; scope, term, territory, per-use or revenue-share royalty, and a revocation clause. India has no binding industry AI agreement yet, so your contract <em>is</em> the standard.</li>
+        <li><strong>Make it the marketing.</strong> &ldquo;Every voice in this app belongs to a real artist who is paid every time you hear it&rdquo; is a defensible, press-friendly position in a market where the story right now is AI replacing voice artists.</li>
+        <li><strong>Never imitate a living person</strong>, and put a name-and-likeness filter in front of the model so users cannot coax it into doing an impression on request.</li>
+        <li><strong>A licensed star can come later.</strong> No Indian precedent exists for an official AI-likeness deal, so you would be drafting it from scratch, paying heavily, and taking key-person risk. It is a Series A move, not a v1 move.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">The audience</span></div>
+    <div>
+      <h2>Where the demand actually is</h2>
+      <p class="lede">You asked which age groups are the lowest-risk, fastest-traction bet. The honest answer is that demand and risk are almost perfectly correlated in this category &mdash; the segment that wants this most is the one that will get you regulated. Here is the ranking, and the reasoning under it.</p>
+
+      <div class="panel" style="margin-top:1.6rem;">
+        <div class="panel-head"><span>Segment scorecard</span><span>ranked by (need &times; ability to pay &times; reach) &divide; risk</span></div>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Segment</th><th>Need</th><th>Pays?</th><th>Reach</th><th>Risk</th><th>Call</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="seg"><span class="rank">1</span> Women 28&ndash;45, tier 2&ndash;3<small>Homemakers and working mothers, vernacular-first</small></td>
+              <td><span class="chip c-hot">High</span></td>
+              <td><span class="chip c-ok">Proven</span></td>
+              <td><span class="chip c-ok">Wide</span></td>
+              <td><span class="chip c-ok">Low</span></td>
+              <td><strong>Beachhead.</strong> Build for these users.</td>
+            </tr>
+            <tr>
+              <td class="seg"><span class="rank">2</span> Seniors 60+, NRI children paying<small>140M seniors today, 347M by 2050</small></td>
+              <td><span class="chip c-hot">High</span></td>
+              <td><span class="chip c-ok">Very</span></td>
+              <td><span class="chip c-warn">Narrow</span></td>
+              <td><span class="chip c-warn">Medium</span></td>
+              <td><strong>Wave two.</strong> Where the margin is.</td>
+            </tr>
+            <tr>
+              <td class="seg"><span class="rank">3</span> Young women 18&ndash;27<small>Students, first jobs, metros</small></td>
+              <td><span class="chip c-hot">High</span></td>
+              <td><span class="chip c-warn">Thin</span></td>
+              <td><span class="chip c-ok">Wide</span></td>
+              <td><span class="chip c-warn">Medium</span></td>
+              <td>Follows for free once #1 works.</td>
+            </tr>
+            <tr>
+              <td class="seg"><span class="rank">4</span> Young men 18&ndash;25<small>India is Character.AI&rsquo;s 2nd-largest market</small></td>
+              <td><span class="chip c-hot">Highest</span></td>
+              <td><span class="chip c-warn">Some</span></td>
+              <td><span class="chip c-ok">Widest</span></td>
+              <td><span class="chip c-hot">Severe</span></td>
+              <td><strong>Do not target.</strong> Serve if they arrive.</td>
+            </tr>
+            <tr>
+              <td class="seg"><span class="rank">5</span> Students under 18<small>Exam aspirants, coaching hubs</small></td>
+              <td><span class="chip c-hot">Extreme</span></td>
+              <td><span class="chip c-flat">Parents</span></td>
+              <td><span class="chip c-ok">Wide</span></td>
+              <td><span class="chip c-hot">Disqualifying</span></td>
+              <td><strong>Excluded from v1.</strong> Age-gate it out.</td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+
+      <h3 style="margin-top:2.4rem;">Why women 28&ndash;45 is the beachhead</h3>
+      <p>Every signal you asked me to read &mdash; what people watch, what they talk about, what they actually pay for &mdash; converges on this group.</p>
+      <ul class="tight">
+        <li><strong>What they watch.</strong> The top Hindi serial for years running is <em>Anupamaa</em>: a homemaker rebuilding her life. The largest TV serial audience segment is 31&ndash;50. Micro-dramas &mdash; now the fastest-growing format in India, 250M+ app downloads and 16&times; growth &mdash; run on family conflict and emotional betrayal, not superheroes. The market is telling you what this audience is starving for.</li>
+        <li><strong>What they pay for.</strong> Astrotalk did <strong>&#8377;1,214 crore</strong> in FY25 with ~&#8377;250 crore profit and a &#8377;2,500 crore run-rate &mdash; 90&ndash;95% of it from people paying roughly <strong>&#8377;20 a minute</strong> to talk to someone about their life for about ten minutes. Users are ~54% female. This is a solved question: Indians already pay, by the minute, for a conversation about their problems.</li>
+        <li><strong>Why they can&rsquo;t get it elsewhere.</strong> India has about one psychiatrist per 150,000 people, and stigma keeps most people away regardless. But <strong>61%</strong> of Indian users with anxiety say they are open to AI-based support and <strong>49%</strong> say AI actually reduces the stigma. Astrology is the culturally sanctioned wrapper for this conversation; a friendly companion can be the second one.</li>
+        <li><strong>Why voice.</strong> 280M Indians use voice search weekly and <strong>62%</strong> of Indian voice queries are in Hindi, Hinglish or a regional language &mdash; because typing in Indic script is genuinely hard. Voice isn&rsquo;t a premium feature here, it&rsquo;s the accessibility layer.</li>
+        <li><strong>Why now.</strong> Kuku FM has 10M+ paid users, <strong>70% from tier-2 and beyond</strong>, an 11% conversion rate and &#8377;600 ARPU. The habit of paying for vernacular audio companionship already exists in exactly this geography.</li>
+      </ul>
+
+      <div class="callout">
+        <span class="h">The friction nobody plans for</span>
+        <p>Phone access for this segment is not private. In one survey <strong>43% of rural Indian women with a household smartphone had not used it in the past month</strong>, with family restriction the main reason, and only about 25% of rural women have regular mobile internet against 45% of men.</p>
+        <p>That is a product requirement, not a footnote: a neutral app icon, notifications that never show content on the lock screen, a PIN or pattern lock on conversation history, and one-tap panic-clear. Design for a phone that other people pick up.</p>
+      </div>
+
+      <h3 style="margin-top:2.4rem;">Why the other segments rank where they do</h3>
+      <div class="cards" style="margin-top:1.3rem;">
+        <div class="card">
+          <div class="card-eyebrow">Rank 2 &middot; the margin play</div>
+          <h3>Seniors, billed to their children abroad</h3>
+          <p>Nearly <strong>73%</strong> of Indian seniors report emotional neglect as a major concern. The payer is the NRI child, and diaspora ARPU is transformative &mdash; Sri Mandir earns about <strong>&#8377;7,000 per user abroad versus &#8377;600&ndash;800 in India</strong>, with 20% of revenue from roughly 2.5% of users. Regional OTT shows the same pattern. Launch India and diaspora together, price them differently, and let the diaspora fund the domestic base.</p>
+        </div>
+        <div class="card">
+          <div class="card-eyebrow">Rank 4 &middot; the trap</div>
+          <h3>Young men are demand you should refuse</h3>
+          <p>India is Character.AI&rsquo;s <strong>second-largest market</strong> and 55% of its users are 18&ndash;24, so the pull is real. But in January 2026 MeitY gave X a 72-hour ultimatum over obscene AI content from Grok. Rule 3(1)(b) of the IT Rules bars hosting obscene material, and an &ldquo;AI girlfriend&rdquo; positioning walks straight into it. Serve men who show up; never market to them; keep romance and sexual content hard-blocked at the model layer.</p>
+        </div>
+        <div class="card">
+          <div class="card-eyebrow">Rank 5 &middot; the disqualifier</div>
+          <h3>Under-18s are legally out of reach</h3>
+          <p>India&rsquo;s DPDP regime is the strictest in the world on this: everyone under <strong>18</strong> is a child, requiring verifiable parental consent, with tracking, profiling and targeted advertising outright prohibited. Layer on 14,488 student suicides in 2024 and ~70% of aspirants showing moderate-to-high anxiety, and a crisis-protocol failure becomes existential. Age-gate at 18 and mean it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">The economics</span></div>
+    <div>
+      <h2>The number that decides everything</h2>
+      <p class="lede">Sarvam prices Indic speech at roughly &#8377;0.05 per second of speech generated and &#8377;0.04 per second recognised. In a real back-and-forth, about half the clock is each side talking &mdash; so a minute of live voice conversation costs around <strong>&#8377;3</strong>, before the language model. That is cheap by Western standards and ruinous by Indian ones.</p>
+
+      <div class="figure">
+        <div class="fig-title">Monthly inference cost per daily-active user, by session length</div>
+        <div class="fig-sub">Live Indic voice at ~&#8377;3 per conversation-minute, 30 days. Measured against &#8377;50/month &mdash; the monthly equivalent of the &#8377;600 annual ARPU a leading Indian vernacular audio app actually earns per paying user.</div>
+
+        <div class="chart">
+          <div class="crow" tabindex="0" title="2 min/day = 60 min/month ≈ ₹180. Above the ₹50 revenue line.">
+            <span class="clabel">2 min / day</span>
+            <span class="ctrack"><span class="cbar" style="width:5.7%"></span><span class="cref" style="left:1.6%"></span></span>
+            <span class="cval">&#8377;180</span>
+          </div>
+          <div class="crow" tabindex="0" title="5 min/day = 150 min/month ≈ ₹450. Nine times the revenue line.">
+            <span class="clabel">5 min / day</span>
+            <span class="ctrack"><span class="cbar" style="width:14.3%"></span><span class="cref" style="left:1.6%"></span></span>
+            <span class="cval">&#8377;450</span>
+          </div>
+          <div class="crow" tabindex="0" title="10 min/day = 300 min/month ≈ ₹900. Eighteen times the revenue line.">
+            <span class="clabel">10 min / day</span>
+            <span class="ctrack"><span class="cbar" style="width:28.6%"></span><span class="cref" style="left:1.6%"></span></span>
+            <span class="cval">&#8377;900</span>
+          </div>
+          <div class="crow" tabindex="0" title="20 min/day = 600 min/month ≈ ₹1,800. Thirty-six times the revenue line.">
+            <span class="clabel">20 min / day</span>
+            <span class="ctrack"><span class="cbar" style="width:57.1%"></span><span class="cref" style="left:1.6%"></span></span>
+            <span class="cval">&#8377;1,800</span>
+          </div>
+          <div class="crow" tabindex="0" title="35 min/day — Tolan's reported session length — = 1,050 min/month ≈ ₹3,150. Sixty-three times the revenue line.">
+            <span class="clabel">35 min / day<br><span style="font-size:.72rem;color:var(--ink-3);">Tolan&rsquo;s actual usage</span></span>
+            <span class="ctrack"><span class="cbar" style="width:100%"></span><span class="cref" style="left:1.6%"></span></span>
+            <span class="cval">&#8377;3,150</span>
+          </div>
+        </div>
+
+        <div class="cref-note">
+          <span class="cref-key" aria-hidden="true"></span>
+          <span><strong>&#8377;50 / month</strong> &mdash; all the revenue an average Indian paying user generates. Every bar above is a cost. The dashed line is barely visible against them, which is the entire point.</span>
+        </div>
+        <div class="cfoot">Sources: Sarvam API pricing; Kuku FM reported ARPU. LLM cost excluded, which makes this optimistic.</div>
+      </div>
+
+      <p>Read it the other way and it becomes a design spec. If you keep 100% of a &#8377;50 monthly ARPU and spend all of it on inference, you can afford <strong>about 16 minutes of live voice per user per month</strong>. At a defensible 60% gross margin, you can afford <strong>about seven</strong>. Roughly fourteen seconds a day.</p>
+
+      <div class="callout hot">
+        <span class="h">So the architecture is forced, not chosen</span>
+        <p><strong>Most of the product must be pre-generated and broadcast; only a thin, precious layer is live.</strong> A three-minute daily audio segment synthesised once and served to a million users costs about &#8377;9 in total, not &#8377;9 million. Live, personalised, remembering-you conversation is the expensive part &mdash; so it is the part you meter and sell.</p>
+        <p>This is Kuku FM&rsquo;s economics wrapped around Tolan&rsquo;s emotional design, and it is the only version of this that survives contact with Indian ARPU.</p>
+      </div>
+
+      <h3 style="margin-top:2.2rem;">Coins, not subscriptions</h3>
+      <p>The payment model is not a preference question in India, it is a plumbing question. UPI AutoPay is structurally leaky: roughly <strong>20 million mandate revocations a month</strong> on insufficient balance, failure rates several times higher than card mandates, and success decaying toward 70% by month six as balances run short and apps get uninstalled.</p>
+      <ul class="tight">
+        <li><strong>Pocket FM replaced monthly subscriptions with coins</strong> and watched microtransaction revenue grow 484% to &#8377;934 crore. Coin packs start at &#8377;49.</li>
+        <li><strong>Astrotalk never sold a subscription at all</strong> &mdash; wallet top-up, ~&#8377;20 a minute, ~ten-minute sessions, &#8377;1,214 crore.</li>
+        <li>So: <strong>a free daily ritual that costs you almost nothing</strong> (cached audio, short text), and <strong>coins for live voice minutes</strong>, from a &#8377;49 pack. Sell minutes at &#8377;5&ndash;10 against a &#8377;3 cost and the margin holds at any usage level. Sell &ldquo;unlimited&rdquo; at &#8377;99/month and your best users bankrupt you.</li>
+        <li><strong>Bill outside the app stores where you legally can</strong>, as the Indian incumbents do &mdash; a 15&ndash;30% platform cut is most of your gross margin at these price points.</li>
+      </ul>
+
+      <div class="panel" style="margin-top:1.7rem;">
+        <div class="panel-head"><span>India reality check</span><span>plan against these, not Western benchmarks</span></div>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Metric</th><th>India</th><th>Implication</th></tr></thead>
+          <tbody>
+            <tr><td class="seg">Paying-user ARPU, vernacular audio</td><td class="num">&#8377;600 / year</td><td>Your annual revenue per subscriber is one Western monthly subscription.</td></tr>
+            <tr><td class="seg">Free-to-paid conversion, Kuku FM</td><td class="num">11%</td><td>Far above Western medians &mdash; because the paywall is a coin wall, not a subscription wall.</td></tr>
+            <tr><td class="seg">Diaspora ARPU multiple</td><td class="num">~10&times;</td><td>&#8377;7,000 vs &#8377;600&ndash;800. Ship international from day one.</td></tr>
+            <tr><td class="seg">CPI, Android</td><td class="num">&#8377;25&ndash;45</td><td>Payback needs roughly one coin pack. Achievable.</td></tr>
+            <tr><td class="seg">CPI, iOS</td><td class="num">&#8377;70&ndash;150</td><td>2&ndash;3&times; Android. Android-first is not a preference.</td></tr>
+            <tr><td class="seg">Nano-influencer reel</td><td class="num">&#8377;1,000&ndash;12,000</td><td>At the low end this matches the global UGC-flood playbook. Stay at the low end.</td></tr>
+            <tr><td class="seg">Live voice cost</td><td class="num">~&#8377;3 / min</td><td>The binding constraint on the entire product.</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">The product</span></div>
+    <div>
+      <h2>What the thing actually is</h2>
+      <p class="lede">A non-human companion with a regional voice, one short daily ritual it initiates, a memory that proves itself, and metered live conversation when you want to go deeper. Tolan&rsquo;s four parts, rebuilt to Indian cost and Indian culture.</p>
+
+      <h3 style="margin-top:1.9rem;">The character rules</h3>
+      <ul class="tight">
+        <li><strong>Non-human, and not an alien.</strong> The non-human form is doing real work &mdash; it suppresses romantic projection and makes the thing shareable. But an alien is an American import. Draw the creature from a regional folk-art visual language instead, so it reads as native and screenshot-worthy at once.</li>
+        <li><strong>Not a deity, not a guru, not a saint.</strong> Religious framing monetises brilliantly in India and carries offence risk you cannot insure against. Stay adjacent to warmth, away from worship.</li>
+        <li><strong>Ungendered by default</strong>, with the voice chosen at pairing. This is what keeps you out of &ldquo;AI girlfriend&rdquo; territory structurally rather than by policy.</li>
+        <li><strong>One character per language, cast properly</strong> &mdash; not one character with five dubs. A Telugu companion and a Tamil companion should feel like different people, because a Telugu friend and a Tamil friend are.</li>
+      </ul>
+
+      <h3 style="margin-top:2.2rem;">Speak the spoken language, not the written one</h3>
+      <p>This is the detail that will separate you from every well-funded competitor, and it is a content problem rather than a model problem. Indic text-to-speech trained on written text sounds like a news bulletin. Real people do not talk like that &mdash; and in Tamil the gap between literary and spoken registers is so wide they are effectively two languages.</p>
+
+      <div class="dlg">
+        <div class="dlg-row">
+          <span class="dlg-lang">Tamil<br>literary</span>
+          <span>
+            <span class="dlg-line tam">நேற்று உங்கள் தாயாருக்கு உடல்நிலை சரியில்லை என்று கூறினீர்கள்.</span>
+            <span class="dlg-gloss">Correct, and no friend has ever said it. This is what an untuned model produces.</span>
+          </span>
+        </div>
+        <div class="dlg-row">
+          <span class="dlg-lang">Tamil<br>spoken</span>
+          <span>
+            <span class="dlg-line tam">நேத்து அம்மாவுக்கு உடம்பு சரியில்லேனு சொன்னீங்களே. இப்போ எப்படி இருக்காங்க?</span>
+            <span class="dlg-gloss">&ldquo;You said yesterday amma wasn&rsquo;t well. How is she now?&rdquo; &mdash; this is the one that lands.</span>
+          </span>
+        </div>
+        <div class="dlg-row">
+          <span class="dlg-lang">Telugu</span>
+          <span>
+            <span class="dlg-line telu">నిన్న అమ్మ ఆరోగ్యం బాగోలేదని చెప్పావు కదా. ఇప్పుడు ఎలా ఉన్నారు?</span>
+            <span class="dlg-gloss">The memory callback, unprompted. This is the activation moment &mdash; the same one Tolan measured.</span>
+          </span>
+        </div>
+        <div class="dlg-row">
+          <span class="dlg-lang">Hindi<br>code-mixed</span>
+          <span>
+            <span class="dlg-line deva">अरे, आज तो तुम्हारा interview था ना? कैसा गया?</span>
+            <span class="dlg-gloss">Code-mixing is not sloppiness, it is how people actually speak. Build for it deliberately.</span>
+          </span>
+        </div>
+      </div>
+
+      <p>Staff this the way Portola did &mdash; their head of story is a published novelist, and non-engineers ship prompt changes straight to production, which bought them a 4&times; iteration rate. Your version is a writer per language with production access. That is five hires, and it is the moat.</p>
+
+      <h3 style="margin-top:2.2rem;">The daily loop</h3>
+      <div class="cards" style="margin-top:1.2rem;">
+        <div class="card">
+          <div class="card-eyebrow">Free &middot; costs you ~&#8377;0</div>
+          <h3>The 3-minute morning segment</h3>
+          <p>Pre-generated once, served to everyone: a short story, a thought, something to think about today, in your language and your companion&rsquo;s voice. Personalised only by cheap text at the edges. This is the habit, and it is nearly free at any scale.</p>
+        </div>
+        <div class="card">
+          <div class="card-eyebrow">Free &middot; cheap text</div>
+          <h3>The check-in it starts</h3>
+          <p>It opens the loop, never a blank box. It remembers what you said yesterday and asks about it. Text-first with a short cached voice greeting &mdash; the memory callback is what converts, and memory is cheap.</p>
+        </div>
+        <div class="card">
+          <div class="card-eyebrow">Coins &middot; ~&#8377;3/min cost</div>
+          <h3>Live voice, when you want to talk</h3>
+          <p>Real conversation, metered, from a &#8377;49 pack. This is the Astrotalk behaviour your users already have. Price it at &#8377;5&ndash;10 a minute and the unit economics hold no matter how heavy the user.</p>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.6rem;">
+        <span class="h">Keep Tolan&rsquo;s guardrails &mdash; they are worth more here than there</span>
+        <p>Tolan blocks romance and sexual content, flags unhealthy engagement, nudges people toward real life, and suggests signing off after an hour. In the US that is good citizenship. In India, under MeitY&rsquo;s current posture, it is the difference between a business and a 72-hour compliance notice.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">Distribution</span></div>
+    <div>
+      <h2>How it gets found</h2>
+      <p class="lede">Tolan&rsquo;s sequence holds &mdash; find the hook organically, then industrialise it as paid. Only the surfaces and the format change.</p>
+      <ul class="tight">
+        <li><strong>Android-only for v1.</strong> iOS CPI runs 2&ndash;3&times; Android and iOS is a rounding error of the segment you are targeting.</li>
+        <li><strong>Make the creative a micro-drama, not a demo.</strong> This is the format India is rewarding right now: 250M+ micro-drama app downloads, 16&times; year-on-year growth, and in a ShareChat&ndash;Kantar study 86% of viewers watching more than fifteen minutes a day with 77% discovering content in social feeds. A 30-second emotional scene &mdash; the empty house at 3pm, the thing you cannot say to your husband &mdash; will travel. A screen recording will not.</li>
+        <li><strong>Post in-language, natively.</strong> Regional-language reels see roughly 30% higher completion, and 79% of Indian users trust a brand more when it speaks their language. One creator team per language, not one campaign translated five ways.</li>
+        <li><strong>Surfaces: Instagram Reels, YouTube Shorts, ShareChat and Moj.</strong> ShareChat and Moj are where tier-2/3 vernacular audiences actually are, and they are far less contested than Instagram.</li>
+        <li><strong>Volume before spend.</strong> 30&ndash;50 organic videos across 5&ndash;10 accounts per language before a rupee of media. If nothing clears 100k views, the hook is wrong &mdash; and paid spend on a wrong hook is just a faster way to lose the money.</li>
+        <li><strong>Launch the diaspora simultaneously.</strong> Same app, geo-priced. At ~10&times; ARPU the diaspora may fund your entire Indian user base, and that is the documented pattern across Sri Mandir and regional OTT alike.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">Compliance</span></div>
+    <div>
+      <h2>The non-negotiable list</h2>
+      <p class="lede">India regulated this category faster than anyone expected. None of these are optional, and all of them are cheaper to build in now than to retrofit.</p>
+      <div class="panel" style="margin-top:1.5rem;">
+        <div class="panel-head"><span>Ship-blocking requirements</span><span>verify each with Indian counsel before launch</span></div>
+        <div class="scroll">
+        <table>
+          <thead><tr><th>Requirement</th><th>Source</th><th>What you build</th></tr></thead>
+          <tbody>
+            <tr><td class="seg">Audible AI disclosure + provenance metadata</td><td>IT Amendment Rules, in force 20 Feb 2026</td><td>Spoken &ldquo;I&rsquo;m an AI&rdquo; on first session and periodically; embedded, non-strippable metadata on generated audio.</td></tr>
+            <tr><td class="seg">~3-hour takedown capability</td><td>IT Amendment Rules 2026</td><td>An on-call process and tooling to pull content on court or government notice. Not a form &mdash; a rota.</td></tr>
+            <tr><td class="seg">18+ age gate</td><td>DPDP Act &amp; Rules</td><td>Under-18 is a child in India. Verifiable parental consent plus a ban on profiling and targeted ads if you ever admit them. Simpler to exclude.</td></tr>
+            <tr><td class="seg">Consent-manager integration</td><td>DPDP Rules, from Nov 2026</td><td>Accept consent tokens, expose revocation hooks, route notices through the manager.</td></tr>
+            <tr><td class="seg">No obscene content, ever</td><td>IT Rules 2021, Rule 3(1)(b)</td><td>Hard model-layer block on sexual and romantic content, plus jailbreak testing as a release gate.</td></tr>
+            <tr><td class="seg">No real-person impersonation</td><td>Personality rights case law</td><td>Name-and-likeness filter on requests; documented synthetic-voice consent for every artist.</td></tr>
+            <tr><td class="seg">Crisis escalation</td><td>Duty of care</td><td>Detect self-harm signals, break character, surface <strong>Tele-MANAS &mdash; 14416</strong>, free and 24/7 in 20+ Indian languages. Log every trigger and review weekly.</td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">Build plan</span></div>
+    <div>
+      <h2>First ninety days</h2>
+      <p class="lede">One language, one segment, one ritual. The instinct to launch five languages at once is the main way this fails &mdash; you would be running five content pipelines before knowing whether one works.</p>
+
+      <div style="margin-top:1.5rem;">
+        <div class="phase">
+          <span class="phase-n">Wk 1&ndash;3</span>
+          <div>
+            <h3>Pick one language and find the hook in it</h3>
+            <p>Telugu or Marathi over Hindi: less contested, strong vernacular preference, and a real diaspora. Shoot 30&ndash;50 micro-drama-shaped clips across 5&ndash;10 accounts. In parallel, sign your first three voice artists with explicit synthetic-voice consent.</p>
+            <span class="gate">Gate: one clip past 100k views, and three signed voice contracts.</span>
+          </div>
+        </div>
+        <div class="phase">
+          <span class="phase-n">Wk 4&ndash;7</span>
+          <div>
+            <h3>Character, memory, the daily segment</h3>
+            <p>Pairing flow with a real personality quiz &mdash; it is the personalisation data, the attachment moment and the shareable artefact at once. Memory as retrieval, not transcript. The cached three-minute morning segment. Spoken-register scripts written by a native writer, not translated.</p>
+            <span class="gate">Gate: a day-2 user is greeted with something they said on day 1, in spoken register.</span>
+          </div>
+        </div>
+        <div class="phase">
+          <span class="phase-n">Wk 8&ndash;10</span>
+          <div>
+            <h3>Live voice, metered, behind coins</h3>
+            <p>Sarvam Saaras for recognition and Bulbul for speech, with the whole loop under two seconds. Coin wallet from &#8377;49, minutes priced at &#8377;5&ndash;10. Instrument cost-per-active-user as a first-class metric from the first day it ships &mdash; not after.</p>
+            <span class="gate">Gate: gross margin above 60% on live minutes at real usage, and sub-2s round trip.</span>
+          </div>
+        </div>
+        <div class="phase">
+          <span class="phase-n">Wk 11&ndash;13</span>
+          <div>
+            <h3>Compliance, then scale the hook</h3>
+            <p>Age gate, AI disclosure, provenance metadata, crisis escalation, jailbreak testing &mdash; all before paid spend, because paid spend is what brings the regulator&rsquo;s attention. Then restage the winning organic clip as produced paid creative and open the diaspora geo.</p>
+            <span class="gate">Gate: compliance checklist signed off by Indian counsel; CAC below 90-day revenue per user.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout" style="margin-top:1.9rem;">
+        <span class="h">Suggested stack</span>
+        <p><strong>Speech:</strong> Sarvam Saaras v3 (recognition) and Bulbul v3 (speech) &mdash; it beat ElevenLabs and Cartesia in a blind Indic evaluation across 11 languages and costs roughly an order of magnitude less. Evaluate <strong>Sarvam Edge</strong> for on-device recognition, which removes your per-query recognition cost entirely and is the single biggest lever on the constraint above. <strong>Reasoning:</strong> a cheap model for routing and a strong one only for the emotional turn. <strong>Payments:</strong> a coin wallet on UPI collect, not AutoPay mandates. <strong>Quality:</strong> a log-review and prompt-iteration tool your writers can use without an engineer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">Risks</span></div>
+    <div>
+      <h2>What would make me wrong</h2>
+      <ul class="tight">
+        <li><strong>Astrotalk&rsquo;s users may not be your users.</strong> One analysis puts ~85% of its base in metros and tier-1, aged 18&ndash;35 &mdash; not the tier-2/3 women I am pointing you at. The proof that Indians pay to talk about their lives is solid; the proof that <em>this specific segment</em> does is thinner. Test it in weeks 1&ndash;3 before building.</li>
+        <li><strong>Tolan itself has stalled.</strong> Estimated traffic down about 35% over three months in 2026, with pricing complaints. Companion novelty decays, and India will decay it faster because switching costs are near zero and free alternatives are everywhere.</li>
+        <li><strong>The cost curve may save you.</strong> Every figure here assumes 2026 Indic speech pricing. On-device inference and falling model costs could turn a &#8377;3 minute into a &#8377;0.30 minute within eighteen months, which would make the long-session product viable after all. Build metered anyway &mdash; you can always give minutes away.</li>
+        <li><strong>Regulation is moving mid-build.</strong> The IT amendments landed in February 2026, DPDP consent-manager obligations arrive in November 2026, and a Synthetic Media Bill is in draft. Budget for compliance rework, and get Indian counsel involved in week one rather than week twelve.</li>
+        <li><strong>Distribution may be more expensive than modelled.</strong> The &#8377;25&ndash;45 Android CPI is a category average. Emotional-companion creative is unproven at scale in India; assume you pay to learn.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="band band-pad">
+  <div class="wrap layout">
+    <div class="rail"><span class="rail-label">Sources</span></div>
+    <div>
+      <h2>Where this came from</h2>
+      <p class="lede">Legal points should be confirmed with Indian counsel before you build against them &mdash; this is research, not advice. Market figures are as reported; treat third-party estimates as directional.</p>
+      <ol class="sources" style="margin-top:1.3rem;padding-left:1.1rem;">
+        <li><a href="https://www.sarvam.ai/api-pricing">Sarvam AI &mdash; API pricing</a></li>
+        <li><a href="https://www.autointerviewai.com/blog/sarvam-ai-bulbul-saaras-indic-voice-models-review-2026">Sarvam Bulbul / Saaras Indic voice benchmarks 2026</a></li>
+        <li><a href="https://www.bwdisrupt.com/article/astrotalk-revenue-jumps-85-to-rs-1-214-cr-591016">BW Disrupt &mdash; Astrotalk revenue &#8377;1,214 Cr</a></li>
+        <li><a href="https://growthx.club/blog/kukufm-business-model">GrowthX &mdash; Kuku FM business model and ARPU</a></li>
+        <li><a href="https://inc42.com/company/kuku-fm/financials/">Inc42 &mdash; Kuku FM financials</a></li>
+        <li><a href="https://www.business-standard.com/amp/finance/news/upi-autopay-revocations-hit-20-mn-monthly-over-low-customer-balances-125090700500_1.html">Business Standard &mdash; UPI AutoPay revocations at 20M/month</a></li>
+        <li><a href="https://razorpay.com/blog/upi-autopay-vs-card-e-mandates/">Razorpay &mdash; UPI AutoPay vs card e-mandates</a></li>
+        <li><a href="https://techcrunch.com/2025/06/30/sri-mandir-keeps-investors-hooked-as-digital-devotion-grows">TechCrunch &mdash; Sri Mandir, and the diaspora ARPU gap</a></li>
+        <li><a href="https://www.mondaq.com/india/new-technology/1760554/it-rules-2026-deepfake-regulation-three-hour-takedowns-and-ai-labelling-obligations">IT Rules 2026 &mdash; three-hour takedowns and AI labelling</a></li>
+        <li><a href="https://www.freshfields.com/en/our-thinking/blogs/technology-quotient/india-targets-deepfakes-and-ai-generated-content-key-changes-under-meitys-2026-102mjwn">Freshfields &mdash; MeitY 2026 amendments on synthetic content</a></li>
+        <li><a href="https://ksandk.com/data-protection-and-data-privacy/childrens-data-protection-under-indias-dpdp-rules/">King Stubb &amp; Kasiva &mdash; children&rsquo;s data under the DPDP Rules</a></li>
+        <li><a href="https://chambers.com/articles/personality-rights-and-the-bachchan-cases">Chambers &mdash; personality rights and the Bachchan cases</a></li>
+        <li><a href="https://www.worldtrademarkreview.com/article/bollywood-singer-prevails-in-first-ai-voice-cloning-infringement-decision">WTR &mdash; first AI voice-cloning decision in India (Arijit Singh)</a></li>
+        <li><a href="https://aninews.in/news/national/general-news/delhi-hc-flags-ai-risks-while-protecting-actor-nagarjunas-personality-rights20250930223739/">ANI &mdash; Delhi HC protects Nagarjuna&rsquo;s personality rights</a></li>
+        <li><a href="https://www.hollywoodreporter.com/movies/movie-news/ai-is-replacing-voice-artists-in-india-1236335714/">Hollywood Reporter &mdash; India&rsquo;s voice artists and AI</a></li>
+        <li><a href="https://techcrunch.com/2026/01/02/india-orders-musks-x-to-fix-grok-over-obscene-ai-content/">TechCrunch &mdash; MeitY orders X to fix Grok over obscene AI content</a></li>
+        <li><a href="https://m.thewire.in/article/tech/ai-companion-apps-grok-chatgpt-it-rules-sdpi-dpdp-act-india">The Wire &mdash; do AI companion apps follow India&rsquo;s data and IT laws?</a></li>
+        <li><a href="https://ai.elevationcapital.com/blogs/ai-companion-indias-opportunity">Elevation Capital &mdash; AI companion, India&rsquo;s opportunity</a></li>
+        <li><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC13363178/">IJMR &mdash; social isolation and loneliness among the elderly in India</a></li>
+        <li><a href="https://www.mentis.co.in/articles/current-mental-health-statistics-india.html">Mentis &mdash; India mental health statistics 2026</a></li>
+        <li><a href="https://telemanas.mohfw.gov.in/">Tele-MANAS &mdash; Government of India mental health helpline (14416)</a></li>
+        <li><a href="https://ifmrlead.org/whose-phone-is-it-anyway-women-users-india/">LEAD at Krea &mdash; how Indian women navigate shared phone access</a></li>
+        <li><a href="https://indianmediastudies.com/microdrama-in-india/">Indian Media Studies &mdash; micro-drama in India</a></li>
+        <li><a href="https://sensortower.com/blog/india-mobile-app-market-q2-2026">Sensor Tower &mdash; India mobile app market Q2 2026</a></li>
+        <li><a href="https://gurob.in/blog-app-install-cost-india-vertical">India CPI benchmarks by vertical, 2026</a></li>
+        <li><a href="https://upgrowth.in/influencer-marketing-pricing-india-2026/">Influencer pricing in India, 2026</a></li>
+        <li><a href="https://www.demandsage.com/character-ai-statistics/">DemandSage &mdash; Character.AI statistics, India market share</a></li>
+        <li><a href="https://www.thestreaminglab.com/p/the-regional-ott-playbook-2025-part">The Streaming Lab &mdash; the regional OTT playbook and diaspora ARPU</a></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer class="band wrap foot">
+  Companion brief to &ldquo;The Tolan Playbook&rdquo; &middot; figures current to August 2026 &middot; legal points require Indian counsel
+</footer>
