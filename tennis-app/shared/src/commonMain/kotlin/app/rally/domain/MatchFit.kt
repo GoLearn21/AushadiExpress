@@ -97,10 +97,23 @@ object MatchFit {
         intent: MatchIntent,
         requiredConsecutiveSlots: Int,
         maxTravelMinutes: Int,
+        /**
+         * How many counted matches the *seeker* has. Not optional, and deliberately has no default:
+         * an earlier version omitted it, so [MatchIntent.bandFor] and [hardExclusionGapFor] existed,
+         * were tested in isolation, and were called by nothing. The placement-window inversion that
+         * protects a returning player on their first outing was dead code, and the band that
+         * actually shipped was the one it was written to replace.
+         */
+        seekerMatchesCounted: Int,
     ): FitResult? {
+        require(maxTravelMinutes > 0) { "maxTravelMinutes must be positive" }
+        require(seekerMatchesCounted >= 0) { "match count cannot be negative" }
+
         val gap = candidate.rating.mu - seeker.rating.mu
-        if (abs(gap) > HARD_EXCLUSION_GAP) return null
+        if (abs(gap) > hardExclusionGapFor(seekerMatchesCounted)) return null
         if (candidate.travelMinutes > maxTravelMinutes) return null
+
+        val band = intent.bandFor(seekerMatchesCounted)
 
         val overlapHard = (seeker.availability.hard and candidate.availability.hard).contiguous(requiredConsecutiveSlots)
         if (overlapHard.isEmpty) return null
@@ -109,10 +122,10 @@ object MatchFit {
         val reasons = mutableListOf<FitReason>()
 
         // Skill: Gaussian around the *centre of the intent band*, not around zero.
-        val bandCentre = (intent.bandLow + intent.bandHigh) / 2.0
+        val bandCentre = (band.start + band.endInclusive) / 2.0
         val sigma = sqrt(seeker.rating.phi * seeker.rating.phi + candidate.rating.phi * candidate.rating.phi).coerceAtLeast(0.25)
         val skill = exp(-((gap - bandCentre) * (gap - bandCentre)) / (2 * sigma * sigma))
-        if (gap in intent.bandLow..intent.bandHigh) reasons += FitReason(
+        if (gap in band) reasons += FitReason(
             when {
                 gap > 0.35 -> "A step up — good stretch for you"
                 gap < -0.35 -> "Slightly below your level"
@@ -129,7 +142,11 @@ object MatchFit {
         val travel = 1.0 - (candidate.travelMinutes.toDouble() / maxTravelMinutes).coerceIn(0.0, 1.0)
         reasons += FitReason("${candidate.travelMinutes} min away")
 
-        val reliability = candidate.reliability.weight
+        // Normalised across the band's real range. Raw weights span 0.7..1.0, so a nominal 0.12
+        // weight was worth only 0.036 of the score - less than 15 minutes of travel, on the one
+        // signal the product treats as a safety obligation.
+        val reliability = (candidate.reliability.weight - ReliabilityBand.LIMITED_HISTORY.weight) /
+            (ReliabilityBand.RELIABLE.weight - ReliabilityBand.LIMITED_HISTORY.weight)
         if (candidate.reliability == ReliabilityBand.RELIABLE) reasons += FitReason("Reliable — shows up")
 
         // Novelty: damp repeats so a pair cannot dominate each other's feed (and cannot farm rating).

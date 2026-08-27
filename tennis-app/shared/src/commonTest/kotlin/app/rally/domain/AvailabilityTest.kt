@@ -52,3 +52,63 @@ class AvailabilityTest {
         assertTrue((four and opponent).cardinality > (two and opponent).cardinality)
     }
 }
+
+/**
+ * Value semantics and wire hardening.
+ *
+ * Nothing in the original suite compared two masks directly — every assertion went through
+ * `.setSlots()` or `.cardinality` — so it never noticed that `AvailabilityMask` did not equal
+ * itself. As a `@JvmInline value class` over a `LongArray` it inherited `LongArray.equals`, which
+ * is reference equality.
+ */
+class AvailabilityMaskIdentityTest {
+
+    @Test
+    fun `two masks with the same bits are equal`() {
+        assertEquals(AvailabilityMask.of(11, 12), AvailabilityMask.of(11, 12))
+        assertEquals(AvailabilityMask.EMPTY, AvailabilityMask.EMPTY)
+    }
+
+    @Test
+    fun `masks deduplicate in a set and work as map keys`() {
+        // The matchmaker caches intersections. Under reference equality every lookup missed.
+        val set = setOf(
+            AvailabilityMask.of(11, 12),
+            AvailabilityMask.of(11, 12),
+        )
+        assertEquals(1, set.size)
+        val map = mapOf(AvailabilityMask.of(1, 2) to "a")
+        assertEquals("a", map[AvailabilityMask.of(1, 2)])
+    }
+
+    @Test
+    fun `an intersection equals the mask it should produce`() {
+        val a = AvailabilityMask.of(10, 11, 12)
+        val b = AvailabilityMask.of(11, 12, 13)
+        assertEquals(AvailabilityMask.of(11, 12), a and b)
+    }
+
+    @Test
+    fun `equal masks hash equally`() {
+        assertEquals(
+            AvailabilityMask.of(5, 500, 1007).hashCode(),
+            AvailabilityMask.of(5, 500, 1007).hashCode(),
+        )
+    }
+
+    @Test
+    fun `wire bytes with bits past the horizon are rejected`() {
+        // Accepted, those bits made cardinality and isEmpty disagree with setSlots: a mask could
+        // report itself non-empty, clear the feasibility gate, and reach a player as a match
+        // offer with no proposable slots in it.
+        val bytes = ByteArray(128)
+        bytes[127] = 0xFF.toByte()          // sets bits 1016..1023, past the 1008-slot horizon
+        assertFailsWith<IllegalArgumentException> { AvailabilityMask.fromByteArray(bytes) }
+    }
+
+    @Test
+    fun `a legitimate round trip still works`() {
+        val original = AvailabilityMask.of(0, 47, 48, 1007)
+        assertEquals(original, AvailabilityMask.fromByteArray(original.toByteArray()))
+    }
+}

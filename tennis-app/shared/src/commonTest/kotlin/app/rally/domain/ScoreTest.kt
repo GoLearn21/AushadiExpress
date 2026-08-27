@@ -1,47 +1,93 @@
 package app.rally.domain
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class ScoreTest {
 
-    private val fromA = ScoreReport(listOf(SetScore(6, 4), SetScore(3, 6), SetScore(10, 7)), Outcome.Completed)
+    private val match = MatchId("m-0001")
 
-    @Test fun `mirrored reports produce identical digests`() {
-        // This is the property the whole dual-attestation scheme depends on: two honest players
-        // entering the same match from opposite perspectives must agree byte-for-byte.
-        val fromBPerspective = ScoreReport(listOf(SetScore(4, 6), SetScore(6, 3), SetScore(7, 10)), Outcome.Completed)
-        val normalised = ScoreCanonicalizer.mirror(fromBPerspective)
-        assertEquals(ScoreCanonicalizer.digest(fromA), ScoreCanonicalizer.digest(normalised))
-    }
+    private fun compare(first: ScoreReport, second: ScoreReport?) =
+        DualAttestation.compare(match, first, second)
 
-    @Test fun `genuinely different scores disagree`() {
-        val other = ScoreReport(listOf(SetScore(6, 4), SetScore(6, 3)), Outcome.Completed)
-        assertNotEquals(ScoreCanonicalizer.digest(fromA), ScoreCanonicalizer.digest(other))
-    }
-
-    @Test fun `mirror is its own inverse`() {
-        assertEquals(fromA, ScoreCanonicalizer.mirror(ScoreCanonicalizer.mirror(fromA)))
-    }
-
-    @Test fun `winner is computed from sets won not games won`() {
-        assertEquals(Side.A, fromA.winner)
-    }
-
-    @Test fun `retirement hands the match to the other side`() {
-        val r = ScoreReport(listOf(SetScore(6, 4), SetScore(1, 2)), Outcome.Retired(by = Side.B))
-        assertEquals(Side.A, r.winner)
-    }
-
-    @Test fun `walkover carries no sets`() {
-        assertFailsWith<IllegalArgumentException> {
-            ScoreReport(listOf(SetScore(6, 0)), Outcome.Walkover(absent = Side.B))
+    @Test
+    fun `mirroring is an involution across every outcome`() {
+        val reports = listOf(
+            ScoreReport(listOf(SetScore(6, 4), SetScore(6, 3)), Outcome.Completed),
+            ScoreReport(listOf(SetScore(6, 4), SetScore(3, 2)), Outcome.Retired(Side.A)),
+            ScoreReport(listOf(SetScore(6, 4), SetScore(3, 2)), Outcome.Retired(Side.B)),
+            ScoreReport(emptyList(), Outcome.Walkover(Side.A)),
+            ScoreReport(emptyList(), Outcome.Walkover(Side.B)),
+            ScoreReport(emptyList(), Outcome.DoubleDefault),
+        )
+        for (r in reports) {
+            assertEquals(r, ScoreCanonicalizer.mirror(ScoreCanonicalizer.mirror(r)), "mirror twice: $r")
+            assertEquals(r.winner?.other, ScoreCanonicalizer.mirror(r).winner, "winner flips: $r")
         }
     }
 
-    @Test fun `agreement and dispute are distinguishable`() {
-        assertIs<Attestation.Agreed>(DualAttestation.compare(fromA, fromA))
-        val disagreeing = ScoreReport(listOf(SetScore(6, 4), SetScore(6, 4)), Outcome.Completed)
-        assertIs<Attestation.Disputed>(DualAttestation.compare(fromA, disagreeing))
-        assertIs<Attestation.AwaitingCountersign>(DualAttestation.compare(fromA, null))
+    @Test
+    fun `the winner is derived, never stored`() {
+        assertEquals(Side.A, ScoreReport(listOf(SetScore(6, 4), SetScore(6, 3)), Outcome.Completed).winner)
+        assertEquals(Side.B, ScoreReport(listOf(SetScore(4, 6), SetScore(3, 6)), Outcome.Completed).winner)
+        // Retiring means losing, whatever the score said at the time.
+        assertEquals(Side.A, ScoreReport(listOf(SetScore(2, 6)), Outcome.Retired(by = Side.B)).winner)
+        assertEquals(Side.B, ScoreReport(emptyList(), Outcome.Walkover(absent = Side.A)).winner)
+        assertEquals(null, ScoreReport(emptyList(), Outcome.DoubleDefault).winner)
+    }
+
+    @Test
+    fun `a completed match with no winner cannot be constructed`() {
+        // Nonsense refused at construction is what lets the rest of the domain skip validation.
+        assertFailsWith<IllegalArgumentException> {
+            ScoreReport(listOf(SetScore(6, 4), SetScore(4, 6)), Outcome.Completed)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            ScoreReport(listOf(SetScore(0, 0)), Outcome.Completed)
+        }
+    }
+
+    @Test
+    fun `a played match needs sets and a walkover must not have them`() {
+        assertFailsWith<IllegalArgumentException> { ScoreReport(emptyList(), Outcome.Completed) }
+        assertFailsWith<IllegalArgumentException> { ScoreReport(emptyList(), Outcome.Retired(Side.A)) }
+        assertFailsWith<IllegalArgumentException> {
+            ScoreReport(listOf(SetScore(6, 0)), Outcome.Walkover(Side.A))
+        }
+    }
+
+    @Test
+    fun `a single report awaits a countersignature`() {
+        val r = ScoreReport(listOf(SetScore(6, 4), SetScore(6, 4)), Outcome.Completed)
+        val a = assertIs<Either.Right<Attestation>>(compare(r, null)).value
+        assertIs<Attestation.AwaitingCountersign>(a)
+    }
+
+    @Test
+    fun `identical accounts agree`() {
+        val r = ScoreReport(listOf(SetScore(6, 4), SetScore(6, 4)), Outcome.Completed)
+        assertIs<Attestation.Agreed>(assertIs<Either.Right<Attestation>>(compare(r, r)).value)
+    }
+
+    @Test
+    fun `genuinely different accounts dispute`() {
+        val a = ScoreReport(listOf(SetScore(6, 4), SetScore(6, 4)), Outcome.Completed)
+        val b = ScoreReport(listOf(SetScore(6, 4), SetScore(4, 6), SetScore(6, 4)), Outcome.Completed)
+        assertIs<Attestation.Disputed>(assertIs<Either.Right<Attestation>>(compare(a, b)).value)
+    }
+
+    @Test
+    fun `an unmirrored submission is caught before it becomes a dispute`() {
+        val a = ScoreReport(listOf(SetScore(6, 4), SetScore(6, 3)), Outcome.Completed)
+        val err = assertIs<Either.Left<AttestError>>(compare(a, ScoreCanonicalizer.mirror(a)))
+        assertEquals(AttestError.WrongFrame, err.error)
+    }
+
+    @Test
+    fun `set scores reject impossible game counts`() {
+        assertFailsWith<IllegalArgumentException> { SetScore(-1, 6) }
+        assertFailsWith<IllegalArgumentException> { SetScore(6, 21) }
     }
 }

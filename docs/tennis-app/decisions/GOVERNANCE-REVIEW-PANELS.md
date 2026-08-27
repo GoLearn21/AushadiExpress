@@ -1687,3 +1687,85 @@ The visual direction is settled and correct. The three things that will decide P
 - [Sharing data and files in Compose Multiplatform](https://medium.com/@mohaberabi98/sharing-data-and-files-in-compose-multiplatform-602105eaa3e2)
 
 ---
+
+---
+
+# Panel E — Adversarial code review (the one that ran the code)
+
+**Date:** 2026-08-27 · **Brief:** break the Kotlin domain module; a passing test proves the tests
+agree with the code, not that the code is correct.
+
+Unlike Panels A–D, this reviewer **executed** the module rather than reading it — probe harness in
+`commonTest`, run against the JVM target, `Rating.kt` temporarily patched for one experiment and
+restored. Every number below was measured.
+
+**It found nine real defects in code that had 57 passing tests.** Four were serious. One had been
+introduced, committed, and reported to the founder as *fixed* earlier the same day.
+
+## Fixed in `f7bd647`…this commit
+
+| # | Defect | Why the tests missed it |
+|---|---|---|
+| 1 | **`MatchId` was not injective in the digest preimage.** `String.encodeToByteArray()` is lossy for unpaired surrogates and the substitute byte is target-dependent (`'?'` on JVM, U+FFFD in the common contract) — so the same id could digest differently on iOS and the server. NFC/NFD forms of one visually identical id also digested differently. | No test used a non-ASCII id. |
+| 2 | **Two canonicalizers existed and the live path used the weak one.** `ScoreCanon` — with the match id and version inside the preimage — was called by *nothing but its own test*. The shipping path hashed `"v1\|C\|6-4,3-6"`: **no match id, so identical scores in different matches produced identical digests (a replay), and no version, so `CanonMismatch` could not even be detected.** | Both paths were tested; nothing asserted that the *state machine* used the strong one. |
+| 3 | **Canon-version skew threw instead of returning a typed error** — on data supplied by a peer, in `commonMain` where ADR-027 bans `throw`. The `when` also carried an `else -> error()` because `CanonVersion` was a value class over `Int` and could never be exhaustive. | The test asserted that a `when` over `AttestError` compiles — a test of the Kotlin compiler. |
+| 4 | **Every agreed walkover and retirement got `ratingWeight = 1.0`.** `submitResult` hard-coded `Resolution.MUTUAL` regardless of outcome, so a no-show awarded a rating gain against an opponent who never arrived — the exact behaviour `MatchResult`'s own docstring says must not happen. `WALKOVER`, `FORFEIT_NO_SHOW`, `ADMIN_RESOLVED` and `VOIDED` were unreachable. | The test hand-built a `MatchResult(…, FORFEIT_NO_SHOW, …)` and asserted `ratingWeight == 0.0` — a tautology asserting the weight table back to itself, never exercising the transition that picks the resolution. |
+| 5 | **The Glicko-2 scale conversion was inverted** — multiplying by 173.7178 where the algorithm divides. Implied mapping: **1 NTRP ≈ 7,544 Elo.** Measured consequences: ratings moved 3.2× too far on one upset; a **point estimate appeared after two matches** with a 95% interval **1.02 NTRP wide**; volatility was numerically inert (σ sat 650:1 against φ instead of ~33:1), so the Illinois solver computed a value it could never move; an idle player needed **377,224 nightly periods — 1,033 years** — to return to seed uncertainty. **This is the defect ADR-027 names by name** (*"mixing them is *the* classic Glicko-2 implementation defect"*) and the value classes it mandates were absent. | The conversions were **consistent inverses**, so every directional test passed. No test composed `update` with `display`, and no test anchored a magnitude to a source outside the file. |
+| 6 | **The seed confidence interval was unusable.** A self-declared Rusty player was shown **"0.7 – 4.3"** — wider than the entire recreational scale, extending below its floor. The code comment claimed "~0.9 NTRP of uncertainty" while `1.96 × 0.90` is ±1.76. | Nothing asserted the displayed range was inside the scale. |
+| 7 | **The placement-window band was dead code.** `MatchIntent.bandFor` and `hardExclusionGapFor` had **exactly one caller each: their own test.** `MatchFit.score` read `intent.bandLow`/`bandHigh` directly and had no match-count parameter. Measured for a seeker with zero matches: **a candidate 0.5 above ranked *first*.** The band that shipped was the one the placement window was written to replace. | `PlacementBandTest` asserted the helpers **in isolation**, never through the matchmaker. |
+| 8 | **`AvailabilityMask` did not equal itself.** A `@JvmInline value class` over `LongArray` inherits `LongArray.equals`, which is *reference* equality. Masks could not dedupe, be map keys, or be compared. | Every assertion went through `.setSlots()` or `.cardinality`; nothing compared two masks. |
+| 9 | **`fromByteArray` accepted bits past the 1008-slot horizon**, after which `cardinality`/`isEmpty` (which popcount all 16 words) disagreed with `setSlots` (which filters). A mask could report itself non-empty, clear the feasibility gate, and reach a player as **an offer with zero proposable slots.** | No test fed it hostile wire bytes. |
+| 10 | **`maxTravelMinutes = 0` produced `NaN`**, and Kotlin's total order sorts `NaN` **above** every real score — so the most broken candidate ranked best. | No test passed a zero cap. |
+
+Also fixed: the reliability weight was nominally 0.12 but spanned only 0.7–1.0, giving it real
+influence of 0.036 — **less than 15 minutes of travel**, on the one signal the PRD treats as a
+safety obligation. Sub-scores are now normalised to their real range.
+
+## The finding about the tests themselves
+
+> *"A change to the frozen function that invalidates every stored digest in the ledger is
+> invisible to CI."*
+
+`encodeV1` is documented **FROZEN**, and the only byte-level assertion was on its first four bytes.
+Moving a field inside a variant — which invalidates every digest in the ledger — passed the entire
+suite, because every other assertion was an equality or inequality between two things that move
+together. The encoder also wrote `Side.ordinal`, so **reordering an enum in a different file would
+silently rewrite the wire format.**
+
+Now: five checked-in golden vectors (one per outcome variant plus the digest hex), and explicit
+permanent wire tags instead of ordinals.
+
+## Not fixed, and recorded rather than quietly dropped
+
+- **The state machine is not total.** `Proposed` is orphaned; `Cancelled` and `CancelReason` are
+  unreachable; `Disputed` is terminal with no `ADMIN_RESOLVED` producer; **a `Scheduled` match
+  cannot receive a score** — both players confirm, play, and the result can never be entered. UC-7
+  (reschedule, P0) and UC-9.3 (resolve a dispute) have no transitions at all. These are unbuilt
+  features, tracked in the use-case catalog's traceability table, not regressions.
+- **`Outcome` has no "unfinished — ran out of court" variant**, which UC-6.1 makes P0. Adding it
+  later is a new canon version, by design.
+- **`MatchIntent.JUST_A_HIT` has no unrated path** — it currently confirms as `MUTUAL` with full
+  rating weight.
+- **`@Serializable` is on nothing.** The serialization plugin is applied and no sealed subtype
+  carries `@SerialName`, so the wire format is currently the fully-qualified class name — exactly
+  what ADR-027 says would "brick every queued outbox row" on a package refactor.
+- **Arrow is not a dependency.** A minimal `Either` stands in so failures are typed and exhaustive;
+  `kotlin.Result` remains rejected because it erases the error to `Throwable`.
+- **The build still has only a `jvm()` target**, so the cross-target golden tests ADR-025 and
+  ADR-028 mandate cannot run. Finding 1 is the one that lands *inside a hash preimage*, and it is
+  now closed at construction rather than at the boundary — but `MatchFit`'s `exp`/`sqrt` still feed
+  an ordered `Double`, so two near-tied candidates can rank differently on iOS than on the server
+  that logged the training data.
+
+## What survived
+
+The Glicko-2 algorithm itself is faithful — the reviewer transplanted Glickman's published worked
+example through the code's own conversions and got **r' = 1464.0507, RD' = 151.5165, σ' = 0.0599960**
+against the paper's **1464.06 / 151.52 / 0.05999**. The Illinois root-find matches term for term.
+Everything wrong with that file was the scale mapping, not the algorithm. That worked example is
+now a test — the only assertion in the suite anchored to a source outside this codebase.
+
+Also unbroken: `contiguous(n)`'s day-boundary logic under every probe including runs ending exactly
+at midnight and at the horizon; the bit arithmetic (21 × 48 = 1008, 16 words, 128 bytes); `mirror`
+as an involution across all six variant shapes; the tag/length framing's injectivity for
+well-formed ids; `confirm`'s idempotency; and `Contrast`, which was correct throughout.

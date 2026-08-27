@@ -39,6 +39,9 @@ data class Glicko(val mu: Double, val phi: Double, val sigma: Double) {
     init {
         require(mu.isFinite() && phi.isFinite() && sigma.isFinite()) { "Glicko params must be finite" }
         require(phi > 0.0) { "phi must be positive" }
+        // sigma = 0 is an absorbing state: ln(0) is -inf, so exp(-inf/2) is 0 and volatility can
+        // never recover. A negative sigma is silently squared away by the solver and looks fine.
+        require(sigma > 0.0) { "sigma must be positive" }
     }
 
     val isReliable: Boolean get() = phi <= RatingBand.RELIABLE_PHI
@@ -65,8 +68,16 @@ data class Glicko(val mu: Double, val phi: Double, val sigma: Double) {
 data class DisplayPolicy(
     val maxPhiForPointEstimate: Double,
     val minMatchesForReliabilityLabel: Int,
+    /** Widest half-interval worth rendering. Beyond this a range stops informing a decision. */
+    val maxDisplayedHalfWidth: Double = 0.5,
+    val scaleFloor: Double = 2.0,
+    val scaleCeiling: Double = 5.5,
 ) {
-    init { require(maxPhiForPointEstimate > 0.0) { "phi threshold must be positive" } }
+    init {
+        require(maxPhiForPointEstimate > 0.0) { "phi threshold must be positive" }
+        require(maxDisplayedHalfWidth > 0.0) { "displayed half-width must be positive" }
+        require(scaleFloor < scaleCeiling) { "scale bounds inverted" }
+    }
 
     companion object {
         /** Fallback only, for a cold client that has never reached the server. */
@@ -94,9 +105,29 @@ sealed interface RatingDisplay {
  */
 fun Glicko.display(matchesCounted: Int, policy: DisplayPolicy): RatingDisplay =
     if (phi > policy.maxPhiForPointEstimate)
-        RatingDisplay.Provisional(confidenceInterval, matchesCounted)
+        RatingDisplay.Provisional(displayRange(policy), matchesCounted)
     else
-        RatingDisplay.Established(mu, confidenceInterval)
+        RatingDisplay.Established(mu, displayRange(policy))
+
+/**
+ * The range a player is actually shown, which is **not** the raw 95% interval.
+ *
+ * At seed, phi is deliberately wide — we genuinely know almost nothing — and 1.96 * 0.90 gives
+ * +/-1.76 NTRP. Rendered literally, a self-declared Rusty player is told they are "0.7 to 4.3":
+ * a range wider than the entire recreational scale, extending below its floor. That is
+ * statistically honest and completely useless, and a useless number erodes trust exactly as fast
+ * as a wrong one.
+ *
+ * So the statistics stay untouched and the *presentation* is clamped: to the scale's real bounds,
+ * and to a width a person can act on. A player who sees "around 3.0 to 3.7" can decide whether to
+ * accept a match. A player who sees "0.7 to 4.3" learns nothing.
+ */
+fun Glicko.displayRange(policy: DisplayPolicy): ClosedFloatingPointRange<Double> {
+    val half = (1.96 * phi).coerceAtMost(policy.maxDisplayedHalfWidth)
+    val low = (mu - half).coerceAtLeast(policy.scaleFloor)
+    val high = (mu + half).coerceAtMost(policy.scaleCeiling)
+    return low..high
+}
 
 /**
  * Glicko-2 over a *rating period* (ADR-023). Results inside a period are simultaneous, so update
@@ -162,8 +193,25 @@ object Glicko2 {
 
     private fun g(phi: Double) = 1.0 / sqrt(1.0 + 3.0 * phi * phi / (kotlin.math.PI * kotlin.math.PI))
     private fun e(mu: Double, muJ: Double, phiJ: Double) = 1.0 / (1.0 + exp(-g(phiJ) * (mu - muJ)))
-    private fun toMu(v: Double) = (v - 3.0) * SCALE / 4.0
-    private fun fromMu(v: Double) = v * 4.0 / SCALE + 3.0
-    private fun toPhi(v: Double) = v * SCALE / 4.0
-    private fun fromPhi(v: Double) = v * 4.0 / SCALE
+    /**
+     * NTRP-ish display scale <-> Glicko-2 internal scale.
+     *
+     * Glicko-2's internal scale is *Elo divided by 173.7178*. An earlier version of this file
+     * multiplied instead, and because the two conversions were consistent inverses every test
+     * passed while the implied mapping was 1 NTRP point = SCALE^2/4 ~= 7,544 Elo. The consequences
+     * were all silent: ratings moved ~3x too far on one upset, uncertainty shrank ~2.7x too fast
+     * (a point estimate appeared after two matches with a band wider than a full tier), volatility
+     * was numerically inert because sigma sat ~650:1 against phi instead of ~33:1, and an inactive
+     * player needed roughly a thousand years of idle rating periods to return to seed uncertainty.
+     *
+     * [ELO_PER_NTRP] is the one genuinely chosen constant here. 350 Elo per NTRP point puts the
+     * 2.5-4.5 band range across ~700 Elo, which matches how these populations actually separate.
+     */
+    private const val ELO_PER_NTRP = 350.0
+    private const val CENTRE_NTRP = 3.0
+
+    private fun toMu(v: Double) = (v - CENTRE_NTRP) * ELO_PER_NTRP / SCALE
+    private fun fromMu(v: Double) = v * SCALE / ELO_PER_NTRP + CENTRE_NTRP
+    private fun toPhi(v: Double) = v * ELO_PER_NTRP / SCALE
+    private fun fromPhi(v: Double) = v * SCALE / ELO_PER_NTRP
 }

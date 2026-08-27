@@ -13,8 +13,25 @@ import kotlin.jvm.JvmInline
  * `horizonStart` in the *market's* timezone. Timezone expansion happens once, upstream, when rules
  * are materialised — never here. This type is pure bits and has no notion of wall-clock time.
  */
-@JvmInline
-value class AvailabilityMask private constructor(private val words: LongArray) {
+class AvailabilityMask private constructor(private val words: LongArray) {
+
+    /**
+     * Hand-written, because this cannot be a `@JvmInline value class`.
+     *
+     * A value class derives equality from its underlying value, and `LongArray.equals` is
+     * *reference* equality — so two masks with identical bits compared as unequal, `EMPTY` did not
+     * equal `EMPTY`, and a `Set` of masks never deduplicated. Nothing caught it because every
+     * assertion in the suite went through `.setSlots()` or `.cardinality` rather than comparing
+     * masks directly. The moment the matchmaker caches intersections by mask, that is a silent
+     * cache miss on every lookup.
+     */
+    override fun equals(other: Any?): Boolean =
+        this === other || (other is AvailabilityMask && words.contentEquals(other.words))
+
+    override fun hashCode(): Int = words.contentHashCode()
+
+    override fun toString(): String = "AvailabilityMask(${cardinality} slots)"
+
 
     val cardinality: Int get() = words.sumOf { it.countOneBits() }
     val isEmpty: Boolean get() = words.all { it == 0L }
@@ -101,8 +118,19 @@ value class AvailabilityMask private constructor(private val words: LongArray) {
                 for (b in 7 downTo 0) v = (v shl 8) or (bytes[w * 8 + b].toLong() and 0xFF)
                 words[w] = v
             }
+            // Bits 1008..1023 are past the horizon and every other constructor keeps them zero.
+            // Wire bytes are not trusted to: with them set, cardinality and isEmpty popcount all
+            // 16 words while setSlots filters to TOTAL_SLOTS, so the three disagree. A mask can
+            // then report itself non-empty, pass the feasibility gate, and reach the user as a
+            // match offer with zero proposable slots.
+            require(words[WORDS - 1] and TAIL_GARBAGE_MASK == 0L) {
+                "bits beyond the ${TOTAL_SLOTS}-slot horizon were set"
+            }
             return AvailabilityMask(words)
         }
+
+        /** The 16 unused high bits of the last word. */
+        private val TAIL_GARBAGE_MASK: Long = ((1L shl (TOTAL_SLOTS and 63)) - 1L).inv()
 
         fun slotIndex(day: Int, halfHourOfDay: Int): Int {
             require(day in 0 until DAYS) { "day out of range: $day" }
