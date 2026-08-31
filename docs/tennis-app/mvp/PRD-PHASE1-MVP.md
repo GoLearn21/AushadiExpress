@@ -474,9 +474,40 @@ $14/hr at the 300-player gate, **the consumer path is disproven regardless of ho
 search-to-fill is**, and the club B2B2C track becomes the business. That is a conclusion the
 product metrics alone can never reach, which is exactly why it belongs here.
 
+### 8.5 Quality drivers — survey-free, and two of them are new
+
 **A note on "quality":** we do not ask players to rate match quality as a headline metric.
 **Rematch rate is the objective proxy** — if two people play each other again, the match was
 good. It is unfakeable and requires no survey. Post-match sentiment is diagnostic, not a KPI.
+
+An advisor proposed replacing the north star with a **"Quality Match"** — a conjunction of
+*completed* AND *both confirmed* AND *no serious issue* AND *no behaviour report* AND *would play
+again*. `research/14` adjudicates it and **rejects the composite**, on four grounds:
+
+- **No operator does this.** Across Uber, Airbnb, DoorDash, Thumbtack, TaskRabbit, Hinge, Playtomic
+  and Bing, **zero put a self-reported conjunct inside a headline volume metric.** The only
+  headline adjustments are behavioural — cancellations, completion.
+- **It is not measurable here.** Two conjuncts need *both* players to respond, so effective
+  n = matches × r². Detecting Quality Match Rate moving 60%→70% needs ~300–390 instrumented matches
+  **per arm**; at 150 matches/month and 50% response that is **16–20 months for one comparison**.
+- **It creates a perverse incentive.** Response rate enters the numerator only, so moving
+  per-player response from 25% to 70% changes the measured count **7.8×** with **zero change in
+  reality** — the north star would track survey UX, not matching quality.
+- **We already have the conjunction, in the right place.** Gate 0 is
+  `search-to-fill ≥50% AND show rate ≥80% AND rematch ≥30%`. **A conjunction is a decision rule,
+  not a metric** — at the decision layer each conjunct keeps its own denominator, threshold and
+  diagnosis, so a failure says *which* thing broke.
+
+**But the proposal is right twice, and both are adopted as separate measurements:**
+
+| Metric | Why |
+|---|---|
+| **NEW — rematch CTA tapped at score confirmation** | The defensible instrument for "would play again": **revealed preference at the moment of the event**, 100% coverage, no response-rate denominator. The mechanic already exists in S6; only the event was missing. Leading indicator to rematch-within-30-days as the lagging one — and the *gap* between them is diagnostic: high intent with low realisation is a scheduling failure, not a matching one. |
+| **NEW — in-app-originated share of rematches** | **The leakage discriminator.** A `match_completed` with no preceding `match_requested` is a self-organised match. Gu & Zhu (*Management Science*, 2021) found by RCT that raising trust *increases* disintermediation once trust is high enough — so rematch rate could measure leakage rather than quality. This turns that argument from philosophy into a number. **If it falls below ~50%, rematch rate must be replaced.** |
+
+**The survey stays where it is:** a Phase 0 concierge-only calibration instrument, one question,
+asked by a human already texting the player. Its job is to validate **once** that rematch behaviour
+tracks stated satisfaction, then be retired. **It does not enter Phase 1.**
 
 ---
 
