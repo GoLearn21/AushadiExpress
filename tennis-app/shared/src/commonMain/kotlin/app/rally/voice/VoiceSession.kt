@@ -19,6 +19,26 @@ import kotlinx.coroutines.flow.Flow
  *
  * What deliberately stays *outside*: the tool implementations and the action stack. Those are the
  * product. If they migrate into an adapter, we have built a framework instead of a swap.
+ *
+ * ## The constraint this interface exists to survive
+ *
+ * Realtime providers do not let a session return speech *and* structured data at once. Gemini's
+ * Live API is explicit — a session is `TEXT` **or** `AUDIO`, never both, and native-audio models
+ * support audio only. So the UI cannot be driven by a parallel data channel: it must be driven by
+ * **tool calls**. And on at least one major provider those calls are **synchronous** — the model
+ * will not resume speaking until [sendToolResult] returns.
+ *
+ * Two consequences the app must be built around, not discover:
+ *
+ *  1. **Every UI update costs conversational dead air.** A tool handler that touches the network
+ *     is silence the user hears. Handlers should answer from cache and reconcile afterwards.
+ *  2. **Transcripts are a separate stream from the audio**, which is why [VoiceEvent] carries
+ *     [VoiceEvent.UserTranscript] and [VoiceEvent.AgentTranscript] as first-class events rather
+ *     than assuming text falls out of the audio channel.
+ *
+ * The alternative design — a second, parallel non-Live pass over the same audio purely to extract
+ * structured intent — is legitimate and materially more expensive. It is not what this interface
+ * assumes, and adopting it would be an ADR, not an implementation detail.
  */
 interface VoiceSession {
 
