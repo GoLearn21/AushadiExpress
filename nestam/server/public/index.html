@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="te">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nestam · నేస్తం — dev console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Telugu:wght@400;600;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="logo">నే</span><div><strong>Nestam</strong><small>మీ తెలుగు నేస్తం · Sarvam-powered · dev console</small></div></div>
+    <div class="status" id="status">connecting…</div>
+  </header>
+
+  <main class="layout">
+    <section class="stage-wrap">
+      <canvas id="stage" width="720" height="720"></canvas>
+      <div class="bubble" id="bubble" hidden></div>
+      <div class="transcript" id="transcript" hidden></div>
+      <div class="controls">
+        <button id="ptt" class="ptt" type="button" aria-label="Hold to talk">
+          <span class="mic">🎙️</span><span class="label">నొక్కి పట్టి మాట్లాడండి · hold to talk</span>
+        </button>
+        <form id="textForm" class="textrow" autocomplete="off">
+          <input id="textInput" type="text" placeholder="…లేదా ఇక్కడ టైప్ చేయండి (Telugu, English or Tenglish)" />
+          <button type="submit">Send</button>
+        </form>
+      </div>
+      <div class="latency" id="latency"></div>
+    </section>
+
+    <aside class="panel">
+      <nav class="tabs">
+        <button data-tab="bommalu" class="active">బొమ్మలు</button>
+        <button data-tab="memories">జ్ఞాపకాలు</button>
+        <button data-tab="vaakili">వాకిలి</button>
+        <button data-tab="usage">Usage</button>
+      </nav>
+      <section class="tab active" id="tab-bommalu">
+        <div class="profile">
+          <label>మీ పేరు <input id="userName" placeholder="Ravi" /></label>
+          <label>భాష
+            <select id="language"><option value="te">తెలుగు</option><option value="mixed">Telugu + English</option><option value="en">English</option></select>
+          </label>
+          <label>సంబోధన
+            <select id="addressStyle"><option value="casual">నువ్వు (casual)</option><option value="respectful">మీరు (respectful)</option></select>
+          </label>
+          <button id="quizBtn" class="secondary" type="button">నా బొమ్మను కనుక్కోండి · take the quiz</button>
+        </div>
+        <div class="cards" id="cards"></div>
+        <div class="customise">
+          <h4>అలంకరణ · customise</h4>
+          <div class="swatches" id="palettes"></div>
+          <div class="row">
+            <label>Accessory <select id="accessory"></select></label>
+            <label><input type="checkbox" id="bottu" /> బొట్టు</label>
+            <label><input type="checkbox" id="glasses" /> కళ్ళజోడు</label>
+          </div>
+          <div class="row">
+            <label>Voice <select id="speaker"></select></label>
+            <button id="resetLook" class="secondary" type="button">reset</button>
+          </div>
+        </div>
+      </section>
+      <section class="tab" id="tab-memories">
+        <p class="hint">Facts your Bomma remembers. Tap × to forget.</p>
+        <ul class="memories" id="memories"></ul>
+        <form id="memForm" class="textrow"><input id="memInput" placeholder="Add a memory…" /><button type="submit">+</button></form>
+      </section>
+      <section class="tab" id="tab-vaakili">
+        <div class="bond" id="bond"></div>
+        <h4>ఈరోజు పనులు · today's activities</h4>
+        <ul class="activities" id="activities"></ul>
+        <h4>వాకిలిని చూసుకోండి · care for your yard</h4>
+        <div class="care" id="care"></div>
+      </section>
+      <section class="tab" id="tab-usage">
+        <pre id="usage"></pre>
+        <p class="hint">Estimated ₹ spend against the free credits. Mock mode bills nothing.</p>
+      </section>
+    </aside>
+  </main>
+
+  <dialog id="quiz">
+    <form method="dialog" id="quizForm">
+      <h3>మీ నేస్తం ఎవరు? · Who is your Bomma?</h3>
+      <div id="quizBody"></div>
+      <menu><button value="cancel" class="secondary" type="button" id="quizCancel">Cancel</button><button value="ok" type="submit">Match me</button></menu>
+    </form>
+  </dialog>
+
+  <script src="bomma.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
