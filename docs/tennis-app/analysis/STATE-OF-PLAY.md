@@ -1,6 +1,6 @@
 # State of Play
 
-**As of:** 2026-08-27, commit `ec15e3f`
+**As of:** 2026-09-04 — see ADR-030–033 for the decisions taken since 2026-08-27
 **Purpose:** one document that says what is decided, what is built, what is known to be wrong,
 and what is still open. Written to be read cold — by the founder after a gap, or by an agent
 after a cleared context window.
@@ -45,11 +45,11 @@ These are settled with reasoning recorded. Reopening one costs a new ADR, not an
 4. **Match Fit ships as reasons, never a score** (ADR-006). A percentage over four of seven
    intended dimensions is false precision in the one feature whose job is to earn trust.
 5. **Evidence tiers are enforced in the service layer, not the prompt** (ADR-007).
-6. **Kotlin Multiplatform + Compose Multiplatform for the client** (ADR-025) — **conditional on
-   ADR-026**, and the dissent recommending mobile web is recorded unrebutted.
-7. **Kotlin/Ktor backend** (ADR-026). This is a *precondition*, not a companion: a Kotlin client
-   against a Node server writes the domain twice, which is the exact reason Flutter was rejected.
-   **If the backend stays Node, ADR-025 is withdrawn and ADR-016 reinstated.**
+6. **Phase 1 client is a mobile web app; native earned at the city gate** (ADR-031, 2026-09-04).
+   ADR-025 (KMP + CMP) is deferred, not withdrawn — it is the native plan, gated on a one-week
+   spike. This overrides the earlier KMP-first directive for Phase 1 and is recorded for veto.
+7. **Backend stays TypeScript with managed Postgres/Auth** (ADR-030). ADR-026 withdrawn: its
+   "write the domain twice" claim measured at ~400 lines against our own architecture.
 8. **No AI agent in Phase 1** (PRD §4, §9) — and nothing that looks like one.
 9. **Server ranks, client renders** (PRD §5). On a no-OTA platform, client-side ranking is frozen
    for 10–14 days per change and any A/B test on it is uninterpretable.
@@ -110,20 +110,18 @@ it, found nine defects behind 57 passing tests):
 
 ## 5. The open decisions, and who owns them
 
-| # | Decision | Owner | Blocks |
-|---|---|---|---|
-| 1 | **Backend language: Kotlin/Ktor, or Node?** | Founder | ADR-025 stands or falls with it |
-| 2 | Does voice ship to users in Phase 1, or only the adapter and prototype? | Founder | The voice roadmap |
-| 3 | Voice scoped to three moments, or full GUI parity? | Founder | 3–4× cost difference |
-| 4 | Run the 20 club calls before any build? | Founder | Three panels rated B2B2C the better business |
-| 5 | Publish the concierge baseline with its n and interval | Founder | PRD §8.3 is not a gate until this exists |
-| 6 | Publish the at-court-no-signal score-entry fraction | Founder | Decides whether the offline outbox is built |
-| 7 | Measure the pilot cohort's actual iOS/Android split | Founder | Do not estimate for 60–120 named people |
+Decisions 1–3 of the previous version were taken under the delegated governor role on 2026-09-04
+(ADR-030, 031, 033) and can be vetoed with one word. What remains is **not decisions but
+numbers**, and none is blocked on engineering:
 
-**Nothing in §5 is blocked on engineering.** Every item is either a decision or a number the
-concierge pilot already produced.
-
----
+| # | Item | Owner |
+|---|---|---|
+| 1 | **Veto or confirm ADR-031** (web for Phase 1). Silence is confirmation. | Founder |
+| 2 | Confirm no pilot user is in the EU (the DMA kills home-screen web apps there) | Founder |
+| 3 | Run the 20 club calls — $0, scripted in `field/INVITE-TEST-FIELD-KIT.md` §7 | Founder |
+| 4 | Publish the concierge baseline with its n and window | Founder |
+| 5 | Publish the at-court-no-signal score-entry fraction | Founder |
+| 6 | Run `/to-spec` in this conversation, then `/to-tickets` | Founder |
 
 ## 6. The disagreement that is still live
 

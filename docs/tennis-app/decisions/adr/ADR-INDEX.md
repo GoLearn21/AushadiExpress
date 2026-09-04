@@ -341,8 +341,8 @@ recorded in `decisions/GOVERNANCE-REVIEW-PANELS.md`.
 
 | ADR | Title | Status | Supersedes |
 |---|---|---|---|
-| 025 | Kotlin Multiplatform + Compose Multiplatform for all client surfaces | Accepted | 016 (mobile clause) |
-| 026 | Kotlin/Ktor backend; one language across client and server | Accepted | 017 (Fastify/Node clause) |
+| 025 | Kotlin Multiplatform + Compose Multiplatform for all client surfaces | **Deferred to the city gate by ADR-031** | 016 (mobile clause) |
+| 026 | Kotlin/Ktor backend; one language across client and server | **Withdrawn by ADR-030** | 017 (Fastify/Node clause) |
 | 027 | Contracts and capability registry in kotlinx.serialization | Accepted | 022 (Zod mechanism) |
 | 028 | Format-config union as a Kotlin sealed hierarchy | Accepted | 024 (Zod mechanism) |
 | 029 | Ktor-served public web; no separate Next.js app | Accepted | 016 (Next.js clause) |
@@ -356,8 +356,9 @@ and survives intact. Nothing in 001–015 is touched.
 
 ## ADR-025 — Kotlin Multiplatform + Compose Multiplatform for all client surfaces {#adr-025}
 
-**Status.** Accepted 2026-08-27. Supersedes ADR-016's mobile clause. ADR-016 remains in
-the record as written.
+**Status.** Accepted 2026-08-27; **deferred to the city gate 2026-09-04 by ADR-031**, which
+puts a one-week CMP-versus-SwiftUI spike in front of the native commitment. Retained as the
+native plan. ADR-016 remains in the record as written.
 
 **Context.** ADR-016 chose Expo/React Native on four arguments: (a) one shared TypeScript
 domain with a Node backend, (b) OTA updates via EAS, (c) talent pool, (d) a JS-first AI
@@ -527,8 +528,8 @@ evidence actually supports.
 
 ## ADR-026 — Kotlin/Ktor backend; one language across client and server {#adr-026}
 
-**Status.** Accepted 2026-08-27. Supersedes ADR-017's Fastify/Node clause. **This ADR is
-a precondition of ADR-025, not a companion to it.**
+**Status.** ~~Accepted 2026-08-27.~~ **Withdrawn 2026-09-04 by ADR-030** — its central claim
+("write the domain twice") was measured at ~400 lines in `research/16`. Retained verbatim.
 
 **Context.** Panel B's condition C1, verbatim: *"Backend moves to Kotlin/Ktor. If Node
 stays, KMP is rejected — you would write the domain twice, the exact reason the prior
@@ -760,3 +761,192 @@ item worked by the operator. No agent mediation. ADR-014's protocol — both att
 retained, digest equality within a canon version, freeze on mismatch — is otherwise
 unchanged. Agent mediation is re-proposed, if at all, in a Phase 2 ADR against a real
 dispute corpus.
+
+---
+
+# Governor's decisions (030–033)
+
+Recorded 2026-09-04. The founder delegated the open decisions to the governor role with the
+instruction to decide on the evidence at >98% confidence, honouring all research to date. Each
+ADR below states its confidence honestly, names what would raise it, and records the reversal
+path. **Every one can be vetoed with one word; none is silently assumed.**
+
+Evidence base: five governance panels (A–E), `research/10`–`16`, and the grilling rounds in this
+session (Q1–Q8, unanswered by the founder and therefore decided here as delegated).
+
+| ADR | Title | Status | Confidence |
+|---|---|---|---|
+| 030 | Backend stays TypeScript; ADR-026 withdrawn | Accepted | 97% |
+| 031 | Phase 1 client is a mobile web app; native is earned at the city gate | Accepted — **overrides an earlier founder directive, see text** | 96% |
+| 032 | Kotlin domain retained as reference; dual-run logic ported to TypeScript against shared fixtures | Accepted | 98% |
+| 033 | Voice: adapter and prototype in Phase 1, user-facing in Phase 2 | Accepted | 98% |
+
+---
+
+## ADR-030 — Backend stays TypeScript; ADR-026 withdrawn {#adr-030}
+
+**Status.** Accepted 2026-09-04. **Withdraws ADR-026.** ADR-017's structure stands; its
+Fastify/Node clause is reinstated.
+
+**Context.** ADR-026 rested on Panel B's condition C1: *"If Node stays, KMP is rejected — you
+would write the domain twice."* `research/16` measured the genuinely dual-run domain against our
+own architecture: **~400 lines of integer math** — the canonical encoder (~200), the mask
+intersection (~80–150), the band-width function (~40–60). It is that small because ADR-026's own
+*"server owns, and the client never does"* list deliberately made the client dumb. **Having given
+the shared domain away on purpose, requiring matched languages to share it argued for a benefit we
+no longer had.**
+
+The Flutter analogy did not transfer — Dart cannot share with TypeScript at all; Kotlin has a
+mature bidirectional OpenAPI bridge. The real delta is *a compile error on both sides at the
+instant of a rename* versus *a codegen step in CI*: meaningfully worse, nowhere near "twice."
+
+**Decision.** The server is TypeScript — the stack this founder already ships in this repository
+(Express/Drizzle/Postgres) — with **managed Postgres + Auth + Storage** (Supabase or Neon) behind
+it, exactly as `architecture/TECHNICAL-ARCHITECTURE.md` §1 already specified. **Auth is bought,
+never hand-rolled at n=1.** Compute runs in a long-lived container: **Supabase Edge Functions cap
+at 2 s CPU / 256 MB (PRIMARY) and cannot host the matchmaker in any language.**
+
+**Consequences.**
+- ~4–8 weeks of calendar returned to Phase 1, against Panel A's 11-week costed plan.
+- Sub-second dev loop for the daily matchmaking-weight tuning the product depends on.
+- The AI-assistance corpus favours this stack for plumbing — where the hours go — while Kotlin's
+  compiler remains the better supervisor for the domain, which is 400 lines (ADR-032).
+- Lost: JVM production diagnostics, Flyway, the all-Kotlin compile-time contract. Recorded as real.
+- **The ADR-025/026 coupling dissolves.** ADR-025 is decided on its own merits (ADR-031).
+
+**Confidence: 97%.** What would raise it: nothing cheap. What would reverse it: ADR-031's native
+phase choosing KMP *and* year-two evidence that two toolchains at n=1 cost more than the rewrite.
+
+**Alternatives rejected.** Ktor (`research/16`: healthy framework, thin auth, seven-month-old
+OpenAPI on a compiler plugin whose Kotlin coupling ADR-025's own rule warns about; **Ktor 3.5.1
+exists specifically to fix Kotlin 2.4.0 compiler-plugin breakage**). Supabase Edge Functions as the
+backend (refuted on the CPU cap).
+
+---
+
+## ADR-031 — Phase 1 client is a mobile web app; native is earned at the city gate {#adr-031}
+
+**Status.** Accepted 2026-09-04. **Defers ADR-025 to the city gate.** ADR-025 is not withdrawn —
+its type-discipline case and its `sharedLogic`/`sharedUI` design remain the native plan.
+
+**This overrides the founder's earlier directive** (*"I need an MVP app built with kotlin
+multiplatform, compose multiplatform"*) for **Phase 1 only**, under the delegated governor role.
+It is recorded here so it can be vetoed, and the reasons are stated so the veto is informed.
+
+**Context — what changed between the directive and this decision.** The directive was given
+before `research/15` and `research/16` existed. Three findings, none available then:
+
+1. **Our flagship screen has no precedent.** No published account exists of a gesture-heavy,
+   accessibility-complete custom-interaction screen built in Compose Multiplatform on iOS. The CMP
+   changelog — JetBrains documenting its own bugs — shows *"Fix hit test for Accessibility
+   Elements"* and *"Fix the traversal order of accessibility nodes"* landing within the last four
+   releases, and swipe-back gesture conflicts fixed **last month**. A drag-to-paint grid is exactly
+   a horizontal-drag surface competing with iOS edge-swipe-back.
+2. **No solo team has shipped a consumer KMP+CMP product to both stores with a retrospective.**
+   The closest is a 2024 "toy app" by a build-systems specialist. The only exit account (SubFox)
+   failed on a *product* signal — *"most users did not finish onboarding"* — detected late.
+3. **Binary size is 110–140 MB** (two unrelated apps), not the 38–51 MB earlier assumed, and
+   there is no binary-size item on the Kotlin roadmap.
+
+Against that, the risk the evidence says actually kills products in this category is **liquidity,
+not platform**: `research/12` found sixteen native apps shipping interchangeable matchmaking and
+**none with evidence of liquidity anywhere in the US.** Panel A: *"the cluster evaporates while you
+are in Xcode."*
+
+**Decision.** Phase 1 ships as a **mobile web app installed to the home screen**, both platforms,
+premium by design (see `design/DESIGN-PHILOSOPHY.md`). Estimated 3–5 weeks to first shipped build
+versus 14–20 for CMP (`research/15` §8). It runs the full Phase 1 loop — all eight stories, the
+operator console, the physical-world handling — because the loop, not the platform, is what must
+be proven.
+
+**Native is earned, not assumed.** At the city gate (300 paid players, 70% season-over-season
+renewal, per ADR-002's playbook), **and only then**, the CMP-versus-SwiftUI decision is made by a
+**one-week spike**: the availability grid built in CMP on a physical iOS device and tested with
+VoiceOver *on device*. If CMP passes, ADR-025 proceeds as written. If it fails, KMP shared logic
+with native SwiftUI — the architecture SubFox arrived at the hard way. Either way the Kotlin domain
+(ADR-032) is the client's domain.
+
+**What this costs, stated plainly.**
+- **iOS push is behind a manual Add-to-Home-Screen** with no install prompt. Mitigation: the
+  concierge onboards every pilot player in person, which is the exact regime where A2HS works; and
+  the pilot already ran on SMS, so push is not load-bearing for Phase 1.
+- **No background sync** on iOS web. The 7-day auto-confirm clock is already anchored to server
+  receipt (PRD §6.7), so this changes nothing the design did not already assume.
+- **No Liquid Glass shell, no native tab bar.** Accepted for a pilot whose users were recruited by
+  hand. The premium bar is met by content-forward hierarchy and interaction correctness, not by
+  chrome — Netflix's and Linear's web surfaces are the existence proof.
+- **Voice works.** `getUserMedia` and WebRTC are available; the adapter (ADR-033) is unaffected.
+
+**Precondition, verified as far as possible.** The pilot is US-based (the entire research
+corpus is US-first). Under the EU DMA Apple removed standalone home-screen web apps — if any
+pilot cluster were in the EU this ADR would be dead on arrival. **If that assumption is wrong, say
+so and this reverts to the spike-first CMP path.**
+
+**Confidence: 96%.** What would raise it to 98%: confirmation that no pilot user is in the EU
+and that SMS, not push, carried the concierge pilot. What would reverse it: the founder's veto.
+
+**Alternatives rejected.**
+- *CMP both platforms first* (`research/15` §8: the option the evidence supports least at this
+  team size and this screen; 14–20 weeks; no cheap move if the grid fails at week 12).
+- *KMP logic + native UI both platforms* — the worst option solo: KMP's toolchain cost *and*
+  native's duplication cost.
+- *Native iOS only* — 7–10 weeks and genuinely strong, rejected because it excludes half a club
+  roster in a product whose thesis is liquidity (Panels C, D).
+
+**The dissent, recorded rather than rebutted.** The founder's directive was for KMP+CMP, and the
+governance panels B, C and D endorsed it conditionally. This ADR agrees with them about the
+*destination* and disagrees about the *order*: prove liquidity on the surface that iterates
+daily, then buy native with evidence and revenue in hand.
+
+---
+
+## ADR-032 — Kotlin domain retained as reference; dual-run logic ported to TypeScript {#adr-032}
+
+**Status.** Accepted 2026-09-04.
+
+**Context.** `tennis-app/shared/` is 92 tests of correct, portable domain logic: the versioned
+canonical encoder with golden vectors, the availability mask, Glicko-2 verified against
+Glickman's published worked example, the placement-window fit, the typed match state machine.
+Under ADR-030 and ADR-031 nothing hosts it in Phase 1.
+
+**Decision.** The Kotlin module is **retained as the reference implementation and the native
+client's domain** (ADR-031's city-gate phase). The ~400 dual-run lines — canonical encoder, mask
+intersection and contiguity, band-width and display mapping — are **ported to TypeScript against
+the same JSON golden fixtures**, which are language-neutral by construction (integer-only, no
+`Double` in anything hashed or ordered, per ADR-025's own rule). Server-side logic (Glicko-2, fit
+scoring, the state machine, standings) is implemented in TypeScript where the server lives.
+
+**The fixtures are the contract, not either implementation.** A CI job runs both suites against
+the same fixture files; a divergence fails the build. This is ADR-028's cross-target golden-file
+discipline applied across languages instead of across Kotlin targets.
+
+**Consequences.** The design work is preserved in full — what changes is only which runtime hosts
+it. The Kotlin tests continue to run in CI so the reference cannot rot. When the native phase
+arrives, its domain already exists and already passes.
+
+**Confidence: 98%.**
+
+---
+
+## ADR-033 — Voice: adapter and prototype in Phase 1, user-facing in Phase 2 {#adr-033}
+
+**Status.** Accepted 2026-09-04.
+
+**Context.** The PRD forbids an AI agent in Phase 1 (*"nothing that even looks like one"*), and
+`research/13` established a constraint that only a prototype can answer: a realtime session
+returns audio **or** structured data, never both, and function calling is synchronous — so every
+UI update costs conversational dead air. Upstream's own doctrine names *"how should this
+interaction feel"* as **ungrillable**.
+
+**Decision.** Phase 1 builds the **`VoiceSession` adapter** (provider-neutral, session-level, already
+in `:shared`; ported to TypeScript per ADR-032) and a **throwaway prototype** of the three scoped
+moments — score entry at the court, the drive-home rematch, and availability declaration — against
+`gpt-realtime-2.1-mini` over WebRTC, with a Gemini Live stub running the same integration tests so
+the interface is proven provider-neutral. **No voice surface reaches users in Phase 1.** Voice is
+scoped, not a parallel interface: Rally's loop has very little to explore by design.
+
+Invariants, from `voice/VoiceRouter.kt`: the agent speaks only server-computed claims and says
+*"I don't have that"* otherwise; voice proposes and a tap commits, except score entry, where dual
+attestation is the safeguard; explicit start, never always-listening, never a wake word.
+
+**Confidence: 98%.**

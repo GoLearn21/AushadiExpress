@@ -1,15 +1,24 @@
 # PRD — Phase 1 MVP: The Liquidity & Reliability Engine
-### Kotlin Multiplatform + Compose Multiplatform · one cluster · 100 players
+### Mobile web, both platforms · one cluster · 100 players
 
-**Version:** 2.0 — rewritten 2026-08-27 after four independent governance panels
-**Status:** Conditionally signable. The pre-build checklist in §10 gates the first commit.
-**Supersedes:** v1.0 (2026-08-26)
-**Stack authority:** ADR-025 (KMP + CMP) · ADR-026 (Kotlin/Ktor backend) · ADR-027 (contracts
-and registry) · ADR-028 (format union) · ADR-029 (Ktor-served web). ADR-016, 017, 022, 024
-are superseded in whole or in part. *v1.0 cited ADR-025 before it existed; two panels called
-that blocking. It exists now.*
-**Review record:** `decisions/GOVERNANCE-REVIEW-PANELS.md` — four panels, run blind to each
-other, all four reproduced here in full including the dissent this document overrides.
+**Version:** 2.1 — 2026-09-04. Platform decision revised per ADR-030/031; metrics per `research/14`.
+**Status:** Signable. The pre-build checklist in §10 gates the first commit.
+**Supersedes:** v2.0 (2026-08-27), which specified KMP + Compose Multiplatform for Phase 1.
+**Stack authority:** ADR-030 (TypeScript backend, managed Postgres/Auth) · **ADR-031 (Phase 1 is a
+mobile web app; native earned at the city gate)** · ADR-032 (Kotlin domain retained as reference,
+dual-run logic ported to TypeScript) · ADR-033 (voice adapter + prototype only). ADR-025 is deferred
+to the city gate; ADR-026 is withdrawn.
+**Design authority:** `design/DESIGN-PHILOSOPHY.md` — binding on every screen.
+**Review record:** `decisions/GOVERNANCE-REVIEW-PANELS.md` (Panels A–E) and `research/10`–`16`.
+
+**Why the platform changed between v2.0 and v2.1, in one paragraph.** v2.0 was written before
+`research/15` and `research/16` existed. Those found: no published precedent for a gesture-heavy,
+accessibility-complete screen in Compose Multiplatform on iOS — and our flagship screen is exactly
+that; no solo team with a two-store CMP retrospective; a 110–140 MB iOS binary; and that ADR-026's
+"write the domain twice" justification measured at ~400 lines. Meanwhile `research/12` found sixteen
+native competitors and **none with evidence of liquidity**. The risk that kills this category is
+liquidity, not platform. So Phase 1 proves the loop on the surface that iterates daily, and native
+is earned at the city gate with a one-week CMP-versus-SwiftUI spike in front of it.
 
 **Inputs that are now measured, not assumed:** the manual concierge run succeeded. Its
 observed values for `w` (fraction seeking a match this week), `s` (slot overlap), `a`
@@ -128,11 +137,12 @@ held to account for moderating a channel you do not operate.
 
 **The server ranks. The client renders.**
 
-This is condition C2 from the CAIO/staff-engineer panel and it is the load-bearing consequence
-of ADR-025. On a platform with no OTA, anything the client computes is frozen for 10–14 days
-per change, and — worse — **any A/B test on it is uninterpretable**, because treatment reaches
-half your users in four days and 90% in two weeks, and update speed correlates with device age,
-OS version, and engagement. You would be measuring *"people who update fast."*
+This was condition C2 from the CAIO/staff-engineer panel, argued from the no-OTA constraint of
+a native binary. **Under ADR-031 the web surface deploys instantly, which removes that constraint —
+and the rule stays anyway.** Server-side ranking is still the only way to A/B a matching change
+cleanly across a population, it is what makes the native phase safe to enter later without a
+rewrite, and it is where the `fit_breakdown` training data is logged. The constraint moved from
+*forced* to *chosen*; the architecture does not change.
 
 Therefore:
 
@@ -395,7 +405,16 @@ CMP iOS is a known open issue), **4.1.3 Status Messages** (the offer counter and
 Handle `UIAccessibilityDarkerSystemColorsEnabled` by swapping to a high-contrast token set —
 Material3's `ColorScheme` has no high-contrast support, so this is manual work, not a default.
 
-### 7.2 The iOS shell forks
+### 7.2 Platform surface in Phase 1, and the shell later
+
+**Phase 1 is a mobile web app installed to the home screen** (ADR-031). No app store, no
+signing, no device matrix, no OTA problem. iOS push sits behind a manual Add-to-Home-Screen with
+no install prompt; the concierge onboards every pilot player in person, and the pilot ran on SMS,
+so push is not load-bearing. No background sync on iOS web — the auto-confirm clock is already
+anchored to server receipt (§6.7), so nothing in the design assumed it.
+
+**The native phase.** At the city gate, a one-week spike decides CMP versus SwiftUI for the
+availability grid, on a physical device, with VoiceOver. What follows is unchanged from v2.0:
 
 **"One UI codebase" cannot be taken literally on iOS 26.** JetBrains states plainly that Liquid
 Glass is rendered only by native `TabView` / `NavigationStack` / toolbar APIs. A thin SwiftUI
@@ -546,8 +565,8 @@ GUI:**
 
 **Decisions that must be recorded before any code**
 - [x] ADR-025 … ADR-029 written; ADR-016/017/022/024 marked superseded
-- [ ] **Backend confirmed as Kotlin/Ktor (ADR-026). If Node stays, ADR-025 is withdrawn and
-      ADR-016 is reinstated — the two decisions stand or fall together**
+- [x] **Backend decided: TypeScript with managed Postgres/Auth (ADR-030).** ADR-026 withdrawn;
+      its "write the domain twice" claim measured at ~400 lines
 - [ ] ADR-014's "agent-mediated resolution" amendment accepted (human queue for Phase 1)
 - [ ] Open question #5 answered: **run the 20 club calls before week one of any build.** They
       cost $0 and three panels independently rated the B2B2C track the better business
@@ -560,12 +579,11 @@ GUI:**
 - [ ] **Ask each recruit which phone they carry, during onboarding.** Do not estimate the
       platform split for a cluster of 60–120 named people — measure it
 
-**The spike that can still reverse ADR-025**
-- [ ] **Availability grid (§6.2) built first, in Compose Multiplatform, tested against real
-      VoiceOver and TalkBack, with a written native-fallback plan.** Two weeks. It is
-      simultaneously the highest-ROI screen in the product and the worst case for CMP interop.
-      **If it goes badly, Panel A's mobile-web recommendation is back on the table cheaply
-      rather than discovered in month four**
+**The spike, now at the city gate (ADR-031)**
+- [ ] Availability grid built in CMP on a physical iOS device and tested with VoiceOver **on
+      device** — one week, run when the city gate is reached, deciding CMP versus SwiftUI for
+      the native phase. **Not a Phase 1 item.** Phase 1 builds the grid on the web, where the
+      WCAG 2.5.7 non-dragging path and the live-region counter are thirty-year-old problems
 
 **In build 1, not later**
 - [ ] `min_supported_client` floor + forced-upgrade screen
