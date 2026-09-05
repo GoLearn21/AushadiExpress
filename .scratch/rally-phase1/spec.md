@@ -78,8 +78,8 @@ tuned daily. Native is earned at the city gate.
 
 ### Onboarding and level
 
-1. As a Returner, I want to see the pool of players near me before I am asked for anything, so that I have a reason to continue.
-2. As a Returner, I want to pick my level from five behavioural descriptions rather than a number, so that I do not have to know what NTRP means.
+1. As a Returner, I want to see the Market of players near me before I am asked for anything, so that I have a reason to continue.
+2. As a Returner, I want to pick my Band from five behavioural descriptions rather than a number, so that I do not have to know what NTRP means.
 3. As a Returner, I want to answer how long it has been since I played regularly, so that the system seeds me below my declared Band rather than trusting my memory of myself.
 4. As a Player who knows my NTRP or UTR, I want to type it, so that I am not forced through descriptions I do not need.
 5. As a Player, I want my first three matches treated as a **Placement window**, so that a bad first result adjusts my Band without shaming me.
@@ -95,7 +95,7 @@ tuned daily. Native is earned at the city gate.
 12. As a Player, I want six named availability chips with two pre-selected, so that I confirm a schedule rather than author one.
 13. As a Player, I want weeknight chips collapsed by default, so that the common case is two taps.
 14. As a Player, I want a "flexible with notice" soft Slot, so that I can be reachable without committing a window.
-15. As a Player, I want an honest opponent count as I add Slots — "about 20", a meter below 25, nothing below 12 — so that I am never shown a precise number the pool cannot back.
+15. As a Player, I want an honest opponent count as I add Slots — "about 20", a meter below 25, nothing below 12 — so that I am never shown a precise number the Market cannot back.
 16. As a Player, I want to be told plainly if I declare only one Slot what that costs me, and offered the single highest-yield addition, so that the choice is mine and informed.
 17. As a Player, I want to be nudged to re-confirm availability after ten days, so that stale Slots do not produce Offers I decline.
 18. As a Player using a screen reader or who cannot drag, I want every chip individually togglable, so that drag is only ever an accelerator.
@@ -103,9 +103,9 @@ tuned daily. Native is earned at the city gate.
 
 ### The Hold
 
-20. As a Player who has just set my Slots, I want to see what the system is doing, how many people are in the pool, and when the next Offer pass runs — the actual time — so that the wait is worth returning to.
+20. As a Player who has just set my Slots, I want to see what the system is doing, how many people are in the Market, and when the next Offer pass runs — the actual time — so that The Hold is worth returning to.
 21. As a Player in The Hold, I want to see three anonymised near-fits, so that I know the pool exists before an Offer does.
-22. As a Player in a thin pool, I want the empty state to be an invitation to bring someone I already hit with, so that the dead end becomes a growth surface.
+22. As a Player in a thin Market, I want the empty state to be an invitation to bring someone I already hit with, so that the dead end becomes a growth surface.
 23. As a Player in The Hold, I want to multi-cast my first request — "ask two more, first yes gets the court" — so that a single decline does not cost me the week.
 24. As a Player, I want the Operator alerted if my first Offer has not arrived inside a day, so that I am rescued before I notice I was forgotten.
 
@@ -171,7 +171,7 @@ tuned daily. Native is earned at the city gate.
 70. As a Player, I want my opponent to accept or counter with a tap, so that a reschedule is two decisions and not a conversation.
 71. As a Player, I want the cancellation ladder — free beyond 24 hours, noted at 12–24, counted under 1, counted in full for a no-show — visible before I commit, so that the rules are never a surprise.
 72. As a Player, I want a rain state with zero Reliability weight, a forecast push twelve hours out, and a one-tap re-offer, so that a washed-out match is replaced rather than apologised for.
-73. As a Player who arrives at an occupied Court, I want a "court taken" report that holds the pairing and proposes the nearest alternative, so that the match survives the venue.
+73. As a Player who arrives at an occupied Court, I want a "court taken" report that holds the pairing and proposes the nearest alternative, so that the Match survives the Facility.
 74. As a Player who reschedules often, I want that stated as a fact — "reschedules often" — and never coloured as a warning, so that Reliability informs without shaming.
 
 ### Safety
