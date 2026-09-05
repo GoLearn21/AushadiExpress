@@ -780,6 +780,7 @@ session (Q1–Q8, unanswered by the founder and therefore decided here as delega
 | 031 | Phase 1 client is a mobile web app; native is earned at the city gate | Accepted — **overrides an earlier founder directive, see text** | 96% |
 | 032 | Kotlin domain retained as reference; dual-run logic ported to TypeScript against shared fixtures | Accepted | 98% |
 | 033 | Voice: adapter and prototype in Phase 1, user-facing in Phase 2 | Accepted | 98% |
+| 034 | Vercel + Supabase; Matcher as a cron-triggered Function with a measured escape | Accepted | 98% |
 
 ---
 
@@ -803,7 +804,8 @@ instant of a rename* versus *a codegen step in CI*: meaningfully worse, nowhere 
 **Decision.** The server is TypeScript — the stack this founder already ships in this repository
 (Express/Drizzle/Postgres) — with **managed Postgres + Auth + Storage** (Supabase or Neon) behind
 it, exactly as `architecture/TECHNICAL-ARCHITECTURE.md` §1 already specified. **Auth is bought,
-never hand-rolled at n=1.** Compute runs in a long-lived container: **Supabase Edge Functions cap
+never hand-rolled at n=1.** ~~Compute runs in a long-lived container~~ *(amended by ADR-034: a
+cron-triggered Function with a measured escape to a container)*: **Supabase Edge Functions cap
 at 2 s CPU / 256 MB (PRIMARY) and cannot host the matchmaker in any language.**
 
 **Consequences.**
