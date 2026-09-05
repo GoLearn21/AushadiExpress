@@ -24,7 +24,7 @@
 #
 #  Works with macOS's stock bash 3.2. Nothing here needs sudo.
 # =============================================================================
-set -u
+# (no set -u: macOS ships bash 3.2 and a cosmetic unbound var must never abort the run)
 
 # ── constants (edit if the repo/branch/session ever change) ──────────────────
 REPO_SLUG="GoLearn21/AushadiExpress"
@@ -94,7 +94,7 @@ ensure_claude() {
 ensure_optional() {
   if [ "$IS_MAC" = 1 ] && have brew; then
     for pkg in gh jq; do
-      if have "$pkg"; then ok "$pkg present"; else say "  Installing $pkg…"; brew install "$pkg" >/dev/null 2>&1 && ok "$pkg installed" || warn "$pkg not installed (optional)"; fi
+      if have "$pkg"; then ok "$pkg present"; else say "  Installing ${pkg}…"; brew install "$pkg" >/dev/null 2>&1 && ok "$pkg installed" || warn "$pkg not installed (optional)"; fi
     done
   else
     have gh && ok "gh present" || warn "gh (GitHub CLI) not found — optional, used for secrets and private clones"
@@ -117,6 +117,7 @@ find_repo() {
 ensure_repo() {
   if find_repo; then ok "repo at $REPO_DIR"; else
     ask NESTAM_DIR "Where should the repo live?" "$NESTAM_DIR_DEFAULT"
+    case "$NESTAM_DIR" in "~"*) NESTAM_DIR="${HOME}${NESTAM_DIR#\~}";; esac
     mkdir -p "$(dirname "$NESTAM_DIR")"
     say "  Cloning ${REPO_SLUG}…"
     if have gh && gh auth status >/dev/null 2>&1; then gh repo clone "$REPO_SLUG" "$NESTAM_DIR" -- --branch "$BRANCH" || return 1
