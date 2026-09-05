@@ -70,6 +70,21 @@ source of truth. Full walkthrough: [docs/05-UNITY_SETUP.md](docs/05-UNITY_SETUP.
 | Customise skin/hair/eyes/blush/clothing/voice | Craft palettes, accessories (jasmine, topi, turban, horns…), bottu, glasses, Bulbul speaker | `APPEARANCE_OPTIONS`, `/api/users/:id` |
 | Not human, not romantic, well-being first | Persona rules, crisis detection → Tele-MANAS 14416 | `characters/prompts.ts` |
 
+## Continue on your MacBook (with the same Claude conversation)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/GoLearn21/AushadiExpress/claude/andhra-pradesh-sarvam-app-w47bgt/nestam/scripts/nestam-mac.sh -o nestam-mac.sh
+bash nestam-mac.sh
+```
+
+The script installs Homebrew, Node 22 and the Claude Code CLI if missing, clones this branch,
+runs the server tests and smoke test, opens the dev console, writes a live snapshot to
+`nestam/.handoff/STATE.md`, and then offers to connect you to Claude with full context:
+teleport the cloud chat into your terminal (`claude --teleport session_017ru8oLVHzVVJTo2pzxa3HT`),
+add Remote Control so you can steer it from your phone, start a fresh local or cloud session that
+reads [`HANDOFF.md`](HANDOFF.md), or message the cloud session (`nestam-mac.sh send "…"`).
+Helpers for the human-only tasks: `nestam-mac.sh sarvam-key` and `nestam-mac.sh unity`.
+
 ## Quality gates
 
 ```bash
