@@ -781,6 +781,7 @@ session (Q1–Q8, unanswered by the founder and therefore decided here as delega
 | 032 | Kotlin domain retained as reference; dual-run logic ported to TypeScript against shared fixtures | Accepted | 98% |
 | 033 | Voice: adapter and prototype in Phase 1, user-facing in Phase 2 | Accepted | 98% |
 | 034 | Vercel + Supabase; Matcher as a cron-triggered Function with a measured escape | Accepted | 98% |
+| 035 | Evolutionary architecture: the ladder, day-one constraints, observability, feedback loops | Accepted — amends 034's trigger | 96% |
 
 ---
 
@@ -957,7 +958,7 @@ attestation is the safeguard; explicit start, never always-listening, never a wa
 
 ## ADR-034 — Vercel + Supabase; the Matcher as a cron-triggered Function with a measured escape {#adr-034}
 
-**Status.** Accepted 2026-09-05. Amends ADR-030's *"long-lived container"* clause.
+**Status.** Accepted 2026-09-05. Amends ADR-030's *"long-lived container"* clause. **Trigger amended by ADR-035 §4** — the cliff is aggregate pass time across Markets, not a single run.
 
 **Context.** The founder holds Pro accounts on Vercel and Supabase used by other products, and
 directed that Rally use them. ADR-030 already specified managed Postgres, Auth, and Storage —
@@ -1000,3 +1001,125 @@ offer. `research/17` verified the limits rather than assuming them.
 `research/16`). Vercel Workflows as the escape (unbounded runs, but each step is still a Function;
 the global matching is one atomic step). A container from day one (an ops practice bought before
 it is needed, for a job that takes under a second).
+
+---
+
+## ADR-035 — Evolutionary architecture: the ladder, the day-one constraints, observability, and the feedback loops {#adr-035}
+
+**Status.** Accepted 2026-09-05. **Amends ADR-034's Matcher trigger** (§4 below).
+
+**Context.** The target became hundreds of thousands of DAU and millions of MAU across web,
+Android and iOS, operated by one person. Two independent reviews (Panels F and G in
+`GOVERNANCE-REVIEW-PANELS.md`) found that the Phase 1 spec could not be built against that
+target: time was "controlled by the harness" while pg_cron owned the timed transitions; there was
+no domain event stream, so seven founder stories had no read path; "served FitWeights" was a
+config file with no versions, arms, or rollback; pg_cron failures were silent by construction; and
+the support-minutes budget was wired to nothing. None of these is a scale problem. **They are all
+day-one shape problems that become rewrites if not decided before the first ticket.**
+
+The structural fact that makes the ladder cheap: a Market is a club cluster of 150–250 players
+(ADR-002). **No Matcher graph is ever large. Scale is more Markets, not bigger ones.**
+
+**Decision — the day-one constraints.** Each costs approximately nothing at 100 users and
+prevents a rewrite later. They are build-1 requirements, enforced where possible by test or lint.
+
+| Constraint | Prevents |
+|---|---|
+| **Time is a parameter, never ambient.** Every timed transition is a SQL function `run_x(as_of, market_id)`; pg_cron only schedules `run_x(now(), m)`; the test harness calls the same function with a chosen `as_of`. Every job writes a `job_run` row and pings a heartbeat | Untestable transitions; silent cron failures |
+| **One `emit(event)` in the service layer**, typed, closed set, golden-schema'd, written to a partitioned `domain_event` table and shipped to the analytics sink by the same call. **Anything counted is emitted server-side** | No read path for metrics; `fit_breakdown` in the OLTP database; analytics that cannot join to outcomes |
+| **Policy is versioned, not served.** A `policy` table (fit weights, display policy, reason templates, copy bundle, flags) with `effective_from`, served as immutable `/policy/{version}.json` on the CDN; `policy_version` on every response, event, and log line | Unattributable changes; "what was live at 6pm Thursday?" |
+| **Experiments randomise by Market, never by player** — matching is a network effect. Sticky arm = `hash(market_id, experiment_key)`, stamped on every Offer event. **No A/B before eight Markets**; until then one policy change per pass, before/after with intervals, in the learnings ledger | Contaminated arms; false findings at n=1 |
+| **Unit of Matcher work is one Market**, written trigger → run → write, `run` pure and fixture-tested. The Rating period has the identical shape and moves with it | A rewrite when the Matcher or the Rating period leaves a Function |
+| **`get the hold` and `get next offer` are reads of rows the Matcher wrote.** They never compute. A `market_stats` row refreshed by pg_cron every five minutes carries the pool count and next-pass time | p95 death at 10K on the two most-viewed screens |
+| **`dbRead` / `dbWrite` handles from commit one**, same URL until a replica exists | A replica becoming a refactor |
+| **One `verifyToken()`**, bearer JWT only, plus `auth_provider` and `auth_subject` columns on the player. Supabase Auth is behind that one function | Auth migration at ~250–300K MAU (where its per-MAU overage crosses the compute bill) becoming a rewrite; native auth rework |
+| **`audit_event`, `domain_event`, `offers` created partitioned by month** (pg_partman is not installable on Supabase; pg_cron creates next month's partition). Archive partitions older than six months to Storage. **Never `DELETE` from the ledger** | A full-table rewrite to partition a live table |
+| **`notification_delivery(channel)`** with `sms | web_push | email | fcm | apns | operator` from day one, written by services, drained by a per-minute cron in batches, transport an adapter faked in tests. Tests assert on the table, never on Twilio | Notification code coupled to one transport; nothing to assert on for eight stories |
+| **The API is a portable HTTP app** with Vercel as an adapter; `waitUntil` behind one `defer()` helper; functions pinned to the Supabase region; `Cache-Control: private` on every authenticated response; per-instance pool capped at 3–5 | The API becoming hostage to one host's request model; pooler exhaustion |
+| **Every Operator capability auto-records elapsed time** (open → commit) against `player_id` and `cause`. A `read metric` capability computes minutes per active player per month; an alert fires above the ceiling | A support budget that measures Operator diligence rather than load |
+| **Wire-format golden fixtures for every DTO; Claim `template + params → string` in the fixtures; design tokens as a JSON source; universal links** | The native phase reworking contracts, rendering, and tokens |
+| Snapshot only players with a match in the period; the nightly mask roll is one set-based `UPDATE` per Market | 5M rows a night at 5M MAU |
+
+**Decision — the ladder.** Triggers are measured signals, never headcounts. Every move is
+config, a deploy, or one new component. *Costs are the architect's estimates against a stated
+load model, provenance-marked in `research/18`; replace with measured values at each step.*
+
+| Step | Trigger | Move | Kind | ≈ $/mo |
+|---|---|---|---|---|
+| **100** | — | Ship. Record Matcher wall-clock, pooler clients, DB size, p95 per capability from day one | config | 75–100 |
+| **1K** | DB > 60% of tier cap, or cache-hit < 99% for 24 h, or pooler > 70% of cap | Supabase Micro → Small. Web Push primary; SMS for confirmed matches only | config | 150–220 |
+| **10K** | Any pg_cron job p95 > 3 min | That job becomes `pg_cron → pg_net → API route (202) → run`. Tier step | config + deploy | 450–550 |
+| **100K MAU** | Aggregate Matcher pass > the stated 30-min window, or any single run > 250 s; notification drain lag p95 > 60 s | **Matcher and notification drain to a Railway container** — same trigger URL, different host. Supabase log drain on. Screen events sampled | one new component | 1,900–2,400 |
+| **1M MAU** | Primary CPU > 60% for 7 days with > 70% read time after index fixes; `(MAU − 100K) × $0.00325` > compute bill | First read replica (`dbRead` → replica URL). **Auth migrates off Supabase Auth** behind the one `verifyToken()`. Matcher across N replicas from a `SKIP LOCKED` queue table | config + one component | 6–8K after auth move |
+| **5M MAU** | Replica lag > 5 s; edge-request bill > compute bill; PostHog bill > Supabase bill | Tier step; second replica; raw event firehose leaves PostHog | config; one component | 18–22K |
+
+**Not built until its trigger fires:** Redis (cache-hit < 99% after a tier step, or cross-instance
+rate limiting under abuse) · queues beyond `SKIP LOCKED` tables (visible lock contention across
+workers) · read replicas (above) · multi-region (a non-North-American Market with RTT-attributable
+p95 > 300 ms) · microservices (never for scale; only a second team) · warehouse (PostHog bill >
+Supabase bill) · Kafka, graph DB, Kubernetes (not on this ladder).
+
+**Decision — observability, five tools, one job each.** Sentry (errors, releases, source maps
+from the Vercel integration, cron check-ins via explicit monitors, user feedback with screenshot)
+· Axiom (structured logs via the Vercel drain; `warn+` and sampled `info` past 100K) · Better
+Stack (uptime, heartbeats from every job, paging to one phone) · Checkly (Playwright checks of
+the five moments against a synthetic Market excluded from KPIs) · Grafana Cloud free (the KPI
+dictionary as SQL views over a read-only role). Vercel's built-in observability is used, not
+rebuilt. **No custom stack.**
+
+**Mandatory context on every log line and span:** `req_id` (ULID, returned as a response header
+and shown on the client's "couldn't sync" state) · `trace_id` · `player_h` (HMAC of the player id;
+vendor logs never carry the raw id) · `market_id` · `capability` · `policy_version` ·
+`canon_version` on attestation paths · `client_version` · `build_id` · `idempotency_key` ·
+`source ∈ {gui, offline_sync, cron, operator, agent}` · `outcome` (the typed refusal name) ·
+`duration_ms`. **Traces do not propagate into Postgres or pg_cron; correlation is by
+`origin_req_id` stored in rows**, so a `player_timeline(player_id, from, to)` view answers *"what
+did this player experience at 6:02pm Thursday"* in under two minutes without SSH.
+
+**Paging policy, one phone.** Pages at any hour: status endpoint down three checks; API 5xx > 5%
+over five minutes; score-submit or outbox-sync error rate > 1%; a heartbeat missed > 15 minutes
+on the 8pm release, the offer-deadline, or the weather job; a Matcher run failed or > 250 s; a
+safety report categorised "in danger". Waits for the 8am digest: everything else, including
+disputes and ordinary safety reports, which get same-day human review.
+
+**Decision — the four feedback loops, each closed.**
+- **Behavioural:** server-emitted events with `reasons[]`, `relaxation_tier`, `policy_version`,
+  arm; the authoritative join to `fit_breakdown` is SQL on Postgres; a Grafana panel renders
+  acceptance by reason **only for cells with n ≥ 50**, with Wilson intervals.
+- **Explicit:** the one-tap difficulty question joined to the band gap; the rematch tap; a
+  **"something's off"** affordance on every screen with category chips, screenshot capture, the
+  current `req_id`, and an automatic `support_minutes(cause='feedback')` row. **Decline-reason chips
+  are restored** (server-authored, ≤ 4, one tap, optional). Fifteen minutes daily in two inboxes;
+  safety reports never share a queue with app feedback.
+- **Errors and incidents:** Sentry issue → tracker entry with `req_id` and blast radius → deploy →
+  "resolved in release" → verified by a Checkly pass and 48 h of zero hits. The `.scratch` tracker
+  moves to GitHub Issues at the first of: > 20 open items, a second person, or an incident where the
+  file was stale when it mattered.
+- **Learning → product without a release:** the `policy` table above, plus a **learnings ledger**
+  — append-only, one entry per question with `policy_version` before and after, n, effect with
+  interval, decision, and the saved query. It is the source of the release notes' "what we
+  learned" and what any agent reads after a cleared context.
+
+**The founder's cadence.** Daily, ten minutes: digest, new issues and feedback, the zero-offer
+list, Matcher duration, safety reports. Weekly, forty-five: week-one metrics, the countersign /
+auto-confirm / dispute split, acceptance by reason, support minutes per player, push-subscribed
+share, headroom against every ladder trigger, one ledger entry. Per release: release health,
+the five-moment check, the `min_supported_client` decision, release notes with a real number.
+
+**§4 — Amendment to ADR-034's trigger.** ADR-034 measured a single Matcher run against 250 s. A
+run is per Market and a Market is cluster-bounded, so a single run never approaches it. **The real
+cliff is aggregate: thousands of Markets inside one pass window.** The trigger is now *aggregate
+pass time exceeds the pass window stated on The Hold (30 min), or any single run exceeds 250 s*;
+the first move is a dispatcher Function fanning out one invocation per Market; the container
+follows. A synthetic 10K-player fixture Market and a CI benchmark recording `wall_ms` per commit
+exist from build 1, so the trigger is observable before it is reached.
+
+**Confidence: 96%.** The constraints and triggers are decision-grade; the cost curve is a model
+and is marked as such. What would change it: a measured Matcher `wall_ms` curve that is not
+superlinear (loosens the aggregate trigger), or Supabase shipping pg_partman (simplifies
+partition maintenance).
+
+**Dissent recorded.** The devil's advocate proposed the notification table and the event stream as
+seams three and four. They are folded into the existing two: events and notifications are rows
+driven and read through capabilities (Seam 1), and their schemas are fixtures (Seam 2). Fewer
+seams is the discipline; the reviewer's *components* are all adopted.

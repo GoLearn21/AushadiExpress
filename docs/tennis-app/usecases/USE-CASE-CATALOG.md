@@ -186,7 +186,7 @@ in a bag would otherwise silently burn a player's countersign window.
 | Flow | Description | Support |
 |---|---|---|
 | **UC-6.1** | Match ran out of court time. **"Unfinished — ran out of court"** is a first-class score state. Public courts have posted time limits; a best-of-3 default silently assumes they do not. | — |
-| **UC-6.2** | Retirement or walkover. `ratingWeight = 0`, full reliability weight. | — |
+| **UC-6.2** | Walkover: `ratingWeight = 0`, full reliability weight. **Retirement is a played match** — real sets, a loser — and carries full rating weight. *(Corrected 2026-09-05; an earlier version grouped them.)* | — |
 | **UC-6.E1** | **Opponent never countersigns.** Auto-confirms at 7 days from server receipt. Tracked as `auto_confirm_rate` — a single "dispute rate" metric reads perfectly healthy while the attestation protocol is dead because nobody countersigns. | 5 min |
 | **UC-6.E2** | **The two reports disagree.** Result freezes out of rating computation; a human review queue item opens. **No agent mediation in Phase 1** — ADR-014 is amended accordingly. | 30 min |
 | **UC-6.E3** | **Canon-version skew.** Two honest players, one on app v9 and one on v10, whose digests differ because the encoder changed. The server re-derives both under the older version. `CanonMismatch` is a typed error and **never a dispute** — otherwise the protocol manufactures a dispute out of an agreement, through the release channel that KMP just made slow. | 30 min |

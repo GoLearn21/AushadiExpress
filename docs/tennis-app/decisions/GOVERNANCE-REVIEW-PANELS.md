@@ -1769,3 +1769,272 @@ Also unbroken: `contiguous(n)`'s day-boundary logic under every probe including 
 at midnight and at the horizon; the bit arithmetic (21 × 48 = 1008, 16 words, 128 bytes); `mirror`
 as an involution across all six variant shapes; the tag/length framing's injectivity for
 well-formed ids; `confirm`'s idempotency; and `Contrast`, which was correct throughout.
+
+
+---
+
+# Panel F — Devil's advocate on the spec and seams, against the scale target
+
+**Date:** 2026-09-05 · **Brief:** find what will not survive hundreds of thousands of DAU, one operator, and the observability and feedback requirements. 29 findings; the five changes it demanded are all adopted in ADR-035 and spec v1.1.
+
+# Devil's-advocate review — Rally Phase 1 spec against the scale/observability/feedback requirements
+
+Files reviewed: `/home/user/AushadiExpress/.scratch/rally-phase1/spec.md`, `docs/tennis-app/usecases/USE-CASE-CATALOG.md`, `docs/tennis-app/decisions/adr/ADR-INDEX.md` (001–034), `docs/tennis-app/architecture/TECHNICAL-ARCHITECTURE.md`, `docs/tennis-app/design/DESIGN-PHILOSOPHY.md`, `docs/tennis-app/CONTEXT.md`, plus `research/17-vercel-supabase-limits.md` and PRD §5/§7/§8.4/§9.
+
+## Findings, by severity
+
+### Severity 1 — the spec cannot be built as written
+
+**1. "Time is controlled by the harness" is false under ADR-034, and the spec does not notice.**
+Spec, Testing Decisions: *"The harness advances a clock the server reads, so deadlines, auto-confirm, and Rating periods run in milliseconds."* Spec, Shape: *"Timed transitions … run under pg_cron as SQL next to the data."* pg_cron SQL reads Postgres `now()`; the harness cannot advance it. Stories 88–93 are therefore untestable at Seam 1 as specified. **Replace:** every timed transition is a SQL function `run_<transition>(as_of timestamptz)`; pg_cron is only a scheduler that calls `run_<transition>(now())`; the harness (and an Operator capability `advance clock` in non-prod) calls the same functions with a chosen `as_of`. The function, not the schedule, is the unit under test. One smoke test verifies the schedule exists. This also gives you the dead-man's switch in finding 14.
+
+**2. The Matcher "run pass" capability returns 202, so no test can observe a pass completing.**
+ADR-034: *"the route acknowledges with 202 in under two seconds and runs asynchronously."* Spec, Seam 1: *"driven through the same seam via an Operator-only 'run a pass now' capability."* There is no `pass_id`, no `get pass status`, no `matcher_pass` record. Worse: in the in-process harness the async work runs inline; in production it runs after the response in a Function that can be killed at `maxDuration`. The one behaviour that matters at scale is the one the harness structurally cannot see. **Replace:** `run pass` returns `{pass_id}`; a `matcher_pass` table records `market_id, started_at, finished_at, phase, candidates_n, pairs_n, wall_ms, error`; an Operator/read capability `get pass` exposes it; tests poll it. That table is also the answer to "is the Matcher slower week over week" (D).
+
+**3. No notification boundary exists, and eight stories assert on notifications.**
+Stories 24, 45, 72, 78, 88, 89, 93, 100 say "alerted", "notification", "push". Spec, Client: *"Push where available; SMS for the pilot."* Spec, Schema: no notification table. Architecture §6 had `notification_delivery` as *"the audit trail for 'I was never told my match was cancelled'"* — the spec dropped it. At scale fan-out needs an outbox; today the tests need something to assert on. **Replace:** add Seam 3 — a `notification` table (recipient, channel ∈ {sms, webpush, apns, fcm, operator}, template, params, deep link, status, provider receipt) written by services, drained by a cron capability with a batch size, delivered through a transport adapter that is a fake in tests. Tests assert on the table, never on Twilio.
+
+**4. There is no domain event stream, so stories 94–100 are unmeasurable and every later evolution (queues, analytics, fan-out, container Matcher) has nothing to hang off.**
+Spec, Schema: *"An audit event table whose source enumeration includes 'agent' and 'offline sync'."* An audit table is a compliance artefact; it is not typed, not schema'd, and nobody reads it for metrics. "As the founder, I want countersign rate, auto-confirm rate, and dispute rate split" (96) has no read path. **Replace:** one `emit(event)` in the service layer with a closed set of typed events (`offer.sent`, `offer.responded{decline_reason, fit_breakdown_ref, policy_version, arm}`, `match.transitioned`, `attestation.received{canon_version, server_receipt_at}`, `notification.delivered`, `operator.action`, `client.error`, …), written to a `domain_event` table *and* shipped to the analytics sink by the same call. Event schemas are golden fixtures (extend Seam 2). Every founder story becomes a query over this table, testable at Seam 1 by emitting through real capabilities and reading through a metrics capability.
+
+**5. No feedback loop closes. "Served FitWeights" is a config file, not an experiment system.**
+Trace the brief's case. A player declines three Offers: story 31 *"declining costs me nothing"* — and the spec **dropped** UC-3.1's *"Reason is optional, one tap, and feeds the matcher"*, so nothing is learned from the decline. Story 99 logs `fit_breakdown` per outcome. What does the founder see? Nothing — no story, no dashboard, no capability reads it. What changes? FitWeights are *"served, not compiled in"* — but there is no `policy_version` table, no per-player sticky arm assignment, no arm on the logged outcome, no rollback, no story that says "compare accept rate by arm". The capability registry's *"exposure flag that is present and unused"* is an agent-exposure flag and has nothing to do with feature flags. **Replace:** (a) restore decline-reason chips (server-authored, ≤4, one tap, optional); (b) a `policy` table versioning FitWeights, DisplayPolicy, reason templates, copy bundle, *and feature flags*, served in the same response that carries `policy_version`; (c) an `experiment` entity with sticky arm assignment `hash(player_id, experiment_key)`, and the arm stamped on every `offer.*` event; (d) Operator capabilities `set policy`, `start/stop experiment`, `rollback policy`, all audited; (e) a `read metric` capability that computes accept/decline/rematch rate by arm from `domain_event`. Seam 1 test: two arms over the same Market produce different orderings and different logged arms. Explicit feedback enters at three points, none of which exist today: decline reasons, a post-match one-tap "something was off: court / opponent / app" (which auto-writes a support-minutes cause), and client error capture tagged with `player_id` (finding 12).
+
+### Severity 2 — scale cliffs the spec must pre-decide or it is a rewrite
+
+Format: cliff → trigger metric → pre-decided move → deploy or rewrite *as the spec stands*.
+
+**6. Supavisor client-connection exhaustion.** research/17: *"Micro tier: 200 max pooler clients."* Vercel Fluid spawns instances freely. Trigger: pooler client count > 60% of tier limit, or first `too many clients`. Move: Drizzle pool `max: 1` per instance (must be a day-one setting), then Supabase compute tier step. Deploy. **Spec silent** — add to Shape.
+
+**7. Supabase compute tier.** Micro is 2 shared cores / 1 GB. Trigger: CPU > 70% for 1 h *or* buffer cache hit ratio < 99%. Move: tier step (minutes of downtime; schedule it at 3am). Deploy, but nobody is watching the metric because the spec has no metrics (D). Add tier cost steps to the budget [unverified: Small ~$15, Medium ~$60, Large ~$110/mo compute add-on].
+
+**8. pg_cron jobs written as global scans.** research/17: *"Advisory: ≤8 concurrent jobs, ≤10 minutes each."* Nightly Rating period, staleness check, weather check all grow with population. Trigger: any `job_run.wall_ms` > 180 s. Move: every job iterates `market_id` in bounded batches and is idempotent per market; parallelism by scheduling per-cluster jobs. **Rewrite as the spec stands** — story 91 says "a nightly Rating period" with no market scope, and ADR-023 says *"Nightly rating periods per market."* Say "per Market" in the story and make `market_id` a required parameter of every job function.
+
+**9. The Rating period is not given the Matcher's escape.** ADR-034 pre-decides only the Matcher → container move. Glicko-2 over a Market is the same shape (pure `run(period, results) → snapshots`) and will hit the 10-minute pg_cron advisory before the Matcher hits 250 s. Trigger: `job_run.wall_ms` p95 > 180 s. Move: same trigger→run→write pattern, run hosted where the Matcher is. Deploy only if it is written pure and host-agnostic from day one. **Add to Shape:** "the Rating period is written trigger → run → write, identical to the Matcher, and moves with it."
+
+**10. `fit_breakdown` in Postgres is the largest write in the system and the spec puts it in the OLTP database.** Story 99: *"the full fit breakdown logged with every Offer outcome."* At 1M MAU × ~40 candidates × weekly ≈ 40M rows/week. Supabase storage beyond the included 8 GB is billed [unverified ~$0.125/GB-mo]. Trigger: table > 20 GB or nightly vacuum > 10 min. Move: `fit_breakdown` is an event-stream payload (finding 4) shipped to object storage / the analytics sink, with only `offer_id, policy_version, arm, outcome` in Postgres. **Rewrite as the spec stands** — the training set moves. Decide it in build 1.
+
+**11. Ledger, audit, idempotency-key, and materialised-mask growth.** Append-only ledger + audit (2-year retention, arch §7) + idempotency table with no TTL + a 128-byte mask per player rebuilt nightly to roll the horizon (ADR-019). Trigger: any of these tables > 10 GB, or the nightly mask roll > 5 min. Move: monthly partitioning of `audit_event`/`domain_event` (pg_partman — availability on Supabase [unverified]); idempotency keys TTL 30 days; horizon roll as a bit-shift in SQL touching only rows with rules changed. Deploy if the mask roll is a per-player idempotent function; the spec doesn't say.
+
+**12. The Hold and Offer screens computed per request.** Story 20 wants pool size and next-pass time; story 21 wants three near-fits. If `get the hold` computes these, p95 API < 300 ms (PRD §7) dies at 10K. Trigger: p95 of `get the hold` > 300 ms. Move: the Matcher pass writes a per-player `hold_view` row; `get the hold` is a single-row read. Deploy only if `get the hold` is a read from day one. **Add to API contract:** "`get the hold` and `get next offer` are reads of rows the Matcher wrote; they never compute."
+
+**13. The API is hostage to Vercel's request model.** Spec: *"one API in TypeScript, both on Vercel Pro."* Cold start on the five moments and Fluid CPU billing at 100K DAU are both cliffs (trigger: client-measured p95 TTFB on `get next offer` > 800 ms; or Vercel bill > Supabase bill). Move: the API to a container on Railway, whose files the repo already carries. Deploy **only if** the API is a portable HTTP app (Hono/Express) with Vercel as an adapter, functions pinned to the Supabase region, and `waitUntil` isolated behind one `defer()` helper. Otherwise a rewrite. Pre-decide it.
+
+**14. ADR-034's Matcher trigger measures the wrong thing.** ADR-034: *"When p95 exceeds one third of the Function ceiling (~250 s), the Matcher alone moves to a container."* But the Matcher is per Market (ADR-020: *"MarketScope is a required parameter with no unscoped variant"*) and a Market is 150–250 players (ADR-002). A single run never approaches 250 s; the cliff is *aggregate* — thousands of Markets inside one cron window. Trigger: Σ `matcher_pass.wall_ms` over a window > 50% of the window. Move: a dispatcher Function fans out one invocation per Market (embarrassingly parallel; Vercel Cron limit 100/project so it must be a dispatcher, not 5,000 crons). Deploy if `run(market)` already takes one Market. Also: the ADR's trigger cannot be observed before you are at it. Add a synthetic 10K-player fixture Market and a CI benchmark that records `wall_ms` per commit.
+
+**15. Notification fan-out and SMS cost.** No worker, no queue, pg_net times out at 2 s. Trigger: any pass notifying > 1,000 players or delivery lag p95 > 60 s. Move: the `notification` table from finding 3 drained by a 1-minute cron in batches of 500, then Supabase Queues/pgmq [availability on Pro unverified] or Vercel Queues (beta). SMS: [unverified ~$0.008/msg] × millions of Offers is unaffordable — trigger: SMS spend > $500/mo; move: push-first (web push VAPID on Android; APNs web push on iOS 16.4+ requires A2HS), SMS only for confirmed matches. This is a product cliff: iOS web push is behind A2HS, which is exactly what ADR-031 accepted for a hand-onboarded pilot and is not accepted at 100K DAU. The native phase is not optional at that scale; the spec should say the notification transport is the trigger for it.
+
+**16. Cross-instance rate limiting does not exist.** Arch §7: *"rate limits per user and per IP."* Vercel Functions share no memory. Stories 31 (free declines) and 25 (*"2 more waiting"*) let a player enumerate a Market by declining. Trigger: first abuse report or > 20 declines/player/week. Move: Postgres token bucket keyed by `player_id`, then Upstash Redis [unverified free tier] when Postgres writes for limits exceed 1% of load. Deploy if the limit check is one function from day one. Add a story: "As the Matcher, I want a per-player weekly Offer budget so that declining is free but enumeration is not."
+
+**17. Multi-region.** Single Supabase region is right for US-only. Trigger: p95 read latency from a metro > 150 ms. Move: Supabase read replica [Pro add-on, unverified] for reads only. Deploy only if the data layer has `readDb`/`writeDb` handles from day one. Spec silent. Also pin Vercel function region to the DB region — one line, day one.
+
+**18. Photos.** Story 77 requires a photo. 1M × 200 KB = 200 GB against 100 GB included. Move: server-side resize to ≤ 50 KB, EXIF strip (arch §7, dropped by the spec), CDN. Deploy; add the constraint now.
+
+### Severity 3 — observability and on-call (nothing exists)
+
+**19. There is no observability strategy.** The spec's entire provision is story 99 plus an audit table. Arch §8 chose PostHog and Sentry and §11 said *"no custom observability stack"*; the spec dropped all of it. **Minimal solo stack, all prices [unverified]:**
+- Errors + traces + web session replay: **Sentry** (free developer tier; Team ~$26/mo). OpenTelemetry via `@vercel/otel` so traces are portable when the API leaves Vercel.
+- Structured logs: **Axiom** (free tier reportedly hundreds of GB/mo, 30-day retention) or **Better Stack Logs** (small free tier). Vercel Pro log drains → Axiom. **Warning:** Supabase Postgres log drains may be Team-plan only (~$599/mo) — verify; if so, `job_run` (finding 20) is the substitute.
+- Product analytics + flags + experiments: **PostHog** (free to 1M events and 1M flag requests/mo per arch §8). Fed by `emit()` from finding 4 — one call, two sinks.
+- Uptime + paging: **Better Stack Uptime** (free tier, phone/SMS alerts) with heartbeat monitors for every cron.
+- DB internals: Supabase's built-in reports + `pg_stat_statements` alert on any query > 100K rows (arch §9 risk 1).
+
+**Mandatory attributes on every log line and span:** `trace_id`, `request_id`, `player_id` (pseudonymous), `market_id`, `capability`, `idempotency_key`, `client_version`, `policy_version`, `experiment_arms`, `canon_version` (attestation paths), `source` ∈ {gui, offline_sync, job, operator}, `server_receipt_at`, `client_clock_skew_ms`, `outcome` (the typed refusal name from story 87), and `offer_id | match_id | pass_id` where present. Matcher spans add `phase` ∈ {intersect, rank, match, write}, `candidates_n`, `pairs_n`, `wall_ms`.
+
+"What did player X experience at 6:02pm Thursday" = `domain_event WHERE player_id AND ts BETWEEN` joined to `notification` and the Sentry replay for that `player_id`. That is answerable only if findings 3, 4, and 20 exist.
+
+**20. pg_cron failures are silent by construction.** `cron.job_run_details` is inside Postgres; nobody will SSH in. Trigger: none — you must build one. **Replace:** every job function writes a `job_run` row (job, market_id, started, finished, rows, error) and pings a heartbeat URL; a missed heartbeat pages. "The nightly Rating period did not run" is the incident nobody notices for a week.
+
+**21. No degraded-mode story.** Design Philosophy §6: *"Showing what we had at 9:14am."* Story 105 only says errors are never red. Add: "As a Player, when the server is unavailable I want the last cached view with its timestamp, and my actions queued, so that an outage is a delay and not a failure." Testable at the browser driver with the API blocked.
+
+**22. The support-minutes budget is wired to nothing.** Story 85: counters per player. PRD §8.4: a kill line at ~$14/support-hour. Nobody increments the counter: if the Operator logs minutes by hand, the metric measures Operator diligence. **Replace:** every Operator capability auto-records elapsed time (open → commit) against `player_id` and `cause = capability`; every rescue path (zero-offer, force match, dispute ruling, report review) is a cause; a `read metric` capability computes minutes/active player/month; an alert fires when it exceeds the ceiling. Then the kill line is a number the system produces.
+
+### Severity 4 — user stories missing, wrong, or off-glossary
+
+**23. Missing story families** (each needs at least one story to exist, or the spec must say the record is silent):
+- Privacy: no delete, no export. Arch §7 had generated DSR tooling and *"tombstone-and-pseudonymise, not hard delete"*; the glossary says Attestations are *"kept forever, in every outcome."* Those two must be reconciled in a story: "As a Player, I want to delete my account and have my identity erased while match facts persist against 'Former player'." Plus the PII column classification CI check (arch §7) — cheap now, impossible later.
+- Age gate (PRD §7 Legal: 18+) — absent from all 107.
+- Abuse: collusion/same-pair damping (arch §10.3), invite rate limits (ADR-015), the Offer budget (finding 16), report auto-actions (finding 26).
+- Operator scaling: no cluster scoping on stories 79–87, no second-Operator role, no audit of who approved, no "auto-approve this Cluster" flag (which is *the* Phase-2 change and must be a flag now).
+- Player-contributed court data with Operator confirmation (story 84 does not scale past one Cluster).
+- Explicit feedback and client error capture (finding 5, 12).
+- Incident: paging, heartbeats, degraded mode (findings 20, 21).
+
+**24. Stories that contradict the record.**
+- Story 59 *"retirement counted as a played match"* vs UC-6.2 *"Retirement or walkover. ratingWeight = 0."* The spec silently overrides the catalog. Pick one and say which document loses.
+- Story 83 *"issue a refund"* refunds nothing: no payment story exists and the deposit rail is out of scope. Either add "As a Player, I pay a deposit through a web checkout link from match two" (UC-5.E2) or drop 83.
+- Story 31 drops UC-3.1's decline reason (finding 5).
+- Story 8 Apple/Google only vs arch §7 *"email OTP + Apple + Google."* A player with neither is locked out; say so or add OTP.
+- Stories 72/93 depend on a weather provider nobody has chosen. The spec's own rule: *"Where the record is silent, this spec says so."* It does not.
+- Front matter cites *"ADR-001–033"* but the Shape section rests on ADR-034. By the spec's own last line that is a defect.
+
+**25. Vocabulary.** Glossary marks *pool* as avoided (use Market); stories 1, 15, 20, 21, 22 say "pool". Stories 88–93 say *"As the system"* — the catalog's actor is the **Clock**. Stories 94–100 say *"As the founder"* — not a glossary actor; the Operator is *"the founder, and a first-class actor."* Story 78 says "thin market" (correct) two lines after 22 says "thin pool".
+
+**26. Stories untestable at Seam 1 as written.** 20 ("see what the system is doing" — name the fields); 24/78/100 (alerts to an unnamed channel — finding 3 fixes); 44 (an absence — provable only as "no capability in the registry accepts a free-text field", so write it that way); 68 (a tap count — browser driver only, say so); 72/93 (weather + push, two unspecified externals); 97–99 (no read path — finding 4); 101 (manual on device); 105 (a token lint, not a Seam 1 test); 107 (a response-schema assertion — write it as "no capability output type contains a coordinate"). Story 39's queued acceptance lives in the client outbox, which the spec says has no seam — it is browser-driver-with-offline-emulation, and must be listed there.
+
+**27. Solo-founder breakpoints not pre-decided.** Story 80 (approve every Offer) breaks at a few hundred players — needs the per-Cluster auto-approve flag with sampled review. Story 76 (*"a report reaches a human, always"*) at 100K DAU is ~100/day — pre-decide: a report applies an immediate mutual soft-block, severity classes, dedupe per pair, a 48 h SLA, and a queue for a second Operator role. Story 82 (disputes) at 20K matches/week × 2% = 400/week — pre-decide a default: unresolved 14 days → voided, zero rating weight, full Reliability weight. Story 24 (alert per late first Offer) becomes a ranked queue, not an alert.
+
+### Severity 5 — native readiness (ADR-031)
+
+**28. The API contract is not native-ready.** Present: `min_supported_client`, `policy_version`, idempotency, server-clamped time. Missing: (a) bearer-JWT-only auth (if web uses cookie sessions, native reworks auth — say "bearer only" now); (b) additive-only DTO evolution with `ignoreUnknownKeys` and **wire-format golden fixtures for every DTO** — ADR-027 mandated them, the spec's Seam 2 omits them, and DTOs are the third thing that runs in two places the day native exists; (c) Claim templates: native renders Claims in Kotlin, so `template + params → string` must be in the Seam 2 fixtures; (d) design tokens as a JSON source (the spec makes them a web lint allowlist); (e) deep links as universal links so native can claim them; (f) notification `channel` enum (finding 3). All additions if decided now; (a), (b), (c) are rewrites if not.
+
+**29. Seam 2 is right but two fixture families short.** RRULE → mask expansion across DST boundaries (arch §10.4: *"this test will fail the first time you write the expander"*) is server-only but must be golden. And the Matcher's pure `run(input) → output` needs a contract fixture so the container move (ADR-034) is validated by the same file on both hosts — the spec's *"no seam inside the Matcher"* is wrong for exactly the escape ADR-034 promises.
+
+## What survives
+
+- Server ranks, client renders; policy served not compiled — the right foundation for every loop above, once it grows versions and arms.
+- Seam 1's direction (drive the HTTP boundary, real DB, no mocks) and Seam 2's fixtures-as-contract. Both keep.
+- Idempotency semantics, server-receipt anchoring, canon-version skew as a typed error, integer-only digests, the sealed state machine. Correct and unchanged.
+- pg_cron for timed transitions — right host, wrong test story (finding 1).
+- The Matcher's trigger → run → write shape — extend it to the Rating period and make `run` a fixture-tested pure function.
+- Capability registry with Claims — good; it just isn't a feedback system.
+- The five moments, the design tokens, the accessibility gates.
+
+## The five changes before a single ticket is written
+
+1. **Add Seam 3: the domain event stream.** One `emit()` in the service layer, typed events with golden schemas, written to Postgres and shipped to PostHog/Axiom by the same call. `fit_breakdown`, notifications, metrics, and audit all become consumers. Stories 94–100 become queries; findings 4, 10, 19 collapse into this.
+2. **Make time a parameter, not an ambient.** Every pg_cron job is `run_x(as_of, market_id)` writing a `job_run` row and a heartbeat; the harness calls the functions; the Rating period gets the Matcher's escape. Fixes findings 1, 8, 9, 20.
+3. **Replace "served FitWeights" with a policy + experiment system**: versioned `policy` (weights, display, templates, copy, flags), sticky arms, arm stamped on every Offer event, Operator set/rollback capabilities, a `read metric` capability, and decline-reason chips restored. This is the only way a learning changes the product without a release.
+4. **Write the cliff table into the spec** — one row per finding 6–18 with trigger metric, pre-decided move, and the day-one constraint that keeps the move a deploy (pool `max:1`, `market_id` on every job, `get the hold` as a read, portable HTTP app, `readDb/writeDb`, `notification.channel`, bearer-only auth).
+5. **Add the missing story families** (privacy delete/export with tombstoning, 18+, Offer budget, report auto-actions and SLA, dispute default ruling, Operator cluster scoping and auto-approve flag, degraded mode, client error capture) and fix the record conflicts (59 vs UC-6.2, 83 with no payment, pool → Market, system → Clock, founder → Operator, ADR-034 in the authority list).
+
+---
+
+# Panel G — Scale and observability architect
+
+**Date:** 2026-09-05 · **Brief:** the evolution ladder with measured triggers, the solo observability stack, the four feedback loops, the cost curve. Adopted as ADR-035; costs are a model against a stated load and are provenance-marked.
+
+## 1. The evolution ladder
+
+Structural facts that make this ladder cheap: a Market is a club cluster of 150–250 players (ADR-002), so no Matcher graph is ever large — scale is *more markets*, not bigger ones. Supabase compute tiers carry hard per-tier caps that double as trigger metrics (**P**: Micro 10 GB / 200 pooler clients; Small 50 GB / 400; Medium 100 GB / 600; Large 200 GB / 800; XL 500 GB / 1,000; 2XL 1 TB / 1,500; 4XL 2 TB / 3,000; monthly $10/$15/$60/$110/$210/$410/$960). Vercel Function ceiling 800 s Pro GA, no partial result on timeout (**P**, research/17). pg_cron advisory ≤8 concurrent jobs, ≤10 min each (**P**). **pg_partman is not installable on Supabase** (**P**: supabase/postgres#1586, discussion #37986 says "in progress") — so partitioning is native declarative `PARTITION BY RANGE` with pg_cron creating next month's partition.
+
+| Step | What changes | Trigger metric (measured, not a headcount) | Pre-decided move | Kind | ≈ $/mo after |
+|---|---|---|---|---|---|
+| **100** (one cluster) | Nothing. Vercel Pro 1 seat + Supabase Pro (Micro on the $10 credit). Matcher = Vercel cron Function. Transitions = pg_cron SQL. SMS for notifications. | — (baseline: record Matcher wall-clock, pooler clients, DB size, p95 per capability from day one) | Ship. Pin the Vercel function region to the Supabase region (same AWS region); `Cache-Control: private` on every authenticated response; `dbRead`/`dbWrite` handles that share one URL; `audit_event`, `player_event`, `offers` created partitioned by month; `notification_delivery(channel)` with `web_push|sms|email|fcm|apns` enum from day one | config | ~$75–100 (§4) |
+| **1K** | Supabase Micro → Small. Web Push replaces SMS as primary channel (Android + A2HS iOS). | DB size > 6 GB (60% of Micro's 10 GB cap, **P**) OR cache-hit ratio < 99% for 24 h OR Supavisor clients > 140 (70% of 200, **P**) | Step compute tier in dashboard (~5 min, brief restart). Push-subscribed share becomes a tracked metric (§4: SMS is the pilot's biggest variable line) | config | ~$150–220 |
+| **10K** (5–10 markets) | Small → Medium. Sentry Team. Resend Pro. Matcher still a Function (research/17: tens of seconds at 10K, 25–40× headroom). Rating period moves from SQL to the API route if the SQL job is slow. | Matcher p95 wall-clock > 250 s (ADR-034) — not expected here. Any pg_cron job p95 > 3 min (⅓ of the 10-min advisory) → that job becomes `pg_cron → pg_net → API route (202) → run` | Step tier; rating period behind an HTTP route with the same trigger→run→write shape as the Matcher | config + deploy | ~$450–550 |
+| **100K MAU** (~15K DAU, ~500 markets) | Medium → Large/XL. **Matcher to Railway container** (worker ≈ 1 vCPU/2 GB, always-on). Supabase log drain on. Notification drain moves to the same worker. Client screen events sampled in PostHog. | Matcher: p95 > 250 s **or** total pass (all markets, serial) > the stated pass window on the Hold screen (30 min); notifications: 8pm-reminder burst drain lag p95 > 60 s; pooler > 70% of tier; DB > 60% of tier cap | Same trigger URL, different host (ADR-034). Worker processes markets sequentially from a `matcher_run` queue table (`SELECT … FOR UPDATE SKIP LOCKED`), one market = one unit of work from day one | new component (host only; zero code in `run()`) | ~$1,900–2,400 |
+| **1M MAU** (~150K DAU, ~5K markets) | XL → 2XL. **First read replica** (same compute size as primary, disk 1.25×, not under spend cap — **P**). **Auth migrates off Supabase Auth** to a self-owned OIDC exchange on Postgres. Matcher sharded by market across N Railway replicas. Partition archival starts. | Replica: primary CPU > 60% for 7 days with > 70% of `pg_stat_statements` total time in reads after index/statement fixes. Auth: `(MAU − 100K) × $0.00325` > primary compute bill — fires ≈ 250–300K MAU (**P** rate, research/17). Matcher: serial pass > 30 min (5K markets × ~0.4 s ≈ 33 min). Archival: any table's live partitions > 40% of DB size | Point `dbRead` at the replica URL (config). Auth: swap the one `verifyToken()` + session issuer; `player.auth_subject` column already there. Matcher: raise Railway replica count; queue claims by market. Archive partitions > 6 months to Supabase Storage via the worker (`COPY TO STDOUT` → Parquet) | config + new component (auth, 1–2 wk) | ~$8–11K before auth move; ~$6–8K after |
+| **5M MAU** (500–750K DAU, ~25K markets) | 2XL → 4XL; 2 replicas; worker fleet 4–8 vCPU; SMS only for un-pushable confirmations; raw events leave PostHog. | Replica lag > 5 s sustained or WAL retention growing on disk; edge-request bill > compute bill; PostHog bill > Supabase bill; a single market p95 > 10 min (means a market was allowed to exceed cluster size — split it, ADR-002) | Tier step; replica add; ClickHouse Cloud/Tinybird for the raw event firehose (**U** pricing) only if a question needs raw joins PostHog cannot answer | config; one new component | ~$18–22K (§4) |
+
+**Where a rewrite would hide, and the day-one prevention (each costs ~nothing at 100 users):**
+- Converting a live unpartitioned `audit_event`/`offers`/`player_event` to partitioned = full table rewrite → **create them partitioned now**; pg_cron `CREATE TABLE … PARTITION OF` monthly.
+- Supabase Auth SDK calls scattered across handlers → **one `verifyToken()` (JWKS) + own `player_id` + `auth_provider, auth_subject` columns**; the migration becomes a component swap.
+- One DB handle → **`dbRead`/`dbWrite` from commit one** (same URL until a replica exists).
+- Matcher's unit of work = "all markets" → **unit = one market** now; parallelism is a queue setting later.
+- Notification code coupled to Twilio → **`notification_delivery` is transport-agnostic**, transport chosen per row.
+- Nightly rating snapshot per player → **snapshot only players with a match in the period** (else 5M rows/night at 5M MAU).
+- Policy docs (`FitWeights`, `DisplayPolicy`, copy bundle) served on a per-player route → **serve at `/policy/{version}.json`, immutable, `s-maxage` on Vercel CDN**; zero DB reads for them at any scale.
+- Client-only analytics events → **counted events are server-emitted** or the `fit_breakdown` join is lost forever.
+
+**Coverage of the mandated items:**
+- *Compute tiers / pooling:* above. Additionally: cap the per-instance `pg` pool at 3–5 under Fluid compute (instances × pool ≤ 70% of tier pooler cap); alert on `Max client connections reached` in Supabase logs.
+- *Read replicas:* Pro plan (**S**), same compute as primary (**P**); Supabase's own guidance is "bigger compute first, replicas second" — and this workload's reads (Hold, Offer) are PK/market-key lookups, so I do not expect a replica before ~1M MAU.
+- *Matcher sharding by Market:* never needed for graph size (cluster-bounded); needed for wall-clock at ~5K markets. If the Matcher is ever run metro-wide (cross-cluster), the trigger becomes per-metro p95 > 10 min and the move is split-by-cluster, not a bigger box.
+- *Ledger/audit growth:* ledger (results, snapshots-as-deltas) is small — ~2 rows per match; `audit_event` ~30/MAU-mo, `offers` ~12 KB/MAU-mo dominate. Monthly partitions; archive > 6 months; never `DELETE` from the ledger (ADR-018).
+- *Availability mask:* 252 B/player — 1.3 GB at 5M, irrelevant. The cost is the nightly horizon roll: do it as one set-based `UPDATE` (bit shift) per market, not per-player rebuilds; rebuild only players whose rules changed. Trigger: roll job > 3 min → move to worker.
+- *Caching Hold/Offer:* **Postgres only** until a trigger. Hold's pool count and next-pass time = one `market_stats` row refreshed by pg_cron every 5 min (materialised row, not a cache tier). Offer = PK read. Vercel edge cache only for versioned policy/copy docs (public, immutable). Redis (Upstash) trigger in §5.
+- *Multi-region:* not before a non-North-American market launches. Then: second-region read replica (primary compute price again + 1.25× disk, **P**) + Vercel functions in that region (Pro multi-region support: **U**). Until then: **one region, pinned**.
+- *CDN for PWA:* Vercel CDN, included; 1 TB Fast Data Transfer on Pro (**P\***), overage ≈ $0.15/GB (**U**). SW-precached, hashed immutable assets → ~2 MB/MAU-mo (**U**) → 10 TB at 5M ≈ $1,350 (**U**). Player photos via Supabase Storage (egress $0.09/GB past 250 GB, **S**).
+- *Analytics pipeline:* PostHog free to 1M events/mo (**S**); 10M events ≈ $350 (**S**); 100M ≈ $2.5K (**S/U**). Bend at 100K MAU: sample screen events 10%, never sample Offer outcomes (which live in Postgres anyway). See §3a.
+- *Push fan-out:* Web Push (VAPID, npm `web-push`) → browser push services; **no per-message fee** (**S**; FCM/APNs likewise **S**). iOS requires A2HS, 16.4+, non-EU (**S**, consistent with ADR-031). Queue = `notification_delivery` table drained by a per-minute Vercel cron (I/O-bound, Fluid is fine) → the Railway worker at the 100K trigger. The 8pm-confirm reminder is the only burst (all next-day matches per timezone); the drain must clear it inside the stated deadline, hence the 60 s lag trigger. Native phase adds FCM/APNs as two more `channel` values.
+
+---
+
+## 2. Observability stack — minimal, solo
+
+Five tools, each owning one job. Everything else is SQL on the database you already pay for.
+
+| Job | Product | Covers | Cost & where it starts costing | Vercel / Supabase integration |
+|---|---|---|---|---|
+| Errors, releases, source maps, cron check-ins, traces | **Sentry** | Browser + Node (Vercel Functions) + Railway worker; issues, release health, Crons, spans, user feedback | Developer $0 (1 user, 5K errors) → Team **$26** (50K errors, 5M spans, 5 GB logs) → overage ~$0.0003/error (**S**). Team at ~1K MAU (release tracking + GitHub issue sync) | Vercel Marketplace integration uploads source maps and tags releases with the deployment on every deploy (**P\***, docs.sentry.io). Cron check-ins: use explicit `Sentry.withMonitor` — auto-detection of Vercel crons is Pages-Router-only (**P**, sentry-javascript#11637). Do **not** combine with `@vercel/otel`; Sentry v8+ owns OTel (**P\***) |
+| Structured logs | **Axiom** | Vercel request/function logs; API JSON logs (pino); worker logs; later Postgres logs | Personal **$0** to 500 GB/mo, 30-day retention; Team $25 (**S**). Vercel charges the drain itself: **$0.50/GB** (**P\***, Vercel changelog) — drain `warn+` and 1–5% of `info` at 100K+ | Vercel → Axiom native log drain integration. Supabase log drain: Pro add-on, **$60/mo/drain** + $0.20/M events (**S**) — deferred to 100K MAU; until then Supabase's Logs Explorer + `cron.job_run_details` |
+| Uptime, heartbeats, paging | **Better Stack** | HTTP checks on `/api/status` and key capabilities every 3 min; heartbeats from every pg_cron job (`pg_net` GET on success); on-call → one phone | Free: 10 monitors, 10 heartbeats, 1 status page, 3-min interval, 1 phone-call alert (**S**); $29/mo for full phone/SMS escalation (**S**) — buy at 1K | Heartbeat URLs called from `cron.schedule` bodies via `pg_net`; Vercel cron routes call the same |
+| Synthetic checks on the five moments | **Checkly** | Playwright checks reusing Seam 1's browser driver: Hold, Reveal, Ticket, Court Mode, Rematch — against a `synthetic` market excluded from KPIs | Hobby **$0**: 10K API runs + 1,500 browser runs/mo (**S**) → 5 moments every 3 h = 1,200/mo; Starter $24 (**S**) when you want hourly | Runs against production URL; alerts route into Better Stack |
+| Metrics & dashboards | **Grafana Cloud** (free) | KPI dictionary as SQL views (Postgres datasource via session-mode pooler, read-only role); Axiom + Sentry datasources; Supabase's Prometheus metrics endpoint (**S** — scrape path from cloud is **U**) | Free: 10K series, 50 GB logs, 50 GB traces, 14-day retention (**S**) | Vercel's built-in Observability (no base fee since 2026-04-02, $1.20/M events, **P\***) covers function latency/errors/throttles — use it, don't rebuild it |
+
+**Tracing across Vercel function → Postgres → pg_cron.** Honest statement: OTel context does not propagate into Postgres or pg_cron. Correlation is **by ID stored in rows**, not by span propagation:
+- The function span records `db.statement` + duration (Sentry Postgres instrumentation).
+- Every write carries `req_id` into the row it creates/mutates (`offers.created_req_id`, `matches.last_req_id`) and an `audit_event(req_id, trace_id, …)`.
+- pg_cron transitions write `audit_event(source='cron', job_name, run_id = cron.job_run_details.runid, origin_req_id = <row's created_req_id>)`.
+- The notification drain writes `notification_delivery(req_id, origin_req_id)` and the push service response.
+- Result: `trace_id` covers the synchronous hop; `origin_req_id` links the asynchronous chain end to end.
+
+**Mandatory context on every log line and span** (middleware sets it once; pino child logger + Sentry scope; the worker and pg_cron write the same keys into `audit_event`):
+
+`req_id` (ULID, also returned as `x-rally-req` header and shown on the client's "couldn't sync" state) · `trace_id` · `player_h` (HMAC-SHA256(server key, player_id)[:16] — vendor logs never carry the raw id; the DB does) · `market_id` · `capability` · `policy_version` · `canon_version` (attestation paths) · `client_version` · `build_id` (both from request headers the version floor already requires) · `idempotency_key` (mutations) · `source` ∈ {gui, offline_sync, cron, operator, agent} · `outcome` (typed refusal name — story 87) · `duration_ms`.
+
+**"What did player X experience at 6:02pm Thursday" in < 2 min:**
+1. `rally who <phone|email>` → `player_id` + `player_h` (CLI, HMAC key from env). 15 s.
+2. Postgres: `SELECT * FROM player_timeline(:player_id, '…17:45', '…18:15')` — a view unioning `audit_event`, `offers`, `offer_responses`, `matches`, `notification_delivery`, `support_minutes`, ordered by time, with `req_id`s. This is the server-side truth including cron transitions and what was pushed. 30 s.
+3. Axiom saved query "player timeline" parameterised by `player_h` → every request, capability, outcome, latency, `client_version`. 20 s.
+4. Any failed `req_id` → Sentry search by `req_id` tag → stack, release, breadcrumbs. 30 s.
+Step 2 alone answers most questions; steps 3–4 are for "the app did something wrong" rather than "the system did something".
+
+**Paging policy (one phone).** Matches happen in daylight; only two jobs run at night. Pages at any hour (Better Stack call): `/api/status` down 3 consecutive checks; API 5xx > 5% over 5 min; score-submit or outbox-sync endpoint error rate > 1%; heartbeat missed > 15 min for the 8pm release job, the offer-deadline job, or the 6am weather job; Matcher run failed or > 250 s. Waits for the 8am digest: any Sentry new issue without the above symptoms; disk/pooler > 70%; replica lag; Operator alerts (zero-offer players, first-Offer-overdue); dispute opened; safety report (**n=1 review by a human the same day — a review, not a 3am page — unless the report category is "in danger", which pages**).
+
+---
+
+## 3. Feedback-loop architecture
+
+**(a) Behavioural.** Event taxonomy = the instrumentation contract in RELEASE-PLAN + spec §Measurement (stories 94–100). Rule: **anything counted is emitted server-side** in the capability's transaction as a `player_event` row (partitioned; ~10/MAU-mo); client emits UI-only events (`reveal_reached`, `chip_toggled`, `rematch_cta_seen`) via the PostHog browser SDK. A per-minute Vercel cron ships `player_event` rows to PostHog's batch API with the row's UUID as the event id for dedupe (**S** that PostHog dedupes on `uuid`). PostHog: free to 1M events, 1M flag requests, 5K replays (**S**). Offer outcomes: `offer_responses ⨝ offers.fit_breakdown` (reasons[], `relaxation_tier`, `weights_version`, band gap, distance bucket, overlap score, reliability) — **the join is SQL on Postgres, not PostHog**; PostHog receives `reasons[]`, `relaxation_tier`, `weights_version` as properties so funnels can break down by them, but the authoritative table is a Grafana panel "Acceptance by reason — n, rate, 95% Wilson CI", **rendered only for cells with n ≥ 50**. "Offers with reason X accepted 20% less" = that panel plus a saved query in `docs/tennis-app/learnings/queries/`. Session replay: off by default; on for a player for 24 h after they tap "something's off".
+
+**(b) Explicit feedback.** Difficulty (story 60) → column on the attestation row → nightly rating input **and** joined to `fit_breakdown.band_gap` (the calibration question: does "a bit tougher" track the gap?). Rematch tap (story 97) → `player_event` + `rematch_intent` row → the Tier-2 leading indicator from research/14 §8. "Something's off": a 3-dot affordance on every screen → category chips (wrong time / wrong court / wrong person / app broke / other) → Sentry User Feedback with screenshot capture from the browser SDK (**S** that the web SDK supports screenshots) linked to the current `req_id`/replay, plus a `support_minutes(cause='feedback')` row so it counts against the economic gate (story 85). Triage by one person: 15 min daily in two inboxes — Sentry Feedback (app) and the Operator console's reports tab (people/safety); each item gets one of `fix-now` / `ledger` (record, no action) / `no-action`; safety reports are never in the same queue as app feedback.
+
+**(c) Errors and incidents.** Sentry issue → if user-visible or ≥ 10 players affected, an entry in `.scratch/rally-phase1/issues.md` (Sentry link, `req_id`, hypothesis, blast radius) → branch → deploy (Sentry release from Vercel) → Sentry "resolved in release" with auto-regression reopen → verify: Checkly moment check green + Axiom saved query for the signature shows 0 hits for 48 h → move entry to `.scratch/rally-phase1/resolved.md` with the learning. **Trigger to leave `.scratch` markdown for GitHub Issues** (free, Sentry↔GitHub integration on Team): the first of (i) > 20 open items, (ii) a second person (Operator/contractor) needs status, (iii) an incident where the file was stale when it mattered — expected at the city gate. Linear only when a second engineer exists; not before.
+
+**(d) Learning → product without a release.** Remote config = **the Postgres `policy` table already in the spec** (`FitWeights`, `DisplayPolicy`, reason templates, copy bundle), versioned rows with `effective_from`, served as `/policy/{version}.json`; `policy_version` is on every response and every log line, so any effect can be attributed. PostHog flags for client-side UI toggles only (free tier); no second config system for the server. **Experiments:** the unit of randomisation is the **market**, never the player — matching is a network effect, and a player in arm A is offered to a player in arm B. Therefore: at 1 market, n = 1, nothing is testable; **no A/B before ≥ 8 markets** and no metric without a pre-registered n (research/14: detecting 60%→70% needs 300–390 instrumented matches per arm). Until then the discipline is *one policy change per Matcher pass*, before/after with CIs, recorded against `policy_version`. **Learnings ledger:** `docs/tennis-app/learnings/LEDGER.md`, append-only, one entry = date · question · `policy_version` before/after · n · effect with CI · decision · link to the saved query. It is the source of the release notes' "What we learned" section, it is what agents read after context loss, and it is reviewed weekly.
+
+**What the founder reviews.** *Daily (10 min):* Better Stack digest; Sentry new issues + feedback inbox; Operator console zero-offer list and overdue first Offers; Matcher run duration; safety reports. *Weekly (45 min):* week-one metrics (time-to-first-Offer, Offers/player/week, reveal-reached, D7); countersign / auto-confirm / dispute split; acceptance-by-reason panel; support-minutes per player; push-subscribed share; DB size, pooler, tier headroom vs the ladder triggers; write the ledger entry. *Per release:* Sentry release health for the previous release; Checkly five-moment pass on the new build; `min_supported_client` decision; release notes with a real number from the ledger.
+
+---
+
+## 4. The cost curve
+
+All-in monthly, no LLM in Phase 1 (no agent; the voice prototype is founder dev-time, **U** ~$10–30). Stripe excluded (scales with revenue).
+
+| Line | 100 | 1K | 10K | 100K MAU | 1M MAU | 5M MAU | Mark |
+|---|---|---|---|---|---|---|---|
+| Vercel Pro (1 seat + Fluid CPU $0.128/hr, mem $0.0106/GB-hr, edge req $2/M > 10M, transfer > 1 TB) | 20 | 20 | 25 | 150–200 | 1,000–1,100 | 5,000–5,500 | P\* rates, U volumes |
+| Supabase Pro + compute + disk | 25 | 30 | 75 | 240 | 1,100 (2XL + 1 replica + 500 GB) | 3,600 (4XL + 2 replicas + 2 TB) | P |
+| Supabase Auth overage ($0.00325/MAU > 100K) | 0 | 0 | 0 | 0 | 2,925 → **0 after migration** | 15,925 → **0** | P rate |
+| Railway worker(s) (Matcher, notifications) | 0 | 0 | 0 | 45 | 100–200 | 500 | S (~$0.028/vCPU-hr, $0.014/GB-hr) |
+| Sentry | 0 | 0 | 26 | 40–60 | 100–200 | 400 | S |
+| Logs (Axiom + Vercel drain $0.50/GB + Supabase drain $60) | 0 | 0 | 0 | 90 | 150 | 300 | S / P\* |
+| Better Stack + Checkly + Grafana | 0 | 29 | 29 | 55 | 55 | 55 | S |
+| PostHog (sampled screen events from 100K) | 0 | 0 | 0–20 | 350 | 600–1,000 | 2,000 | S/U |
+| Push (Web Push / FCM / APNs) | 0 | 0 | 0 | 0 | 0 | 0 | S |
+| SMS (Twilio ≈ $0.012/segment + 10DLC ≈ $5/mo) | 27 | 75 | 240 | 600 | 1,500 | 3,000 | S rate, U volume |
+| Email (Resend) | 0 | 0 | 20 | 90 | 1,000 | 2,500 | S |
+| **Total** | **≈ 75–100** | **≈ 150–220** | **≈ 450–550** | **≈ 1,900–2,400** | **≈ 6–8K** (post-auth) | **≈ 18–22K** | — |
+| Per MAU | ~$0.90 | ~$0.18 | ~$0.05 | ~$0.02 | ~$0.007 | ~$0.004 | U |
+
+**Versus the architecture doc's $830 at 10K:** this curve is ≈ $500. The $330 gap is entirely lines that no longer exist: Fly API compute ($100), Redis ($20), Mapbox ($100 — distances are buckets and the Ticket links out to a maps app), Expo EAS ($99), LLM ($258, Phase 2). What replaced them costs less: Vercel compute at 10K MAU sits inside the $20 credit. The architecture doc's 100K figure ($6,400) vs ≈ $2,200 here differs for the same reasons plus no LLM.
+
+**Where the curve bends and why:**
+1. **SMS at 1K–10K** — the only line that can double the bill in the pilot; it is a function of push-subscription rate, which is why that rate is a weekly review metric.
+2. **Supabase Auth at ~250–300K MAU** — the per-MAU overage crosses the compute bill; the pre-decided move (auth migration, a 1–2 week component swap designed for from commit one) removes $2.9K/mo at 1M and $16K/mo at 5M.
+3. **Vercel edge requests + transfer at 1M+** — request-priced hosting is the bend the architecture doc's Fly model never had; at 5M it is the largest line. Mitigation is client-side (SW cache, batching Hold polling into one call, ETag on policy docs), and if it still crosses the Supabase line the API moves to the Railway worker fleet behind the same routes — a deploy, not a rewrite, because handlers only call services.
+4. **PostHog at 100K+** — solved by sampling what is only descriptive and keeping what is counted in Postgres.
+
+---
+
+## 5. Not built until a trigger fires
+
+| Looks responsible | Why premature | The trigger that justifies it |
+|---|---|---|
+| **Redis / Upstash** (free 500K cmds, then $0.20/100K, **S**) | Hold/Offer reads are PK/market-key lookups; `market_stats` row is the cache | Postgres buffer cache-hit < 99% *after* tier step, or cross-instance rate limiting needed against abuse, or Hold polling > 20% of DB time in `pg_stat_statements` |
+| **Queues** (pgmq/graphile-worker/Vercel Queues) | `notification_delivery` and `matcher_run` tables with `SKIP LOCKED` are the queue | > 1 worker process contending on the same table with visible lock waits, or a job needs retries with backoff the table pattern cannot express in one screen of SQL |
+| **Read replicas** | Supabase itself says bigger compute first; PK reads scale with tier | § 1: primary CPU > 60% for 7 days, > 70% read time, after index/statement fixes |
+| **Multi-region** | One region, pinned function+DB region, US-only product | A launched market outside North America with p95 TTFB > 300 ms attributable to RTT |
+| **Microservices** | One API, one worker, one DB; handlers import services only (import rule) | Never for scale. Only if a second team owns a component with a different deploy cadence — not a solo condition |
+| **Data warehouse / dbt / ClickHouse** | KPI dictionary is SQL views on Postgres; PostHog for funnels | PostHog bill > Supabase bill, or a question needs raw-event joins across > 3 months that the primary cannot hold |
+| **Kafka** | No consumer besides the same database | A second system needing the event stream at > 10K events/s — not on this ladder |
+| **Graph DB** | The play graph is joins on `market_id`-scoped tables with 500-candidate caps (ADR-020) | A query that PostGIS + bitmask + max-weight matching cannot express within the per-market bound — none identified |
+| **Kubernetes** | Vercel + one Railway service + Postgres | Never on this ladder; a worker fleet is a Railway replica count |
+| **Supabase log drain ($60/mo)** | Logs Explorer + `cron.job_run_details` + heartbeats cover pg_cron | First incident where a Postgres-side log was needed and not in the dashboard's retention |
+| **Feature-flag platform beyond PostHog free** | Server config is the `policy` table | Never for the server; PostHog flags for client UI only |
+
+**What I could not verify and have marked accordingly:** Vercel per-GB transfer overage and Pro multi-region support (**U**); Railway "app sleeping" for the worker (**U**, so I costed always-on); Supabase log-drain price and read-replica plan eligibility (**S** only — the docs paths I tried 404'd); whether Supabase Auth MAU counts token refreshes as activity (**S**; if it counts only sign-ins the auth bend moves later); Grafana Cloud scraping Supabase's metrics endpoint without an agent (**U**); Sentry web-SDK screenshot capture and PostHog `uuid` dedupe (**S**). Every volume-derived dollar figure rests on the load model stated at the top and should be replaced by measured values at each step — which is the point of recording them from day one.
+
+Sources: [Supabase compute-and-disk (docs repo)](https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/platform/compute-and-disk.mdx) · [Supabase read replica usage (docs repo)](https://github.com/supabase/supabase/blob/master/apps/docs/content/guides/platform/manage-your-usage/read-replicas.mdx) · [pg_partman not available — supabase/postgres#1586](https://github.com/supabase/postgres/issues/1586) · [pg_partman discussion #37986](https://github.com/orgs/supabase/discussions/37986) · [Supabase read replicas vs compute](https://supabase.com/blog/read-replicas-vs-bigger-compute) · [Supabase log drain usage](https://supabase.com/docs/guides/platform/manage-your-usage/log-drains) · [Supabase pricing breakdown (Flexprice)](https://flexprice.io/blog/supabase-pricing-breakdown) · [Vercel log drains $0.50/GB changelog](https://vercel.com/changelog/reduced-log-drains-costs-with-smaller-billable-increments) · [Vercel Active CPU pricing](https://vercel.com/blog/introducing-active-cpu-pricing-for-fluid-compute) · [Vercel Fluid compute pricing](https://vercel.com/docs/functions/usage-and-pricing) · [Vercel Observability Plus base fee removed](https://vercel.com/changelog/no-base-fee-for-observability-plus) · [Vercel Pro plan](https://vercel.com/docs/plans/pro-plan) · [Sentry Vercel integration](https://docs.sentry.io/organization/integrations/deployment/vercel) · [Sentry Vercel cron auto-monitor limitation #11637](https://github.com/getsentry/sentry-javascript/issues/11637) · [Sentry OTel export guide](https://blog.sentry.io/nextjs-export-traces-opentelemetry/) · [Sentry pricing (Last9)](https://last9.io/blog/sentry-pricing/) · [Axiom pricing](https://axiom.co/pricing) · [Better Stack pricing](https://betterstack.com/pricing) · [Checkly pricing review](https://cubeapm.com/blog/checkly-pricing-review/) · [Grafana Cloud usage limits](https://grafana.com/docs/grafana-cloud/cost-management-and-billing/manage-invoices/understand-your-invoice/usage-limits/) · [PostHog pricing guide](https://flexprice.io/blog/posthog-pricing-guide) · [Upstash Redis pricing](https://upstash.com/pricing/redis) · [Railway pricing plans](https://docs.railway.com/pricing/plans.md) · [Twilio US SMS pricing](https://www.twilio.com/en-us/sms/pricing/us) · [Resend pricing (Flexprice)](https://flexprice.io/blog/detailed-resend-pricing-guide) · [PWA push on iOS 2026](https://www.magicbell.com/blog/pwa-ios-limitations-safari-support-complete-guide)

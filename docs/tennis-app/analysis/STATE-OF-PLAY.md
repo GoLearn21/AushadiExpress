@@ -1,6 +1,6 @@
 # State of Play
 
-**As of:** 2026-09-04 — see ADR-030–033 for the decisions taken since 2026-08-27
+**As of:** 2026-09-05 — see ADR-030–035 for the decisions taken since 2026-08-27; the spec is at `.scratch/rally-phase1/spec.md` (137 stories, two seams)
 **Purpose:** one document that says what is decided, what is built, what is known to be wrong,
 and what is still open. Written to be read cold — by the founder after a gap, or by an agent
 after a cleared context window.
@@ -121,7 +121,7 @@ numbers**, and none is blocked on engineering:
 | 3 | Run the 20 club calls — $0, scripted in `field/INVITE-TEST-FIELD-KIT.md` §7 | Founder |
 | 4 | Publish the concierge baseline with its n and window | Founder |
 | 5 | Publish the at-court-no-signal score-entry fraction | Founder |
-| 6 | Run `/to-spec` in this conversation, then `/to-tickets` | Founder |
+| 6 | Run `/to-tickets` in this conversation — the spec is published and revised | Founder |
 
 ## 6. The disagreement that is still live
 
