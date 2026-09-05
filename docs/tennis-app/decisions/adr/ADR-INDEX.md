@@ -950,3 +950,51 @@ Invariants, from `voice/VoiceRouter.kt`: the agent speaks only server-computed c
 attestation is the safeguard; explicit start, never always-listening, never a wake word.
 
 **Confidence: 98%.**
+
+---
+
+## ADR-034 — Vercel + Supabase; the Matcher as a cron-triggered Function with a measured escape {#adr-034}
+
+**Status.** Accepted 2026-09-05. Amends ADR-030's *"long-lived container"* clause.
+
+**Context.** The founder holds Pro accounts on Vercel and Supabase used by other products, and
+directed that Rally use them. ADR-030 already specified managed Postgres, Auth, and Storage —
+Supabase Pro is that — but said the Matcher runs in a long-lived container, which Vercel does not
+offer. `research/17` verified the limits rather than assuming them.
+
+**Decision.**
+- **Vercel Pro hosts the PWA and the API.** Fluid compute; Functions with `maxDuration` set
+  explicitly (default 300 s, Pro ceiling 800 s GA); Performance size for the Matcher route.
+- **Supabase Pro hosts Postgres, Auth, and Storage.** Apple and Google sign-in via Supabase Auth
+  (closing ADR-030's "buy auth" condition); connections from Vercel through **Supavisor
+  transaction mode on 6543 with prepared statements disabled**; PostGIS for geography.
+- **The Matcher is a Vercel Cron-triggered Function** at pilot scale, with on-demand runs on the
+  same route behind Operator auth. It is written as **trigger → run → write results**, with the
+  run function pure and host-agnostic, and the route **acknowledges with 202 in under two
+  seconds** and runs asynchronously.
+- **Timed transitions live in Postgres.** Offer-deadline lapses, the 8pm confirmation release,
+  the 7-day auto-confirm from server receipt, availability staleness, and the nightly rating
+  period run under **pg_cron** as SQL next to the data, at 1–59 s granularity. They do not
+  depend on Vercel.
+- **The escape is pre-decided and mechanical.** Wall-clock per Matcher run is recorded at every
+  population step. **When p95 exceeds one third of the Function ceiling (~250 s), the Matcher
+  alone moves to a container worker on Railway** — the repo already carries the deploy files —
+  reached by the same trigger at a different URL. Nothing else moves.
+
+**Consequences.**
+- No long-lived process anywhere in Phase 1, and none needed: the only job that would want one
+  is sub-second at pilot scale with 25–40× headroom at 10k.
+- **h3 cells are dropped from candidate pre-filtering** — h3-pg is not installable on Supabase.
+  PostGIS `ST_DWithin` on a geography column replaces it. `research/09`'s liquidity math is
+  unaffected; only the index changes.
+- Realtime subscriptions are not used (already declined in the architecture); the 500-concurrent
+  cap with the spend cap on is therefore moot, and recorded in case that changes.
+- A Vercel Function that times out dies with a 504 and no partial result. The one-third rule
+  exists so that never happens in production rather than being handled when it does.
+
+**Confidence: 98%.** Every load-bearing number is PRIMARY from vendor source or docs repos.
+
+**Alternatives rejected.** Supabase Edge Functions for the Matcher (2 s CPU — refuted in
+`research/16`). Vercel Workflows as the escape (unbounded runs, but each step is still a Function;
+the global matching is one atomic step). A container from day one (an ops practice bought before
+it is needed, for a job that takes under a second).

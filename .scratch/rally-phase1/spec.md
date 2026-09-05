@@ -227,13 +227,17 @@ tuned daily. Native is earned at the city gate.
 ### Shape of the system
 
 - **One deployable web application** — a mobile-first single-page client served with a
-  service worker so it installs to the home screen — and **one API service** in TypeScript with a
-  long-lived process for the Matcher. Both live in their own package, sharing nothing with the
-  pharmaceutical marketplace in this repository beyond git history.
-- **Managed Postgres, managed Auth, managed object storage** behind the API. Auth is bought and
-  verified by JWT; it is never hand-rolled. The database may be Supabase's or Neon's; the API
-  connects directly and PostgREST is unused. Edge Functions are not used for compute — they cap at
-  two seconds of CPU, which cannot host the Matcher.
+  service worker so it installs to the home screen — and **one API** in TypeScript, both on
+  Vercel Pro. The Matcher is a cron-triggered Function written as trigger → run → write, with the
+  run pure and host-agnostic, and a pre-decided escape to a container worker when p95 run time
+  passes a third of the Function ceiling (ADR-034). Both live in their own package, sharing
+  nothing with the pharmaceutical marketplace in this repository beyond git history.
+- **Supabase Pro** for Postgres, Auth, and Storage. Auth is Supabase Auth with Apple and Google
+  sign-in, verified by JWT; never hand-rolled. The API connects through the transaction-mode
+  pooler with prepared statements disabled; PostGREST is unused. Timed transitions — deadline
+  lapses, the 8pm release, the 7-day auto-confirm, staleness, the nightly rating period — run
+  under pg_cron as SQL next to the data. Edge Functions are not used for compute (2 s CPU cap).
+  Geography uses PostGIS; h3 is not available on Supabase and is not used.
 - **Server ranks, client renders.** The client may filter and never re-orders. Fit weights, the
   display policy, reason templates, and the copy bundle are served, not compiled in. On the web
   this is a choice rather than a forced constraint, and it is kept because it is what makes
