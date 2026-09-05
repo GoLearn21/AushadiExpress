@@ -1,0 +1,9 @@
+{
+  "name": "rally",
+  "private": true,
+  "workspaces": ["api", "web", "domain"],
+  "scripts": {
+    "test": "npm run test --workspaces --if-present",
+    "check": "tsc -b --noEmit 2>/dev/null || npm run check --workspaces --if-present"
+  }
+}

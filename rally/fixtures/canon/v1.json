@@ -1,0 +1,99 @@
+{
+  "$comment": "Seam 2 golden fixtures for the canonical score encoder, version 1. THE FIXTURES ARE THE CONTRACT; neither the Kotlin nor the TypeScript implementation is. A change here means a new canon version with new fixtures, never an edit. Sides are match-absolute: 0 = A, 1 = B. Encoding: u32 version, u32 len, ascii matchId, outcome tag, [u8 setCount, (u8 a, u8 b)*], [u8 side].",
+  "canonVersion": 1,
+  "matchId": "m-2026-08-27-0042",
+  "cases": [
+    {
+      "name": "completed match",
+      "report": {
+        "outcome": "completed",
+        "sets": [
+          [
+            6,
+            4
+          ],
+          [
+            3,
+            6
+          ],
+          [
+            10,
+            7
+          ]
+        ]
+      },
+      "preimageHex": "00000001000000116d2d323032362d30382d32372d303034320103060403060a07",
+      "digestHex": "f828f446b0c731c54c73b93ac94b9c17c82b2fcf5c1d438106f481128b79e1f0"
+    },
+    {
+      "name": "retired, B retires",
+      "report": {
+        "outcome": "retired",
+        "sets": [
+          [
+            6,
+            4
+          ],
+          [
+            3,
+            2
+          ]
+        ],
+        "side": 1
+      },
+      "preimageHex": "00000001000000116d2d323032362d30382d32372d3030343202020604030201"
+    },
+    {
+      "name": "walkover, A absent",
+      "report": {
+        "outcome": "walkover",
+        "side": 0
+      },
+      "preimageHex": "00000001000000116d2d323032362d30382d32372d303034320300"
+    },
+    {
+      "name": "double default",
+      "report": {
+        "outcome": "double_default"
+      },
+      "preimageHex": "00000001000000116d2d323032362d30382d32372d3030343204"
+    }
+  ],
+  "mirror": {
+    "$comment": "Two honest players report the same match from opposite sides; after normalising to match-absolute sides the digests are identical.",
+    "fromA": {
+      "outcome": "completed",
+      "sets": [
+        [
+          6,
+          4
+        ],
+        [
+          3,
+          6
+        ],
+        [
+          10,
+          7
+        ]
+      ]
+    },
+    "fromBAsEntered": {
+      "outcome": "completed",
+      "sets": [
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          3
+        ],
+        [
+          7,
+          10
+        ]
+      ]
+    }
+  }
+}

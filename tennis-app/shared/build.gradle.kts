@@ -30,3 +30,9 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 }
+
+// Seam 2: the Kotlin suite reads the shared fixture files at runtime. Declare them as an input
+// so Gradle reruns the tests when a fixture changes instead of serving a cached green.
+tasks.withType<Test>().configureEach {
+    inputs.dir(rootProject.file("../rally/fixtures")).withPathSensitivity(PathSensitivity.RELATIVE)
+}
