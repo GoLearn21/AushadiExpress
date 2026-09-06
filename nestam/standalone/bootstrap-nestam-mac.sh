@@ -34,20 +34,29 @@ gh auth status >/dev/null 2>&1 || { echo "  Logging in to GitHub…"; gh auth lo
 
 ask DIR "Folder for the new repo" "$DIR_DEFAULT"
 case "$DIR" in "~"*) DIR="${HOME}${DIR#\~}";; esac
-if [ -e "$DIR" ] && [ -n "$(ls -A "$DIR" 2>/dev/null)" ]; then fail "$DIR exists and is not empty — choose another folder"; exit 1; fi
+if [ -e "$DIR" ] && [ -n "$(ls -A "$DIR" 2>/dev/null)" ]; then
+  if [ -d "$DIR/.git" ] && [ -d "$DIR/server" ]; then ok "$DIR already holds the repo — skipping clone"; SKIP_CLONE=1
+  else warn "$DIR is not empty — cloning into $DIR/nestam instead"; DIR="$DIR/nestam"; fi
+fi
 mkdir -p "$(dirname "$DIR")"
 
 BUNDLE="$(dirname "$0")/nestam.bundle"
 if [ ! -f "$BUNDLE" ]; then
-  BUNDLE="$(mktemp -d)/nestam.bundle"
+  BUNDLE="$(cd "$(dirname "$0")" && pwd)/nestam.bundle"
   echo "  Downloading the repository bundle…"
   curl -fsSL "$BUNDLE_URL" -o "$BUNDLE" || { fail "download failed (private repo? run: gh auth login, then: gh api repos/GoLearn21/AushadiExpress/contents/nestam/standalone/nestam.bundle?ref=claude/andhra-pradesh-sarvam-app-w47bgt -H 'Accept: application/vnd.github.raw' > nestam.bundle)"; exit 1; }
 fi
-git bundle verify "$BUNDLE" >/dev/null 2>&1 || { fail "bundle is not valid"; exit 1; }
-git clone -q --branch main "$BUNDLE" "$DIR" || { fail "clone failed"; exit 1; }
+# `git bundle verify` only works inside a repository, so check the file header instead.
+if ! head -c 20 "$BUNDLE" | grep -q "git bundle"; then
+  fail "downloaded file is not a git bundle ($(wc -c < "$BUNDLE" | tr -d ' ') bytes). Open $BUNDLE_URL in a browser: if it asks you to sign in, the repo is private — run: gh auth login, then rerun."
+  exit 1
+fi
+if [ -z "${SKIP_CLONE:-}" ]; then
+  git clone -q --branch main "$BUNDLE" "$DIR" || { fail "clone failed"; exit 1; }
+fi
 cd "$DIR" || exit 1
-git remote remove origin >/dev/null 2>&1
-ok "cloned into $DIR ($(git rev-list --count HEAD) commits)"
+git remote get-url origin 2>/dev/null | grep -q "\.bundle$" && git remote remove origin >/dev/null 2>&1
+ok "repository at $DIR ($(git rev-list --count HEAD) commits)"
 
 ask SLUG "GitHub repository to create (owner/name)" "$REPO_SLUG_DEFAULT"
 if gh repo view "$SLUG" >/dev/null 2>&1; then
