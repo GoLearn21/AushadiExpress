@@ -1,5 +1,9 @@
 # Nestam (నేస్తం) — a Telugu AI best friend for Andhra Pradesh
 
+> **Moved.** Nestam now lives in its own repository (`GoLearn21/nestam`, with Vercel + Supabase
+> + app-store builds). This folder is the archived first drop. To create the standalone repo on
+> your Mac, see [`standalone/README.md`](standalone/README.md).
+
 > **Tolan, adapted for Telugu culture.** Instead of a squishy alien from Planet Portola, your
 > companion is a **Bomma** (బొమ్మ) — a living toy born from Andhra Pradesh's own crafts: a
 > Kondapalli doll, an Etikoppaka lacquer toy, a Tholu Bommalata shadow puppet, a Sankranti
