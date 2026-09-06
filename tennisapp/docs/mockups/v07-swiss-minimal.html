@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenRally — Baseline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   OpenRally — v07 "Baseline"
+   Swiss / Apple minimalism. The interface disappears;
+   only your season remains.
+   ============================================================ */
+
+:root{
+  /* page chrome (dark, so the white phones pop) */
+  --page-bg:#111113;
+  --page-bg-2:#0B0B0D;
+  --page-ink:#F5F5F7;
+  --page-dim:#98989D;
+  --page-hair:rgba(255,255,255,.10);
+
+  /* device surfaces */
+  --white:#FFFFFF;
+  --off:#F5F5F7;
+  --off-2:#EFEFF2;
+
+  /* ink scale */
+  --ink:#1D1D1F;
+  --ink-2:#6E6E73;
+  --ink-3:#AEAEB2;
+
+  /* the single accent */
+  --accent:#0A5AE8;
+  --accent-press:#0847BC;
+  --accent-tint:rgba(10,90,232,.08);
+
+  /* semantic */
+  --green:#34C759;
+  --red:#FF453A;
+
+  /* hairlines */
+  --hair:#E5E5EA;
+  --hair-2:#D2D2D7;
+
+  /* type scale */
+  --fs-caption2:11px;
+  --fs-caption:12px;
+  --fs-footnote:13px;
+  --fs-body:15px;
+  --fs-callout:17px;
+  --fs-title3:20px;
+  --fs-title2:24px;
+  --fs-title1:28px;
+  --fs-large:34px;
+  --fs-display:56px;
+
+  /* radius */
+  --r-phone:48px;
+  --r-lg:18px;
+  --r-md:12px;
+  --r-sm:10px;
+  --r-pill:999px;
+
+  /* elevation */
+  --shadow-phone:0 40px 80px -24px rgba(0,0,0,.65), 0 12px 32px rgba(0,0,0,.45);
+  --shadow-phone-hover:0 60px 110px -24px rgba(0,0,0,.7), 0 18px 44px rgba(0,0,0,.5);
+  --shadow-soft:0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.05);
+
+  --ease:cubic-bezier(.25,.1,.25,1);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 50% -200px, #1B1B1F 0%, transparent 60%),
+    linear-gradient(var(--page-bg), var(--page-bg-2));
+  color:var(--page-ink);
+  min-height:100vh;
+  font-size:var(--fs-body);
+  line-height:1.5;
+}
+::selection{background:var(--accent);color:#fff}
+
+button{font:inherit;border:none;background:none;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+/* ---------- page header ---------- */
+.page-head{
+  max-width:1440px;margin:0 auto;
+  padding:72px 48px 40px;
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:32px;
+  justify-content:space-between;
+}
+.brand-row{display:flex;align-items:baseline;gap:14px}
+.wordmark{
+  font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--page-ink);
+}
+.wordmark .dot{color:var(--accent)}
+.variant-tag{
+  font-size:var(--fs-caption);font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--page-dim);
+  border:1px solid var(--page-hair);border-radius:var(--r-pill);
+  padding:5px 12px;
+}
+.page-title{
+  font-size:clamp(36px,5vw,54px);font-weight:700;letter-spacing:-.035em;line-height:1.05;
+  margin-top:18px;
+}
+.page-thesis{
+  margin-top:12px;max-width:560px;color:var(--page-dim);
+  font-size:16px;line-height:1.6;font-weight:400;
+}
+.spec-list{
+  display:flex;gap:28px;flex-wrap:wrap;
+  font-size:var(--fs-caption);color:var(--page-dim);
+  border-top:1px solid var(--page-hair);
+  padding-top:20px;min-width:280px;
+}
+.spec-list div b{display:block;color:var(--page-ink);font-weight:600;margin-bottom:2px;font-size:13px}
+.swatch{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:6px}
+
+/* ---------- phone grid ---------- */
+.gallery{
+  max-width:1440px;margin:0 auto;
+  padding:24px 48px 96px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(400px, 1fr));
+  gap:56px 40px;
+  justify-items:center;
+}
+.slot{display:flex;flex-direction:column;align-items:center;gap:22px;
+  opacity:0;animation:rise .8s var(--ease) forwards;
+}
+.slot:nth-child(1){animation-delay:.05s}
+.slot:nth-child(2){animation-delay:.15s}
+.slot:nth-child(3){animation-delay:.25s}
+.slot:nth-child(4){animation-delay:.35s}
+.slot:nth-child(5){animation-delay:.45s}
+.slot:nth-child(6){animation-delay:.55s}
+@keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .slot{opacity:1}
+}
+.slot-label{display:flex;align-items:baseline;gap:10px}
+.slot-num{
+  font-size:var(--fs-caption);font-weight:700;color:var(--accent);
+  letter-spacing:.1em;
+}
+.slot-name{font-size:14px;font-weight:600;color:var(--page-ink);letter-spacing:-.01em}
+.slot-sub{font-size:var(--fs-caption);color:var(--page-dim)}
+
+/* ---------- device frame ---------- */
+.phone{
+  width:390px;height:844px;flex:none;
+  background:var(--white);
+  border-radius:var(--r-phone);
+  box-shadow:var(--shadow-phone), 0 0 0 1px rgba(255,255,255,.08), 0 0 0 10px #1A1A1C, 0 0 0 11px rgba(255,255,255,.06);
+  position:relative;overflow:hidden;
+  transition:transform .5s var(--ease), box-shadow .5s var(--ease);
+  color:var(--ink);
+}
+.phone:hover{transform:translateY(-6px);box-shadow:var(--shadow-phone-hover),0 0 0 1px rgba(255,255,255,.08),0 0 0 10px #1A1A1C,0 0 0 11px rgba(255,255,255,.06)}
+@media (max-width:470px){
+  .gallery{padding:24px 12px 80px;grid-template-columns:1fr}
+  .phone{transform:scale(.87);transform-origin:top center;margin-bottom:-110px}
+  .phone:hover{transform:scale(.87)}
+  .page-head{padding:56px 24px 32px}
+}
+
+/* status bar */
+.statusbar{
+  height:54px;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 30px 0;position:relative;
+}
+.sb-time{font-size:15px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.island{
+  position:absolute;top:14px;left:50%;transform:translateX(-50%);
+  width:118px;height:34px;border-radius:20px;background:#000;
+}
+.sb-icons{display:flex;align-items:center;gap:7px;color:var(--ink)}
+.home-indicator{
+  position:absolute;bottom:9px;left:50%;transform:translateX(-50%);
+  width:134px;height:5px;border-radius:3px;background:var(--ink);opacity:.9;
+}
+
+.screen{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:0 28px}
+
+/* ---------- shared iOS-native pieces ---------- */
+.nav{padding:6px 0 0}
+.nav-back{
+  display:inline-flex;align-items:center;gap:2px;color:var(--accent);
+  font-size:var(--fs-callout);font-weight:400;margin-left:-6px;
+}
+.eyebrow{
+  font-size:var(--fs-caption);font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ink-2);
+}
+.large-title{
+  font-size:var(--fs-large);font-weight:700;letter-spacing:-.025em;line-height:1.12;
+}
+.subtitle{font-size:var(--fs-body);color:var(--ink-2);margin-top:4px}
+
+.hairline{height:1px;background:var(--hair);border:none;flex:none}
+
+.cta{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  height:52px;border-radius:var(--r-md);
+  background:var(--accent);color:#fff;
+  font-size:var(--fs-callout);font-weight:600;letter-spacing:-.01em;
+  width:100%;
+  transition:background .2s var(--ease), transform .15s var(--ease);
+}
+.cta:hover{background:var(--accent-press)}
+.cta:active{transform:scale(.98)}
+.cta-quiet{
+  display:flex;align-items:center;justify-content:center;
+  height:48px;border-radius:var(--r-md);
+  background:var(--off);color:var(--accent);
+  font-size:var(--fs-body);font-weight:600;width:100%;
+  transition:background .2s var(--ease);
+}
+.cta-quiet:hover{background:var(--off-2)}
+.textlink{color:var(--accent);font-weight:500;font-size:var(--fs-body)}
+
+.avatar{
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--off);color:var(--ink);font-weight:600;flex:none;
+  border:1px solid var(--hair);
+  font-variant-numeric:tabular-nums;
+}
+.av-28{width:28px;height:28px;font-size:11px}
+.av-34{width:34px;height:34px;font-size:12px}
+.av-40{width:40px;height:40px;font-size:14px}
+.av-72{width:72px;height:72px;font-size:24px;letter-spacing:-.02em}
+.av-accent{background:var(--accent-tint);color:var(--accent);border-color:transparent}
+
+.chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:var(--fs-caption);font-weight:500;color:var(--ink-2);
+  border:1px solid var(--hair);border-radius:var(--r-pill);
+  padding:5px 11px;white-space:nowrap;
+}
+.chip .dot{width:6px;height:6px;border-radius:50%;flex:none}
+
+.num{font-variant-numeric:tabular-nums}
+
+/* rows */
+.row{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0;border-bottom:1px solid var(--hair);
+  text-align:left;width:100%;background:none;
+  transition:background .15s var(--ease);
+}
+.row:hover{background:rgba(0,0,0,.015)}
+.row:last-of-type{border-bottom:none}
+
+.section-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  padding:0 0 6px;
+}
+.section-head h3{font-size:var(--fs-title3);font-weight:700;letter-spacing:-.02em}
+.see-all{font-size:var(--fs-body);color:var(--accent);font-weight:500;display:inline-flex;align-items:center;gap:2px}
+
+/* movement arrows */
+.mv{font-size:12px;font-weight:700;width:26px;text-align:center;flex:none;font-variant-numeric:tabular-nums}
+.mv.up{color:var(--green)}
+.mv.down{color:var(--red)}
+.mv.flat{color:var(--ink-3);font-weight:500}
+
+/* ============ S1 · onboarding ============ */
+.quiz-top{display:flex;align-items:center;justify-content:space-between;padding:8px 0 22px}
+.step-dots{display:flex;gap:6px}
+.step-dots i{width:6px;height:6px;border-radius:50%;background:var(--hair-2)}
+.step-dots i.on{background:var(--accent);width:18px;border-radius:3px}
+.skip{color:var(--ink-2);font-size:var(--fs-body)}
+.level-row{
+  display:flex;align-items:center;gap:16px;
+  padding:15px 0;border-bottom:1px solid var(--hair);
+  width:100%;text-align:left;transition:background .15s var(--ease);
+}
+.level-row:hover{background:rgba(0,0,0,.015)}
+.level-num{
+  font-size:22px;font-weight:700;letter-spacing:-.02em;width:52px;flex:none;
+  font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.level-copy{flex:1;min-width:0}
+.level-copy b{display:block;font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
+.level-copy span{display:block;font-size:var(--fs-footnote);color:var(--ink-2);margin-top:1px;line-height:1.4}
+.radio{
+  width:22px;height:22px;border-radius:50%;border:1.5px solid var(--hair-2);flex:none;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  transition:all .2s var(--ease);
+}
+.level-row[aria-checked="true"] .radio{background:var(--accent);border-color:var(--accent)}
+.level-row[aria-checked="true"] .level-num{color:var(--accent)}
+.radio svg{opacity:0;transform:scale(.5);transition:all .2s var(--ease)}
+.level-row[aria-checked="true"] .radio svg{opacity:1;transform:none}
+.join-meta{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  font-size:var(--fs-footnote);color:var(--ink-2);padding:14px 0 12px;
+}
+.join-meta .live{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none}
+.price-old{color:var(--ink-3);text-decoration:line-through;font-weight:400;margin-right:2px}
+
+/* ============ S2 · home ============ */
+.home-nav{display:flex;align-items:flex-end;justify-content:space-between;padding:10px 0 14px}
+.progress-wrap{padding:2px 0 20px}
+.progress-meta{display:flex;justify-content:space-between;font-size:var(--fs-footnote);color:var(--ink-2);margin-bottom:8px}
+.progress-meta b{color:var(--ink);font-weight:600}
+.bar{height:4px;border-radius:2px;background:var(--off-2);overflow:hidden}
+.bar i{display:block;height:100%;width:71%;background:var(--accent);border-radius:2px;
+  animation:grow 1.2s .5s var(--ease) backwards}
+@keyframes grow{from{width:0}}
+.hero{
+  padding:22px 0 24px;border-top:1px solid var(--hair);
+}
+.hero .eyebrow{color:var(--accent)}
+.hero-name{font-size:var(--fs-title1);font-weight:700;letter-spacing:-.022em;margin-top:8px}
+.hero-meta{font-size:var(--fs-body);color:var(--ink-2);margin-top:2px}
+.hero-when{
+  display:flex;align-items:center;gap:8px;margin:14px 0 18px;
+  font-size:var(--fs-body);color:var(--ink);font-weight:500;
+}
+.hero-when svg{color:var(--ink-3);flex:none}
+.hero-when .sep{color:var(--hair-2)}
+.stand-mini .row{padding:12px 0}
+.pos{width:18px;font-size:var(--fs-footnote);font-weight:600;color:var(--ink-3);flex:none;font-variant-numeric:tabular-nums}
+.p-name{flex:1;font-size:var(--fs-body);font-weight:500;letter-spacing:-.01em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.p-name .you{color:var(--accent);font-weight:600}
+.p-rec{font-size:var(--fs-body);color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* ============ S3 · standings ============ */
+.table-head{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 0 8px;border-bottom:1px solid var(--hair-2);
+  font-size:var(--fs-caption2);font-weight:600;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;
+}
+.st-row{padding:11px 0}
+.st-rs{width:44px;text-align:right;font-size:var(--fs-body);color:var(--ink-2);font-variant-numeric:tabular-nums;flex:none}
+.st-rec{width:38px;text-align:right;font-size:var(--fs-body);font-weight:500;font-variant-numeric:tabular-nums;flex:none}
+.row.me{position:relative;background:var(--accent-tint);border-radius:var(--r-sm);padding-left:10px;padding-right:10px;margin:0 -10px;border-bottom-color:transparent}
+.cutline{
+  display:flex;align-items:center;gap:12px;padding:10px 0;
+}
+.cutline .line{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--hair-2) 0 5px,transparent 5px 10px)}
+.cutline span{font-size:var(--fs-caption2);font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
+.foot-note{font-size:var(--fs-footnote);color:var(--ink-2);text-align:center;padding:16px 0;line-height:1.5}
+.foot-note b{color:var(--ink);font-weight:600}
+
+/* ============ S4 · scheduling ============ */
+.slot-option{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  padding:15px 16px;margin-bottom:10px;
+  border:1px solid var(--hair);border-radius:var(--r-lg);
+  transition:all .2s var(--ease);background:var(--white);
+}
+.slot-option:hover{border-color:var(--hair-2)}
+.slot-option[aria-checked="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.slot-when{flex:1;min-width:0}
+.slot-when b{display:block;font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
+.slot-when span{display:block;font-size:var(--fs-footnote);color:var(--ink-2);margin-top:1px}
+.slot-option[aria-checked="true"] .radio{background:var(--accent);border-color:var(--accent)}
+.slot-option[aria-checked="true"] .radio svg{opacity:1;transform:none}
+.map{
+  border:1px solid var(--hair);border-radius:var(--r-lg);overflow:hidden;
+  margin:6px 0 12px;background:var(--off);
+}
+.map svg{display:block;width:100%;height:auto}
+.map-cap{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;border-top:1px solid var(--hair);background:var(--white);
+  font-size:var(--fs-footnote);color:var(--ink-2);
+}
+.map-cap b{color:var(--ink);font-weight:600}
+.score-preview{padding-top:14px}
+.score-boxes{display:flex;gap:8px;margin-top:10px}
+.set-box{
+  flex:1;text-align:center;border:1px solid var(--hair);border-radius:var(--r-sm);
+  padding:9px 0 7px;
+}
+.set-box b{display:block;font-size:var(--fs-callout);font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.set-box span{display:block;font-size:var(--fs-caption2);color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase;margin-top:2px;font-weight:600}
+
+/* ============ S5 · chat ============ */
+.chat-nav{display:flex;align-items:center;gap:12px;padding:8px 0 14px;border-bottom:1px solid var(--hair)}
+.rally-mark{
+  width:36px;height:36px;border-radius:50%;flex:none;
+  background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;
+}
+.chat-nav-copy b{display:block;font-size:var(--fs-callout);font-weight:600;letter-spacing:-.01em}
+.chat-nav-copy span{display:block;font-size:var(--fs-caption);color:var(--ink-2)}
+.chat-scroll{flex:1;display:flex;flex-direction:column;gap:14px;padding:18px 0 12px;overflow:hidden}
+.msg{max-width:82%;font-size:var(--fs-body);line-height:1.45;letter-spacing:-.005em}
+.msg.user{
+  align-self:flex-end;background:var(--accent);color:#fff;
+  padding:10px 14px;border-radius:var(--r-lg);border-bottom-right-radius:6px;
+}
+.msg.agent{
+  align-self:flex-start;background:var(--off);color:var(--ink);
+  padding:10px 14px;border-radius:var(--r-lg);border-bottom-left-radius:6px;
+}
+.msg.agent b{font-weight:600}
+.chat-card{
+  align-self:flex-start;width:88%;
+  border:1px solid var(--hair);border-radius:var(--r-lg);
+  overflow:hidden;background:var(--white);box-shadow:var(--shadow-soft);
+}
+.chat-card-body{padding:14px 16px 12px}
+.chat-card-body .eyebrow{color:var(--accent);font-size:var(--fs-caption2)}
+.chat-card-body h4{font-size:var(--fs-callout);font-weight:600;letter-spacing:-.015em;margin-top:6px}
+.chat-card-body p{font-size:var(--fs-footnote);color:var(--ink-2);margin-top:2px}
+.chat-card .cta{height:44px;border-radius:0;font-size:var(--fs-body)}
+.timestamp{align-self:center;font-size:var(--fs-caption2);color:var(--ink-3);font-weight:500;letter-spacing:.04em}
+.composer{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0 14px;border-top:1px solid var(--hair);
+}
+.composer .field{
+  flex:1;display:flex;align-items:center;gap:8px;
+  border:1px solid var(--hair-2);border-radius:var(--r-pill);
+  padding:10px 8px 10px 16px;color:var(--ink-3);font-size:var(--fs-body);
+}
+.composer .field .send{
+  width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;flex:none;margin-left:auto;
+  transition:background .2s var(--ease);
+}
+.composer .field .send:hover{background:var(--accent-press)}
+.composer .mic{color:var(--ink-2);display:flex;padding:6px}
+
+/* ============ S6 · profile ============ */
+.profile-id{display:flex;align-items:center;gap:16px;padding:14px 0 20px}
+.profile-id h2{font-size:var(--fs-title2);font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:7px}
+.verified{color:var(--accent);display:inline-flex}
+.profile-id p{font-size:var(--fs-body);color:var(--ink-2);margin-top:2px}
+.score-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:20px 0 22px;border-top:1px solid var(--hair)}
+.score-big{
+  font-size:var(--fs-display);font-weight:800;letter-spacing:-.045em;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.score-delta{display:inline-flex;align-items:center;gap:4px;font-size:var(--fs-footnote);font-weight:600;color:var(--green);margin-top:8px}
+.spark{flex:none}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--hair)}
+.stat-cell{padding:14px 0 13px;border-bottom:1px solid var(--hair)}
+.stat-cell:nth-child(odd){border-right:1px solid var(--hair);padding-right:16px}
+.stat-cell:nth-child(even){padding-left:16px}
+.stat-cell b{display:block;font-size:var(--fs-title3);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat-cell span{display:block;font-size:var(--fs-caption);color:var(--ink-2);margin-top:1px}
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0 4px}
+.hist-row{padding:12px 0}
+.hist-season{flex:1;min-width:0}
+.hist-season b{display:block;font-size:var(--fs-body);font-weight:600;letter-spacing:-.01em}
+.hist-season span{display:block;font-size:var(--fs-footnote);color:var(--ink-2)}
+.hist-res{font-size:var(--fs-body);color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right}
+.hist-res em{display:block;font-style:normal;font-size:var(--fs-caption);color:var(--green);font-weight:600}
+
+/* page footer */
+.page-foot{
+  max-width:1440px;margin:0 auto;padding:0 48px 72px;
+  display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  color:var(--page-dim);font-size:var(--fs-caption);
+  border-top:1px solid var(--page-hair);padding-top:28px;
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE HEADER ============================ -->
+<header class="page-head">
+  <div>
+    <div class="brand-row">
+      <span class="wordmark">OpenRally<span class="dot">.</span></span>
+      <span class="variant-tag">v07 · Baseline</span>
+    </div>
+    <h1 class="page-title">Absolute clarity.</h1>
+    <p class="page-thesis">Swiss &#215; Apple minimalism. The interface disappears — hairlines instead of cards, one accent action per screen, and only your season remains.</p>
+  </div>
+  <div class="spec-list" role="list">
+    <div role="listitem"><b>Type</b>Inter · weight-driven, tight tracking</div>
+    <div role="listitem"><b>Accent</b><span class="swatch" style="background:#0A5AE8"></span>International Blue #0A5AE8</div>
+    <div role="listitem"><b>Surfaces</b><span class="swatch" style="background:#FFF"></span>#FFFFFF · <span class="swatch" style="background:#F5F5F7;margin-left:6px"></span>#F5F5F7</div>
+    <div role="listitem"><b>Rules</b>Hairlines #E5E5EA · zero decoration</div>
+  </div>
+</header>
+
+<main class="gallery">
+
+<!-- ============================ S1 · ONBOARDING ============================ -->
+<section class="slot" aria-label="Screen 1: Onboarding level quiz">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <span class="sb-icons" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8 5.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4A3.6 3.6 0 0 0 8 7.6c-1 0-1.9.4-2.5 1L4.1 7.2c1-1 2.4-1.6 3.9-1.6zM8 2c2.5 0 4.8 1 6.4 2.6l-1.4 1.4A7 7 0 0 0 8 4a7 7 0 0 0-5 2L1.6 4.6A9 9 0 0 1 8 2z" transform="translate(0 -2)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="content">
+        <div class="quiz-top">
+          <div class="step-dots" aria-label="Step 2 of 3"><i></i><i class="on"></i><i></i></div>
+          <button class="skip">Skip</button>
+        </div>
+        <h2 class="large-title">What&#8217;s your<br>level?</h2>
+        <p class="subtitle" style="margin-top:8px;margin-bottom:6px">Be honest — your Rally Score quietly corrects it in season. No shame, ever.</p>
+
+        <div role="radiogroup" aria-label="Skill level" style="flex:1">
+          <button class="level-row" role="radio" aria-checked="false">
+            <span class="level-num num">2.5</span>
+            <span class="level-copy"><b>Learning to rally</b><span>Points won are a happy bonus</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="level-row" role="radio" aria-checked="false">
+            <span class="level-num num">3.0</span>
+            <span class="level-copy"><b>Consistent rallies</b><span>Steady from the baseline, serve developing</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="level-row" role="radio" aria-checked="true">
+            <span class="level-num num">3.5</span>
+            <span class="level-copy"><b>Directional control</b><span>Placing shots, adding spin and depth</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="level-row" role="radio" aria-checked="false">
+            <span class="level-num num">4.0</span>
+            <span class="level-copy"><b>Dependable weapons</b><span>Constructing points with purpose</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="level-row" role="radio" aria-checked="false">
+            <span class="level-num num">4.5</span>
+            <span class="level-copy"><b>Power and spin on command</b><span>Forcing errors, finishing at net</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="level-row" role="radio" aria-checked="false" style="border-bottom:none">
+            <span class="level-num num">5.0</span>
+            <span class="level-copy"><b>Tournament-hardened</b><span>All-court game, few free points</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+        </div>
+
+        <div>
+          <div class="join-meta"><span class="live" aria-hidden="true"></span>Fall Season 4 closes in 5 days · <span class="num" style="font-weight:600;color:var(--ink)">&nbsp;212 players in Austin</span></div>
+          <button class="cta">Join Fall Season 4&nbsp;&nbsp;·&nbsp;&nbsp;<span class="price-old num">$39</span> <span class="num">$29 founding</span></button>
+          <div style="height:26px"></div>
+        </div>
+      </div>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="slot-label">
+    <span class="slot-num num">01</span>
+    <span class="slot-name">Onboarding — Level Quiz</span>
+    <span class="slot-sub">self-placement, zero shame</span>
+  </div>
+</section>
+
+<!-- ============================ S2 · HOME "SEASON" ============================ -->
+<section class="slot" aria-label="Screen 2: Home season">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <span class="sb-icons" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8 5.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4A3.6 3.6 0 0 0 8 7.6c-1 0-1.9.4-2.5 1L4.1 7.2c1-1 2.4-1.6 3.9-1.6zM8 2c2.5 0 4.8 1 6.4 2.6l-1.4 1.4A7 7 0 0 0 8 4a7 7 0 0 0-5 2L1.6 4.6A9 9 0 0 1 8 2z" transform="translate(0 -2)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="content">
+        <div class="home-nav">
+          <div>
+            <div class="eyebrow">Fall Season 4 · Austin</div>
+            <h2 class="large-title" style="margin-top:4px">Season</h2>
+          </div>
+          <span class="avatar av-40" aria-label="Maya Chen">MC</span>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-meta"><span><b>Week 5</b> of 7</span><span class="num">Oct 6 – Nov 23</span></div>
+          <div class="bar" role="progressbar" aria-valuenow="71" aria-valuemin="0" aria-valuemax="100" aria-label="Season progress"><i></i></div>
+        </div>
+
+        <div class="hero">
+          <div class="eyebrow">Next match</div>
+          <div style="display:flex;align-items:center;gap:14px;margin-top:10px">
+            <span class="avatar av-40">JP</span>
+            <div>
+              <div class="hero-name">Jordan Patel</div>
+              <div class="hero-meta num">3.5 · Rally 3.61 · 1st in Box 12</div>
+            </div>
+          </div>
+          <div class="hero-when">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="1.5" y="2.5" width="12" height="11" rx="2.5"/><path d="M1.5 6h12M5 1v2.5M10 1v2.5"/></svg>
+            <span class="num">Thu Oct 30 · 6:30 PM</span>
+            <span class="sep">·</span>
+            <svg width="14" height="15" viewBox="0 0 14 15" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M7 13.5S12 9.6 12 5.8A5 5 0 0 0 2 5.8c0 3.8 5 7.7 5 7.7z"/><circle cx="7" cy="5.8" r="1.7"/></svg>
+            <span>Pharr Tennis Center</span>
+          </div>
+          <button class="cta">Confirm Thursday 6:30 PM</button>
+          <div style="text-align:center;padding-top:12px"><button class="textlink">Propose a new time</button></div>
+        </div>
+
+        <hr class="hairline">
+
+        <div style="padding-top:18px;flex:1">
+          <div class="section-head">
+            <h3>Box 12</h3>
+            <button class="see-all">See all <svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l5 5-5 5"/></svg></button>
+          </div>
+          <div class="stand-mini">
+            <div class="row">
+              <span class="pos num">1</span><span class="avatar av-28">JP</span>
+              <span class="p-name">Jordan Patel</span>
+              <span class="p-rec num">8–1</span><span class="mv up">▲</span>
+            </div>
+            <div class="row">
+              <span class="pos num">2</span><span class="avatar av-28 av-accent">MC</span>
+              <span class="p-name"><span class="you">Maya Chen · You</span></span>
+              <span class="p-rec num" style="color:var(--ink);font-weight:600">7–2</span><span class="mv up">▲2</span>
+            </div>
+            <div class="row">
+              <span class="pos num">3</span><span class="avatar av-28">PN</span>
+              <span class="p-name">Priya Nair</span>
+              <span class="p-rec num">6–3</span><span class="mv flat">—</span>
+            </div>
+            <div class="row">
+              <span class="pos num">4</span><span class="avatar av-28">SR</span>
+              <span class="p-name">Sam Rivera</span>
+              <span class="p-rec num">5–4</span><span class="mv down">▼1</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;padding-top:14px">
+            <span class="chip"><span class="dot" style="background:var(--green)"></span>3-match win streak</span>
+            <span class="chip"><span class="dot" style="background:var(--accent)"></span>2 to clinch playoffs</span>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="slot-label">
+    <span class="slot-num num">02</span>
+    <span class="slot-name">Home — Season</span>
+    <span class="slot-sub">one answer: what&#8217;s next</span>
+  </div>
+</section>
+
+<!-- ============================ S3 · BOX STANDINGS ============================ -->
+<section class="slot" aria-label="Screen 3: Box standings">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <span class="sb-icons" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8 5.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4A3.6 3.6 0 0 0 8 7.6c-1 0-1.9.4-2.5 1L4.1 7.2c1-1 2.4-1.6 3.9-1.6zM8 2c2.5 0 4.8 1 6.4 2.6l-1.4 1.4A7 7 0 0 0 8 4a7 7 0 0 0-5 2L1.6 4.6A9 9 0 0 1 8 2z" transform="translate(0 -2)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="content">
+        <div class="nav">
+          <button class="nav-back"><svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5l-7 7 7 7"/></svg> Season</button>
+        </div>
+        <h2 class="large-title" style="margin-top:6px">Box 12</h2>
+        <p class="subtitle num">3.5 · Round robin · Week 5 of 7</p>
+
+        <div class="table-head" aria-hidden="true">
+          <span style="width:18px">#</span>
+          <span style="width:28px"></span>
+          <span style="flex:1">Player</span>
+          <span style="width:38px;text-align:right">W–L</span>
+          <span style="width:44px;text-align:right">Rally</span>
+          <span style="width:26px;text-align:center">Mv</span>
+        </div>
+
+        <div style="flex:1;padding-top:2px">
+          <div class="row st-row">
+            <span class="pos num">1</span><span class="avatar av-28">JP</span>
+            <span class="p-name">Jordan Patel</span>
+            <span class="st-rec num">8–1</span><span class="st-rs num">3.61</span><span class="mv up">▲1</span>
+          </div>
+          <div class="row st-row me">
+            <span class="pos num" style="color:var(--accent)">2</span><span class="avatar av-28 av-accent">MC</span>
+            <span class="p-name" style="font-weight:600">Maya Chen <span style="color:var(--accent)">· You</span></span>
+            <span class="st-rec num">7–2</span><span class="st-rs num" style="color:var(--ink)">3.52</span><span class="mv up">▲2</span>
+          </div>
+          <div class="row st-row">
+            <span class="pos num">3</span><span class="avatar av-28">PN</span>
+            <span class="p-name">Priya Nair</span>
+            <span class="st-rec num">6–3</span><span class="st-rs num">3.55</span><span class="mv flat">—</span>
+          </div>
+          <div class="row st-row" style="border-bottom:none">
+            <span class="pos num">4</span><span class="avatar av-28">SR</span>
+            <span class="p-name">Sam Rivera</span>
+            <span class="st-rec num">5–4</span><span class="st-rs num">3.48</span><span class="mv down">▼1</span>
+          </div>
+
+          <div class="cutline" role="separator" aria-label="Playoff line, top 4 advance">
+            <span class="line"></span><span>Playoff line · top 4 advance</span><span class="line"></span>
+          </div>
+
+          <div class="row st-row">
+            <span class="pos num">5</span><span class="avatar av-28">AK</span>
+            <span class="p-name">Alex Kim</span>
+            <span class="st-rec num">4–5</span><span class="st-rs num">3.44</span><span class="mv down">▼2</span>
+          </div>
+          <div class="row st-row">
+            <span class="pos num">6</span><span class="avatar av-28">DB</span>
+            <span class="p-name">Dana Brooks</span>
+            <span class="st-rec num">3–6</span><span class="st-rs num">3.39</span><span class="mv flat">—</span>
+          </div>
+          <div class="row st-row">
+            <span class="pos num">7</span><span class="avatar av-28">CO</span>
+            <span class="p-name">Chris Okafor</span>
+            <span class="st-rec num">2–7</span><span class="st-rs num">3.31</span><span class="mv down">▼1</span>
+          </div>
+        </div>
+
+        <hr class="hairline">
+        <p class="foot-note">Win 1 of your last 2 to clinch. <b>Beat Priya Nair</b> and you take the 2nd seed — promotion to Box 11 is in reach.</p>
+        <div style="height:20px"></div>
+      </div>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="slot-label">
+    <span class="slot-num num">03</span>
+    <span class="slot-name">Box Standings</span>
+    <span class="slot-sub">movement, cutline, rivalry</span>
+  </div>
+</section>
+
+<!-- ============================ S4 · SCHEDULING ============================ -->
+<section class="slot" aria-label="Screen 4: Match scheduling">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <span class="sb-icons" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8 5.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4A3.6 3.6 0 0 0 8 7.6c-1 0-1.9.4-2.5 1L4.1 7.2c1-1 2.4-1.6 3.9-1.6zM8 2c2.5 0 4.8 1 6.4 2.6l-1.4 1.4A7 7 0 0 0 8 4a7 7 0 0 0-5 2L1.6 4.6A9 9 0 0 1 8 2z" transform="translate(0 -2)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="content">
+        <div class="nav">
+          <button class="nav-back"><svg width="10" height="17" viewBox="0 0 10 17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 1.5l-7 7 7 7"/></svg> Box 12</button>
+        </div>
+        <h2 class="large-title" style="margin-top:6px;font-size:30px">Play Jordan</h2>
+        <p class="subtitle" style="margin-bottom:16px">Rally matched both calendars — three times you can both play.</p>
+
+        <div role="radiogroup" aria-label="Proposed match times">
+          <button class="slot-option" role="radio" aria-checked="true">
+            <span class="slot-when"><b class="num">Thu Oct 30 · 6:30 PM</b><span>Best for both · courts lit until 10</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="slot-option" role="radio" aria-checked="false">
+            <span class="slot-when"><b class="num">Sat Nov 1 · 9:00 AM</b><span>Morning · usually open walk-on</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+          <button class="slot-option" role="radio" aria-checked="false">
+            <span class="slot-when"><b class="num">Sun Nov 2 · 4:00 PM</b><span>Jordan prefers earlier</span></span>
+            <span class="radio"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l2.5 2.5L10 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
+        </div>
+
+        <div class="map">
+          <svg viewBox="0 0 332 118" role="img" aria-label="Map: Pharr Tennis Center is the midpoint between you and Jordan">
+            <rect width="332" height="118" fill="#F5F5F7"/>
+            <g stroke="#E5E5EA" stroke-width="2">
+              <path d="M-10 30 H342 M-10 66 H342 M-10 98 H342"/>
+              <path d="M50 -10 V128 M120 -10 V128 M198 -10 V128 M268 -10 V128"/>
+            </g>
+            <g stroke="#D2D2D7" stroke-width="3"><path d="M-10 84 C 80 78, 200 96, 342 74" fill="none"/></g>
+            <path d="M38 88 C 90 60, 120 52, 166 48 C 214 44, 250 32, 294 26" fill="none" stroke="#0A5AE8" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>
+            <g>
+              <circle cx="38" cy="88" r="5" fill="#fff" stroke="#6E6E73" stroke-width="2"/>
+              <text x="38" y="107" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#6E6E73">YOU</text>
+            </g>
+            <g>
+              <circle cx="294" cy="26" r="5" fill="#fff" stroke="#6E6E73" stroke-width="2"/>
+              <text x="294" y="45" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="600" fill="#6E6E73">JORDAN</text>
+            </g>
+            <g>
+              <circle cx="166" cy="48" r="11" fill="#0A5AE8" opacity=".14"/>
+              <circle cx="166" cy="48" r="5.5" fill="#0A5AE8"/>
+              <circle cx="166" cy="48" r="2" fill="#fff"/>
+            </g>
+          </svg>
+          <div class="map-cap">
+            <svg width="14" height="15" viewBox="0 0 14 15" fill="none" stroke="#0A5AE8" stroke-width="1.4"><path d="M7 13.5S12 9.6 12 5.8A5 5 0 0 0 2 5.8c0 3.8 5 7.7 5 7.7z"/><circle cx="7" cy="5.8" r="1.7"/></svg>
+            <span><b>Pharr Tennis Center · Court 4</b> — 11 min for you, 13 for Jordan</span>
+          </div>
+        </div>
+
+        <button class="cta">Confirm Thu 6:30 PM</button>
+
+        <div class="score-preview" style="flex:1">
+          <hr class="hairline" style="margin-bottom:14px">
+          <div class="eyebrow">After you play</div>
+          <div class="score-boxes" aria-label="Example score entry: 6-4, 3-6, 10-7 match tiebreak">
+            <div class="set-box"><b>6–4</b><span>Set 1</span></div>
+            <div class="set-box"><b>3–6</b><span>Set 2</span></div>
+            <div class="set-box" style="border-color:var(--accent)"><b style="color:var(--accent)">10–7</b><span>Match TB</span></div>
+          </div>
+          <p style="font-size:var(--fs-footnote);color:var(--ink-2);margin-top:10px">Scores count when both players confirm — verified in one tap.</p>
+        </div>
+        <div style="height:16px"></div>
+      </div>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="slot-label">
+    <span class="slot-num num">04</span>
+    <span class="slot-name">Match Scheduling</span>
+    <span class="slot-sub">3 slots · midpoint court · 1 tap</span>
+  </div>
+</section>
+
+<!-- ============================ S5 · RALLY AGENT CHAT ============================ -->
+<section class="slot" aria-label="Screen 5: Rally agent chat">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <span class="sb-icons" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8 5.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4A3.6 3.6 0 0 0 8 7.6c-1 0-1.9.4-2.5 1L4.1 7.2c1-1 2.4-1.6 3.9-1.6zM8 2c2.5 0 4.8 1 6.4 2.6l-1.4 1.4A7 7 0 0 0 8 4a7 7 0 0 0-5 2L1.6 4.6A9 9 0 0 1 8 2z" transform="translate(0 -2)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="content">
+        <div class="chat-nav">
+          <span class="rally-mark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.2"/><path d="M3.5 3.5c3 2.4 6 6.6 9 9M12.5 3.5c-3 2.4-6 6.6-9 9" stroke-width="1.2"/></svg>
+          </span>
+          <div class="chat-nav-copy">
+            <b>Rally</b>
+            <span>Your season concierge · replies in seconds</span>
+          </div>
+        </div>
+
+        <div class="chat-scroll">
+          <span class="timestamp">Today 5:12 PM</span>
+
+          <div class="msg user">Find me a match Thursday after 6</div>
+
+          <div class="msg agent">Done — <b>Jordan Patel</b> is free Thursday evening. Midpoint court is <b>Pharr Tennis Center</b>, 11&nbsp;min for each of you. Want it?</div>
+
+          <div class="chat-card">
+            <div class="chat-card-body">
+              <div class="eyebrow">Proposed match</div>
+              <h4 class="num">Thu Oct 30 · 6:30 PM</h4>
+              <p>Jordan Patel · 3.5 · Pharr Tennis Center, Court 4</p>
+            </div>
+            <button class="cta">Confirm — one tap</button>
+          </div>
+
+          <div class="msg user">What do I need to make playoffs?</div>
+
+          <div class="msg agent">Win <b>1 of your last 2</b>. Beat Priya on Nov&nbsp;8 and you clinch the <b>2nd seed</b> outright — she&#8217;s 0–2 against you this year.</div>
+
+          <div class="msg user">Reschedule with Priya to the weekend</div>
+
+          <div class="msg agent">Asking Priya now. Her grid shows <span class="num">Sat 10&nbsp;AM</span> or <span class="num">Sun 4&nbsp;PM</span> — I&#8217;ll confirm the moment she picks.</div>
+        </div>
+
+        <div class="composer">
+          <button class="mic" aria-label="Voice input">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="6.2" y="1.5" width="5.6" height="9.5" rx="2.8"/><path d="M3.5 8.5a5.5 5.5 0 0 0 11 0M9 14v2.5"/></svg>
+          </button>
+          <div class="field">
+            Ask Rally anything…
+            <button class="send" aria-label="Send">
+              <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12.5v-11M1.5 6L6 1.5 10.5 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="slot-label">
+    <span class="slot-num num">05</span>
+    <span class="slot-name">Rally — Agent Chat</span>
+    <span class="slot-sub">concierge with inline cards</span>
+  </div>
+</section>
+
+<!-- ============================ S6 · PROFILE ============================ -->
+<section class="slot" aria-label="Screen 6: Player profile">
+  <div class="phone">
+    <div class="screen">
+      <div class="statusbar">
+        <span class="sb-time">9:41</span>
+        <div class="island" aria-hidden="true"></div>
+        <span class="sb-icons" aria-hidden="true">
+          <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+          <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M8 9.2a1.4 1.4 0 1 1 0 2.8 1.4 1.4 0 0 1 0-2.8zM8 5.6c1.5 0 2.9.6 3.9 1.6l-1.4 1.4A3.6 3.6 0 0 0 8 7.6c-1 0-1.9.4-2.5 1L4.1 7.2c1-1 2.4-1.6 3.9-1.6zM8 2c2.5 0 4.8 1 6.4 2.6l-1.4 1.4A7 7 0 0 0 8 4a7 7 0 0 0-5 2L1.6 4.6A9 9 0 0 1 8 2z" transform="translate(0 -2)"/></svg>
+          <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x=".5" y=".5" width="21" height="11" rx="3" stroke="currentColor" opacity=".4"/><rect x="2" y="2" width="18" height="8" rx="1.6" fill="currentColor"/><path d="M23.5 4v4a2.2 2.2 0 0 0 0-4z" fill="currentColor" opacity=".4"/></svg>
+        </span>
+      </div>
+      <div class="content">
+        <div class="profile-id">
+          <span class="avatar av-72 av-accent">MC</span>
+          <div>
+            <h2>Maya Chen
+              <span class="verified" title="Photo-verified player" aria-label="Verified">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><circle cx="9" cy="9" r="8"/><path d="M5.4 9.4l2.4 2.4 4.8-5" stroke="#fff" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </h2>
+            <p>Austin · 3.5 · Box 12 · 3rd season</p>
+          </div>
+        </div>
+
+        <div class="score-hero">
+          <div>
+            <div class="eyebrow">Rally Score</div>
+            <div class="score-big" style="margin-top:8px">3.52</div>
+            <span class="score-delta">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 9L9 1M3.5 1H9v5.5"/></svg>
+              +0.14 this season
+            </span>
+          </div>
+          <svg class="spark" width="132" height="56" viewBox="0 0 132 56" role="img" aria-label="Rally Score trend, rising over nine matches">
+            <polyline points="4,44 20,40 36,45 52,34 68,36 84,26 100,28 116,16 128,12"
+              fill="none" stroke="#0A5AE8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="128" cy="12" r="3.5" fill="#0A5AE8"/>
+            <line x1="4" y1="52" x2="128" y2="52" stroke="#E5E5EA"/>
+          </svg>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-cell"><b class="num">7–2</b><span>Season record</span></div>
+          <div class="stat-cell"><b class="num">98%</b><span>Reliability · shows up, on time</span></div>
+          <div class="stat-cell"><b class="num">4.9</b><span>Sportsmanship · peer rated</span></div>
+          <div class="stat-cell"><b class="num">21</b><span>Verified matches played</span></div>
+        </div>
+
+        <div class="badge-row" aria-label="Badges">
+          <span class="chip"><span class="dot" style="background:var(--accent)"></span>Founding Player</span>
+          <span class="chip"><span class="dot" style="background:var(--green)"></span>3-Win Streak</span>
+          <span class="chip">Never Missed</span>
+          <span class="chip">Comeback Win</span>
+        </div>
+
+        <div style="flex:1;padding-top:12px">
+          <div class="section-head" style="padding-top:6px">
+            <h3>Seasons</h3>
+          </div>
+          <div class="row hist-row">
+            <div class="hist-season"><b>Fall Season 4</b><span>Box 12 · in progress</span></div>
+            <div class="hist-res num">7–2<em>2nd · playoff pace</em></div>
+          </div>
+          <div class="row hist-row">
+            <div class="hist-season"><b>Summer Season 3</b><span>Box 14 · Austin</span></div>
+            <div class="hist-res num">6–3<em>Promoted</em></div>
+          </div>
+          <div class="row hist-row">
+            <div class="hist-season"><b>Spring Season 2</b><span>Box 15 · Austin</span></div>
+            <div class="hist-res num">5–4<em style="color:var(--ink-3)">Held</em></div>
+          </div>
+        </div>
+
+        <button class="cta-quiet">Share season card</button>
+        <div style="height:24px"></div>
+      </div>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </div>
+  </div>
+  <div class="slot-label">
+    <span class="slot-num num">06</span>
+    <span class="slot-name">Player Profile</span>
+    <span class="slot-sub">identity, trust, trajectory</span>
+  </div>
+</section>
+
+</main>
+
+<footer class="page-foot">
+  <span>OpenRally · Fall Season 4 · Austin, TX — concept mockup, variation 7 of 10</span>
+  <span>&#8220;Baseline&#8221; — if Apple made a tennis league. Lowest cognitive load of the set.</span>
+</footer>
+
+<script>
+// Minimal interactivity: radio-style selection for level quiz + match slots.
+document.querySelectorAll('[role="radiogroup"]').forEach(function(group){
+  group.addEventListener('click', function(e){
+    var btn = e.target.closest('[role="radio"]');
+    if(!btn) return;
+    group.querySelectorAll('[role="radio"]').forEach(function(r){
+      r.setAttribute('aria-checked', r === btn ? 'true' : 'false');
+    });
+  });
+});
+</script>
+</body>
+</html>

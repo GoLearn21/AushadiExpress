@@ -1,0 +1,32 @@
+# dependencies and builds
+node_modules/
+dist/
+build/
+*dev-dist/
+.gradle/
+.kotlin/
+kotlin-reference/**/build/
+android/app/build/
+ios/App/Pods/
+ios/App/build/
+
+# secrets — never commit; the wizard writes .env
+.env
+.env.*
+!.env.example
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+
+# tooling
+.claude/*
+!.claude/skills/
+.vscode/
+.idea/
+.DS_Store
+*.log
+test-results/
+playwright-report/

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenRally — 10 Design Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B0B0F; --surface:#16161D; --surface-2:#1F1F28; --line:rgba(255,255,255,.09);
+    --text:#F5F5F1; --muted:#8C8C95; --accent:#E8442A; --accent-2:#FF6B45;
+    --r-lg:20px; --r-md:14px; --r-sm:10px;
+    --shadow:0 24px 60px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.55;
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(900px 500px at 12% -10%, rgba(232,68,42,.16), transparent 60%),
+      radial-gradient(700px 420px at 92% 8%, rgba(88,101,242,.10), transparent 60%);
+  }
+  .wrap{position:relative; z-index:1; max-width:1240px; margin:0 auto; padding:72px 28px 96px}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:9px; font-size:11px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--muted);
+    border:1px solid var(--line); border-radius:999px; padding:7px 14px; background:rgba(255,255,255,.03);
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent)}
+  h1{
+    font-family:Archivo,Inter,sans-serif; font-weight:900; letter-spacing:-.035em;
+    font-size:clamp(42px,7vw,80px); line-height:.98; margin:22px 0 0; max-width:16ch;
+  }
+  h1 em{font-style:normal;background:linear-gradient(96deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{color:var(--muted); font-size:clamp(16px,1.6vw,19px); max-width:64ch; margin:22px 0 0}
+  .metrics{display:flex; flex-wrap:wrap; gap:12px; margin:34px 0 0}
+  .metric{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md);
+    padding:14px 18px; min-width:150px;
+  }
+  .metric b{display:block; font-family:Archivo,sans-serif; font-size:26px; font-weight:800; letter-spacing:-.02em}
+  .metric span{font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; font-weight:600}
+  .sec{margin-top:68px}
+  .sec-h{display:flex; align-items:baseline; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:22px}
+  .sec-h h2{font-family:Archivo,sans-serif; font-weight:800; font-size:22px; letter-spacing:-.02em; margin:0}
+  .sec-h p{margin:0; color:var(--muted); font-size:14px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px}
+  .card{
+    display:flex; flex-direction:column; text-decoration:none; color:inherit;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
+    overflow:hidden; transition:transform .25s cubic-bezier(.2,.7,.3,1), border-color .25s, box-shadow .25s;
+    animation:rise .55s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .card:hover,.card:focus-visible{transform:translateY(-6px); border-color:rgba(255,255,255,.22); box-shadow:var(--shadow)}
+  .card:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+  @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  .swatch{height:112px; position:relative; display:flex; align-items:flex-end; padding:12px}
+  .swatch .chips{display:flex; gap:6px}
+  .chip{width:22px;height:22px;border-radius:6px;border:1px solid rgba(255,255,255,.25)}
+  .num{
+    position:absolute; top:12px; right:14px; font-family:Archivo,sans-serif; font-weight:900;
+    font-size:34px; letter-spacing:-.04em; opacity:.34; line-height:1;
+  }
+  .body{padding:16px 18px 18px; border-top:1px solid var(--line); flex:1; display:flex; flex-direction:column}
+  .body h3{margin:0; font-family:Archivo,sans-serif; font-weight:800; font-size:17px; letter-spacing:-.01em}
+  .body p{margin:7px 0 0; color:var(--muted); font-size:13.5px; flex:1}
+  .tag{
+    display:inline-block; margin-top:13px; font-size:10.5px; font-weight:700; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--muted); border:1px solid var(--line);
+    border-radius:999px; padding:5px 10px; align-self:flex-start;
+  }
+  .rec{border-color:rgba(232,68,42,.5)}
+  .rec .tag{color:#FFB4A2; border-color:rgba(232,68,42,.45); background:rgba(232,68,42,.10)}
+  .docs{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px}
+  .doc{
+    display:block; text-decoration:none; color:inherit; background:var(--surface-2);
+    border:1px solid var(--line); border-radius:var(--r-md); padding:16px 18px; transition:border-color .2s, transform .2s;
+  }
+  .doc:hover{border-color:rgba(255,255,255,.24); transform:translateY(-2px)}
+  .doc b{display:block; font-size:14.5px; font-weight:700}
+  .doc span{display:block; margin-top:4px; font-size:12.5px; color:var(--muted)}
+  .screens{display:flex; flex-wrap:wrap; gap:8px; margin-top:18px}
+  .screens span{
+    font-size:12px; color:var(--muted); border:1px solid var(--line);
+    border-radius:999px; padding:6px 12px; background:rgba(255,255,255,.02);
+  }
+  footer{margin-top:72px; padding-top:24px; border-top:1px solid var(--line); color:var(--muted); font-size:12.5px;
+    display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow"><span class="dot"></span>Design exploration · 10 directions</span>
+    <h1>Ten ways to build <em>the tennis app America is missing</em></h1>
+    <p class="lede">Every variation renders the same six screens with the same real data — a 3.5 player in Austin, Fall Season 4, Box 12 — so the comparison is about design language, not content. Same product, ten studios.</p>
+    <div class="metrics">
+      <div class="metric"><b>27.3M</b><span>US players</span></div>
+      <div class="metric"><b>14.5M</b><span>Core players</span></div>
+      <div class="metric"><b>~300K</b><span>In USTA League</span></div>
+      <div class="metric"><b>$25–40</b><span>Proven season price</span></div>
+    </div>
+    <div class="screens">
+      <span>1 · Level quiz</span><span>2 · Season home</span><span>3 · Box standings</span>
+      <span>4 · Scheduling &amp; score</span><span>5 · Rally agent</span><span>6 · Profile</span>
+    </div>
+  </header>
+
+  <section class="sec">
+    <div class="sec-h">
+      <h2>The ten directions</h2>
+      <p>Open any file directly in a browser — each is fully self-contained.</p>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-h">
+      <h2>The research behind it</h2>
+      <p>Every design decision traces to one of these.</p>
+    </div>
+    <div class="docs">
+      <a class="doc" href="../report/DEEP-RESEARCH-REPORT.md"><b>Deep Research Report</b><span>Market, strategy, UX, CRO, GTM, economics, risk</span></a>
+      <a class="doc" href="../research/01-platform-landscape.md"><b>Platform Landscape</b><span>Every US tennis competition platform, verified</span></a>
+      <a class="doc" href="../research/02-format-catalog.md"><b>Format Catalog</b><span>Every ladder/league/tournament rule parameter</span></a>
+      <a class="doc" href="../research/03-legal-compliance.md"><b>Legal &amp; Compliance</b><span>Liability, minors, payments, privacy, prizes</span></a>
+      <a class="doc" href="../research/04-monetization-growth-cro-design.md"><b>Monetization &amp; Growth</b><span>Pricing, playbooks, CRO benchmarks, design tokens</span></a>
+      <a class="doc" href="../research/00-persona-debate.md"><b>Persona Debate</b><span>Eleven lenses, each with a devil's advocate</span></a>
+      <a class="doc" href="../FEATURES.md"><b>Feature Blueprint</b><span>MVP → v3, with differentiators marked</span></a>
+      <a class="doc" href="../PRODUCT-CONCEPT.md"><b>Product Concept</b><span>The one-page version</span></a>
+    </div>
+  </section>
+
+  <footer>
+    <span>OpenRally · working title, trademark clearance required</span>
+    <span>Six screens × ten directions · self-contained HTML</span>
+  </footer>
+</div>
+
+<script>
+const V = [
+  {n:"01", f:"v01-midnight-ace.html", t:"Midnight Ace", d:"Netflix cinematic. Near-black canvas, billboard hero, horizontal carousels — every match is a title card.", tag:"Recommended core", rec:true, c:["#0B0B0F","#16161D","#E8442A","#F5F5F1"], bg:"linear-gradient(135deg,#0B0B0F,#1F1F28 60%,#3a1710)"},
+  {n:"02", f:"v02-clubhouse-blurple.html", t:"Clubhouse", d:"Discord warmth. Blurple, presence dots, reactions — your city's tennis scene as a server you belong to.", tag:"Borrow: presence", rec:true, c:["#1E1F22","#313338","#5865F2","#57F287"], bg:"linear-gradient(135deg,#1E1F22,#2B2D31 55%,#2f3488)"},
+  {n:"03", f:"v03-championship-green.html", t:"Championship", d:"Wimbledon heritage. Championship green, gold rules, cream cards, engraved-invitation elegance.", tag:"Premium skew", c:["#0E3B2E","#145A43","#C9A227","#F6F1E7"], bg:"linear-gradient(135deg,#0E3B2E,#145A43 60%,#C9A227)"},
+  {n:"04", f:"v04-hardcourt-blue.html", t:"Hard Court", d:"US Open night session. Stadium blues, broadcast score bugs, court-line geometry, line-call yellow.", tag:"High energy", c:["#0A1F3C","#2478CC","#35C4F0","#FFD400"], bg:"linear-gradient(135deg,#0A1F3C,#2478CC 65%,#35C4F0)"},
+  {n:"05", f:"v05-terracotta-clay.html", t:"Terracotta", d:"Roland-Garros clay, editorial light theme. Warm paper, big numerals, court arcs — the anti-intimidation option.", tag:"Recommended light", rec:true, c:["#FAF5EF","#C4502C","#5C6B3C","#26201B"], bg:"linear-gradient(135deg,#FAF5EF,#F1E7DA 50%,#C4502C)"},
+  {n:"06", f:"v06-optic-neon.html", t:"Optic", d:"Tennis-ball neon on carbon. Optic yellow glow, ticker marquee, oversized standings numerals.", tag:"Competitive edge", c:["#0A0A0A","#141414","#DFFF00","#A78BFA"], bg:"linear-gradient(135deg,#0A0A0A,#141414 55%,#8f9e00)"},
+  {n:"07", f:"v07-swiss-minimal.html", t:"Baseline", d:"Swiss/Apple minimalism. Hairlines instead of cards, one accent, maximum whitespace — lowest cognitive load of the ten.", tag:"Max clarity", c:["#FFFFFF","#F5F5F7","#0A5AE8","#1D1D1F"], bg:"linear-gradient(135deg,#FFFFFF,#F5F5F7 62%,#0A5AE8)"},
+  {n:"08", f:"v08-aurora-glass.html", t:"Aurora", d:"Glassmorphic premium. Frosted surfaces over aurora orbs, conic score rings, gradient CTAs.", tag:"Justifies price", c:["#0D0E1C","#4F46E5","#8B5CF6","#2DD4BF"], bg:"linear-gradient(135deg,#0D0E1C,#4F46E5 55%,#2DD4BF)"},
+  {n:"09", f:"v09-retro-club.html", t:"Racquet Club '78", d:"Vintage club revival. Crests, grosgrain stripes, letterpress scores, membership-card profile.", tag:"Brand love", c:["#F3ECDC","#1F4433","#D96C3D","#D9A441"], bg:"linear-gradient(135deg,#F3ECDC,#1F4433 55%,#D96C3D)"},
+  {n:"10", f:"v10-performance-data.html", t:"Deuce Lab", d:"Whoop/Strava instrument panel. Sparklines, radial gauges, monospace tabular standings, win-probability bars.", tag:"Borrow: Pro tier", rec:true, c:["#101216","#171A21","#00D4B8","#FF5C5C"], bg:"linear-gradient(135deg,#101216,#171A21 55%,#00695f)"}
+];
+document.getElementById('grid').innerHTML = V.map((v,i)=>`
+  <a class="card${v.rec?' rec':''}" href="${v.f}" style="animation-delay:${i*45}ms">
+    <div class="swatch" style="background:${v.bg}">
+      <span class="num">${v.n}</span>
+      <div class="chips">${v.c.map(c=>`<span class="chip" style="background:${c}"></span>`).join('')}</div>
+    </div>
+    <div class="body">
+      <h3>${v.t}</h3>
+      <p>${v.d}</p>
+      ${v.tag?`<span class="tag">${v.tag}</span>`:''}
+    </div>
+  </a>`).join('');
+</script>
+</body>
+</html>
