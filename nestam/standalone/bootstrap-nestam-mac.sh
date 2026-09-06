@@ -58,15 +58,35 @@ cd "$DIR" || exit 1
 git remote get-url origin 2>/dev/null | grep -q "\.bundle$" && git remote remove origin >/dev/null 2>&1
 ok "repository at $DIR ($(git rev-list --count HEAD) commits)"
 
-ask SLUG "GitHub repository to create (owner/name)" "$REPO_SLUG_DEFAULT"
+# Ask for a repository NAME (people often type "y" here, so validate and re-ask).
+GH_USER="$(gh api user --jq .login 2>/dev/null)"
+while :; do
+  say ""
+  say "  ${B}Next: name the GitHub repository to create.${N} This is a NAME, not a yes/no answer."
+  ask SLUG "Repository name (owner/name)" "$REPO_SLUG_DEFAULT"
+  case "$SLUG" in
+    ""|y|Y|yes|YES|n|N|no|NO|q|quit) warn "That looks like a yes/no answer. Type a repository name such as ${REPO_SLUG_DEFAULT}, or press Enter to accept it."; continue ;;
+  esac
+  case "$SLUG" in
+    */*) : ;;
+    *) [ -n "$GH_USER" ] && { SLUG="${GH_USER}/${SLUG}"; say "  using ${SLUG}"; } ;;
+  esac
+  printf '%s' "$SLUG" | grep -Eq '^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$' && break
+  warn "Use the form owner/name (letters, digits, dot, dash, underscore)."
+done
+
+# Always use HTTPS for the remote: an SSH remote makes git prompt for the key
+# passphrase on every push, and gh's credential helper handles HTTPS for us.
+gh auth setup-git >/dev/null 2>&1 || true
 if gh repo view "$SLUG" >/dev/null 2>&1; then
-  ok "$SLUG already exists — using it as origin"
-  git remote add origin "https://github.com/${SLUG}.git"
+  ok "$SLUG already exists on GitHub — using it as origin"
 else
   confirm "Create PRIVATE repository ${SLUG} and push main?" || { warn "skipped; later run: bash scripts/nestam-mac.sh github"; exec bash scripts/nestam-mac.sh; }
-  gh repo create "$SLUG" --private --source=. --remote=origin --description "Nestam (నేస్తం) — Telugu AI best friend for Andhra Pradesh" || { fail "gh repo create failed"; exit 1; }
+  gh repo create "$SLUG" --private --description "Nestam (నేస్తం) — Telugu AI best friend for Andhra Pradesh" || { fail "gh repo create failed"; exit 1; }
 fi
-git push -u origin main 2>&1 | tail -1
+git remote remove origin >/dev/null 2>&1
+git remote add origin "https://github.com/${SLUG}.git"
+git push -u origin main 2>&1 | tail -2
 ok "https://github.com/${SLUG}"
 echo
 echo "  Handing over to scripts/nestam-mac.sh (toolchain → tests → server → Claude)…"
