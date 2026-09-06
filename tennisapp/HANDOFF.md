@@ -63,27 +63,30 @@ From `docs/analysis/STATE-OF-PLAY.md` §4–5, still true:
 
 Everything below is on the machine. Nothing here needs the old repository.
 
+**One command, from a fresh Mac:**
+
 ```bash
-# 1. Tools (Homebrew). Java 21 is required — the Kotlin build pins jvmToolchain(21).
-#    Gradle itself is NOT needed: ./gradlew downloads the pinned 8.14.3.
-brew install node@22 postgresql@16 openjdk@21 git
-brew services start postgresql@16
-sudo ln -sfn $(brew --prefix)/opt/openjdk@21/libexec/openjdk.jdk \
-             /Library/Java/JavaVirtualMachines/openjdk-21.jdk
-npm i -g @anthropic-ai/claude-code vercel supabase
-
-# 2. The repository — unzip tennisapp.zip into ~/tennisapp, or clone it once it is on GitHub
-cd ~/tennisapp
-git status                      # a clean repo with the initial commit
-
-# 3. One command does dependencies, the test database, and both suites
-./scripts/setup.sh              # expect: TypeScript 43 passing, Kotlin 94 passing
-
-# 4. Claude Code
-claude                          # the vendored skills and CLAUDE.md load automatically
+cd ~/tennisapp                  # wherever you unzipped it
+bash scripts/bootstrap-mac.sh
 ```
 
-`scripts/setup.sh` is idempotent — re-run it any time. What it does by hand, if you prefer:
+It installs Homebrew if missing, then Node 22, Postgres 16 and JDK 21 — installing each only
+if it is actually absent, and telling Homebrew not to upgrade what you already have (that
+cascade is what makes `brew install` look frozen). It puts those keg-only tools on PATH in
+`~/.tennisapp-env`, sources that from `~/.zshrc`, starts Postgres, creates the `rally_test`
+database, installs the workspaces, and runs both suites. It is idempotent; re-run it any time.
+`--no-brew` skips the tool section, `--no-tests` stops after setup.
+
+Expect: **TypeScript 43 passing, Kotlin 94 passing.**
+
+Then:
+
+```bash
+npm i -g @anthropic-ai/claude-code vercel supabase   # in a NEW terminal
+claude                                                # skills and CLAUDE.md load automatically
+```
+
+`scripts/setup.sh` does the repository half alone, when the tools are already installed. By hand:
 
 ```bash
 npm ci --workspaces --include-workspace-root

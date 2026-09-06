@@ -17,7 +17,8 @@ supersedes it. Do not re-litigate the settled list in STATE-OF-PLAY §2.
 ## Commands
 
 ```bash
-./scripts/setup.sh                               # install + test database + both suites
+bash scripts/bootstrap-mac.sh                    # fresh Mac: tools + Postgres + install + both suites
+./scripts/setup.sh                               # repository half only
 npm ci --workspaces --include-workspace-root     # install (root + api + domain + web)
 npm test                                         # all TypeScript suites (needs RALLY_TEST_DATABASE_URL)
 npm run check --workspaces --if-present          # typecheck

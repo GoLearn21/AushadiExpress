@@ -24,20 +24,22 @@ decision is recorded.
 | `web/` | The mobile web app: Vite + PWA, tokens as JSON, the WCAG contrast gate as a test |
 | `fixtures/` | **Seam 2.** Golden files shared by the Kotlin and TypeScript suites. The fixtures are the contract |
 | `kotlin-reference/` | The Kotlin Multiplatform reference domain (Glicko-2, availability mask, canon, match state, fit). 94 tests |
-| `scripts/setup.sh` | One command: install, create the test database, run both suites |
+| `scripts/bootstrap-mac.sh` | Fresh Mac → working state: tools, Postgres, dependencies, both suites |
+| `scripts/setup.sh` | The repository half only: install, create the test database, run both suites |
 | `scripts/provision.sh` | The wizard that creates the Supabase and Vercel projects and writes `.env` — run once, on a machine logged into both |
 | `.claude/skills/` | Vendored Matt Pocock skills: `grill-me`, `to-spec`, `to-tickets`, `implement`, `tdd`, `code-review`, … |
 | `.github/workflows/ci.yml` | Both suites on every push; a real Postgres for Seam 1 |
 
 ## Run
 
-Node 22, Postgres 16, and JDK 21 for the Kotlin reference. Gradle is not needed — `./gradlew`
-downloads the pinned version.
+On a fresh Mac, one command does everything — Homebrew, Node 22, Postgres 16, JDK 21,
+dependencies, the test database, and both suites:
 
 ```bash
-./scripts/setup.sh    # installs, creates rally_test, runs both suites (43 + 94)
+bash scripts/bootstrap-mac.sh
 ```
 
+If the tools are already installed, `./scripts/setup.sh` does just the repository half.
 By hand:
 
 ```bash
