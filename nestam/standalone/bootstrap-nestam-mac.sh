@@ -17,6 +17,7 @@ REPO_SLUG_DEFAULT="GoLearn21/nestam"
 DIR_DEFAULT="${HOME}/Projects/nestam"
 
 if [ -t 1 ]; then B=$'\033[1m'; G=$'\033[32m'; Y=$'\033[33m'; R=$'\033[31m'; C=$'\033[36m'; N=$'\033[0m'; else B=""; G=""; Y=""; R=""; C=""; N=""; fi
+say()  { printf "%s\n" "$*"; }   # NB: macOS has a /usr/bin/say that speaks aloud — define our own
 ok()   { printf "  %s✔%s %s\n" "$G" "$N" "$*"; }
 warn() { printf "  %s!%s %s\n" "$Y" "$N" "$*"; }
 fail() { printf "  %s✘%s %s\n" "$R" "$N" "$*"; }
