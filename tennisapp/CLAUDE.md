@@ -17,6 +17,7 @@ supersedes it. Do not re-litigate the settled list in STATE-OF-PLAY §2.
 ## Commands
 
 ```bash
+./scripts/setup.sh                               # install + test database + both suites
 npm ci --workspaces --include-workspace-root     # install (root + api + domain + web)
 npm test                                         # all TypeScript suites (needs RALLY_TEST_DATABASE_URL)
 npm run check --workspaces --if-present          # typecheck
@@ -24,7 +25,7 @@ cd api && npx vitest run                         # Seam 1: HTTP boundary against
 cd domain && npx vitest run                      # Seam 2: golden fixtures
 cd web && npx vitest run                         # token contrast gate
 cd web && npm run dev                            # web app locally
-cd kotlin-reference && gradle :shared:jvmTest    # Kotlin reference, same fixtures as Seam 2
+cd kotlin-reference && ./gradlew :shared:jvmTest # Kotlin reference, same fixtures as Seam 2 (needs JDK 21)
 python3 docs/tools/contrast-audit.py docs/mockups/*.html   # WCAG audit of the mockups
 ./scripts/provision.sh                           # create Supabase + Vercel projects; writes .env
 ```

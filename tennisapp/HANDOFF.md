@@ -64,25 +64,37 @@ From `docs/analysis/STATE-OF-PLAY.md` §4–5, still true:
 Everything below is on the machine. Nothing here needs the old repository.
 
 ```bash
-# 1. Tools (Homebrew)
-brew install node@22 postgresql@16 openjdk@17 gradle git
+# 1. Tools (Homebrew). Java 21 is required — the Kotlin build pins jvmToolchain(21).
+#    Gradle itself is NOT needed: ./gradlew downloads the pinned 8.14.3.
+brew install node@22 postgresql@16 openjdk@21 git
 brew services start postgresql@16
+sudo ln -sfn $(brew --prefix)/opt/openjdk@21/libexec/openjdk.jdk \
+             /Library/Java/JavaVirtualMachines/openjdk-21.jdk
 npm i -g @anthropic-ai/claude-code vercel supabase
 
-# 2. The repository — either unzip tennisapp.zip, or clone once it is on GitHub
+# 2. The repository — unzip tennisapp.zip into ~/tennisapp, or clone it once it is on GitHub
 cd ~/tennisapp
 git status                      # a clean repo with the initial commit
 
-# 3. Dependencies and tests
-npm ci --workspaces --include-workspace-root
-createdb rally_test
-export RALLY_TEST_DATABASE_URL=postgres://$USER@localhost:5432/rally_test
-npm test                        # expect 43 passing
-(cd kotlin-reference && gradle :shared:jvmTest)   # expect 94 passing
+# 3. One command does dependencies, the test database, and both suites
+./scripts/setup.sh              # expect: TypeScript 43 passing, Kotlin 94 passing
 
 # 4. Claude Code
 claude                          # the vendored skills and CLAUDE.md load automatically
 ```
+
+`scripts/setup.sh` is idempotent — re-run it any time. What it does by hand, if you prefer:
+
+```bash
+npm ci --workspaces --include-workspace-root
+createdb rally_test
+export RALLY_TEST_DATABASE_URL="postgres://$USER@localhost:5432/rally_test"
+npm test                                        # 43 passing
+(cd kotlin-reference && ./gradlew :shared:jvmTest)   # 94 passing
+```
+
+Put the `RALLY_TEST_DATABASE_URL` export in `~/.zshrc` so every shell and every Claude Code
+session has it.
 
 If the GitHub repository does not exist yet (see §5), create it from the Mac:
 

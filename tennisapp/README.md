@@ -24,20 +24,28 @@ decision is recorded.
 | `web/` | The mobile web app: Vite + PWA, tokens as JSON, the WCAG contrast gate as a test |
 | `fixtures/` | **Seam 2.** Golden files shared by the Kotlin and TypeScript suites. The fixtures are the contract |
 | `kotlin-reference/` | The Kotlin Multiplatform reference domain (Glicko-2, availability mask, canon, match state, fit). 94 tests |
+| `scripts/setup.sh` | One command: install, create the test database, run both suites |
 | `scripts/provision.sh` | The wizard that creates the Supabase and Vercel projects and writes `.env` — run once, on a machine logged into both |
 | `.claude/skills/` | Vendored Matt Pocock skills: `grill-me`, `to-spec`, `to-tickets`, `implement`, `tdd`, `code-review`, … |
 | `.github/workflows/ci.yml` | Both suites on every push; a real Postgres for Seam 1 |
 
 ## Run
 
-Node 22, Postgres 16, and for the Kotlin reference a JDK 17+ with Gradle 8.
+Node 22, Postgres 16, and JDK 21 for the Kotlin reference. Gradle is not needed — `./gradlew`
+downloads the pinned version.
+
+```bash
+./scripts/setup.sh    # installs, creates rally_test, runs both suites (43 + 94)
+```
+
+By hand:
 
 ```bash
 npm ci --workspaces --include-workspace-root
 createdb rally_test
-export RALLY_TEST_DATABASE_URL=postgres://$USER@localhost:5432/rally_test
-npm test                                   # api (Seam 1) + domain (Seam 2) + web (token gate)
-(cd kotlin-reference && gradle :shared:jvmTest)   # the Kotlin reference, same fixtures
+export RALLY_TEST_DATABASE_URL="postgres://$USER@localhost:5432/rally_test"
+npm test                                            # api (Seam 1) + domain (Seam 2) + web (token gate)
+(cd kotlin-reference && ./gradlew :shared:jvmTest)  # the Kotlin reference, same fixtures
 ```
 
 Tests run against a real database. Nothing is mocked.
